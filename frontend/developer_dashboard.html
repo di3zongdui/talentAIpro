@@ -200,7 +200,7 @@
                         <div style="font-weight: 600; margin-bottom: 5px;">生产环境密钥</div>
                         <div class="api-key-label">Key</div>
                         <div class="api-key-value">
-                            <span id="key1">ta_live_*******************************f8x2</span>
+                            <span id="key1" data-full="ta_live_xK9m2nP4rQ7wL5jH3vB8cF6dE1gA0zT" class="key-hidden">••••••••••••••••••••f8x2</span>
                             <button class="btn btn-secondary btn-sm" onclick="toggleKey('key1')" style="margin-left: 10px;">👁️</button>
                             <button class="btn btn-secondary btn-sm" onclick="copyKey('key1')">📋</button>
                         </div>
@@ -215,7 +215,7 @@
                         <div style="font-weight: 600; margin-bottom: 5px;">测试环境密钥</div>
                         <div class="api-key-label">Key</div>
                         <div class="api-key-value">
-                            <span id="key2">ta_test_*******************************m5k9</span>
+                            <span id="key2" data-full="ta_test_mN8pL3kJ5hG2wE7vF1cR4bD6zA9xT" class="key-hidden">••••••••••••••••••••m5k9</span>
                             <button class="btn btn-secondary btn-sm" onclick="toggleKey('key2')" style="margin-left: 10px;">👁️</button>
                             <button class="btn btn-secondary btn-sm" onclick="copyKey('key2')">📋</button>
                         </div>
@@ -230,7 +230,7 @@
                         <div style="font-weight: 600; margin-bottom: 5px;">Webhook专用密钥</div>
                         <div class="api-key-label">Key</div>
                         <div class="api-key-value">
-                            <span id="key3">ta_wh_********************************q2p7</span>
+                            <span id="key3" data-full="ta_wh_Q8mN2kP5jH7wL4gF3vB1cE6dG9zA" class="key-hidden">••••••••••••••••••••q2p7</span>
                             <button class="btn btn-secondary btn-sm" onclick="toggleKey('key3')" style="margin-left: 10px;">👁️</button>
                             <button class="btn btn-secondary btn-sm" onclick="copyKey('key3')">📋</button>
                         </div>
@@ -705,20 +705,31 @@ client.set_debug(<span class="boolean">True</span>)</div>
         // API密钥操作
         function toggleKey(keyId) {
             const el = document.getElementById(keyId);
-            if (el.textContent.includes('***')) {
-                el.textContent = el.dataset.full || el.textContent;
+            const fullKey = el.dataset.full;
+            if (el.classList.contains('key-hidden')) {
+                // 显示完整密钥
+                el.textContent = fullKey;
+                el.classList.remove('key-hidden');
+                el.nextElementSibling.textContent = '🙈';
                 showToast('密钥已显示', 'info');
             } else {
-                el.dataset.full = el.textContent;
-                el.textContent = el.textContent.substring(0, 20) + '*******************************' + el.textContent.slice(-4);
+                // 隐藏密钥（保留后4位）
+                const suffix = fullKey.slice(-4);
+                el.textContent = '••••••••••••••••••••' + suffix;
+                el.classList.add('key-hidden');
+                el.nextElementSibling.textContent = '👁️';
                 showToast('密钥已隐藏', 'info');
             }
         }
 
         function copyKey(keyId) {
             const el = document.getElementById(keyId);
-            navigator.clipboard.writeText(el.dataset.full || el.textContent);
-            showToast('密钥已复制到剪贴板', 'success');
+            const keyToCopy = el.dataset.full;
+            navigator.clipboard.writeText(keyToCopy).then(() => {
+                showToast('密钥已复制到剪贴板', 'success');
+            }).catch(() => {
+                showToast('复制失败，请手动复制', 'error');
+            });
         }
 
         // 端点测试
