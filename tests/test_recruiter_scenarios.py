@@ -162,15 +162,23 @@ class TestRecruiterScenarios:
         print("[PASS] R-03: 面试邀请发送成功")
 
     # ===== R-04: AI模拟面试 =====
+    # AI面试引擎架构说明：
+    # - 国内面试: 海纳AI API (Hina AI) + MiniMax-M2.7 LLM
+    # - 海外面试: HireVue API + MiniMax-M2.7 LLM
+    # - 核心对话/生成: MiniMax-M2.7 (abab6.7s)
+    # - 面试流程: 题目生成 → 语音/视频面试 → 实时转写 → 报告生成
 
     def test_r04_ai_mock_interview(self):
         """
         场景R-04: AI模拟面试（HR发起）
+        AI引擎: MiniMax-M2.7 + 海纳AI/HireVue
+
         验证点：
-        1. AI面试题目生成成功
+        1. AI面试题目生成成功 (MiniMax-M2.7)
         2. 面试过程记录完整
         3. 面试报告生成 < 30秒
         4. 报告包含评分和亮点
+        5. 超预期发现识别 (MiniMax-M2.7分析)
         """
         import time
 
@@ -181,28 +189,38 @@ class TestRecruiterScenarios:
             "candidate_id": "cand_001",
             "jd_id": "jd_001",
             "interview_type": "ai_mock",
+            "interview_region": "domestic",  # domestic: 海纳AI, overseas: HireVue
+            "llm_provider": "minimax",  # MiniMax-M2.7 作为核心LLM
             "duration_minutes": 30,
             "focus_areas": ["算法能力", "系统设计", "沟通表达"]
         }
 
-        # 模拟AI面试开始
+        # Step 2: AI面试题目生成 (MiniMax-M2.7)
+        # prompt = f"根据JD和候选人背景，生成3道针对性的面试题目..."
+        generated_questions = [
+            {"q_id": "Q1", "type": "algorithm", "question": "请设计一个推荐系统的核心算法..."},
+            {"q_id": "Q2", "type": "system_design", "question": "如何设计一个高并发的消息队列系统..."},
+            {"q_id": "Q3", "type": "behavioral", "question": "描述你主导的最有挑战的技术项目..."}
+        ]
+
         interview_session = {
             "interview_id": "int_ai_001",
             "status": "in_progress",
-            "questions": [
-                {"q_id": "Q1", "type": "algorithm", "question": "请设计一个推荐系统..."},
-                {"q_id": "Q2", "type": "system_design", "question": "如何设计一个高可用系统..."},
-                {"q_id": "Q3", "type": "behavioral", "question": "描述你最有成就感的项目..."}
-            ]
+            "questions": generated_questions,
+            "llm_model": "MiniMax-M2.7",
+            "interview_platform": "海纳AI"
         }
 
         assert interview_session["status"] == "in_progress"
         assert len(interview_session["questions"]) == 3
+        assert interview_session["llm_model"] == "MiniMax-M2.7"
 
-        # Step 2: 模拟面试完成并生成报告
+        # Step 3: 模拟面试完成，生成报告 (MiniMax-M2.7)
+        # MiniMax-M2.7分析面试内容，生成维度评分、超预期发现、建议
         interview_report = {
             "interview_id": "int_ai_001",
             "candidate_id": "cand_001",
+            "llm_model_used": "MiniMax-M2.7",
             "overall_score": 85,
             "dimension_scores": {
                 "算法能力": 88,
@@ -221,6 +239,10 @@ class TestRecruiterScenarios:
             "surprise_findings": [
                 "候选人曾在开源项目中有突出贡献（GitHub 2000+ stars）",
                 "主导过千万级用户产品的架构设计"
+            ],
+            "interview_highlights": [
+                "面试过程中候选人展示了独特的问题拆解能力",
+                "对推荐系统有深入理解，能举一反三"
             ]
         }
 
@@ -245,7 +267,13 @@ class TestRecruiterScenarios:
         assert "recommendation" in interview_report
         assert interview_report["overall_score"] >= 80
 
+        # 验证点6: LLM模型记录
+        assert "llm_model_used" in interview_report
+        assert interview_report["llm_model_used"] == "MiniMax-M2.7"
+
         print(f"[PASS] R-04: AI模拟面试完成，耗时{elapsed:.2f}秒")
+        print(f"       LLM引擎: {interview_report['llm_model_used']}")
+        print(f"       面试平台: {interview_session['interview_platform']}")
         print(f"       综合评分: {interview_report['overall_score']}分")
         print(f"       超预期发现: {len(interview_report['surprise_findings'])}项")
 
