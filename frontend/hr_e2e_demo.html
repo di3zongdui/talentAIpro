@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR端到端演示 - TalentAI Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; }
+
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+
+        .progress-bar { display: flex; justify-content: center; padding: 20px; background: white; border-bottom: 1px solid #e4e7ed; }
+        .step { display: flex; align-items: center; margin: 0 20px; }
+        .step-num { width: 32px; height: 32px; border-radius: 50%; background: #dcdfe6; color: #909399; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+        .step.active .step-num { background: #667eea; color: white; }
+        .step.completed .step-num { background: #67c23a; color: white; }
+        .step-label { color: #909399; font-size: 14px; }
+        .step.active .step-label { color: #667eea; font-weight: bold; }
+        .step.completed .step-label { color: #67c23a; }
+        .step-arrow { color: #dcdfe6; margin: 0 10px; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        .control-panel { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .control-panel h3 { margin-bottom: 15px; color: #303133; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a70d9; transform: translateY(-1px); }
+        .btn-success { background: #67c23a; color: white; }
+        .btn-success:hover { background: #5da32e; }
+        .btn-warning { background: #e6a23c; color: white; }
+        .btn-warning:hover { background: #d4922f; }
+        .btn-danger { background: #f56c6c; color: white; }
+        .btn-danger:hover { background: #e04040; }
+        .btn-secondary { background: #909399; color: white; }
+        .btn-secondary:hover { background: #7a7a7a; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 1000px) { .dashboard { grid-template-columns: 1fr; } }
+
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .card h3 { color: #303133; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e4e7ed; display: flex; justify-content: space-between; align-items: center; }
+        .card h3 .badge { background: #667eea; color: white; padding: 2px 10px; border-radius: 10px; font-size: 12px; }
+
+        .candidate-list { display: flex; flex-direction: column; gap: 12px; }
+        .candidate-item { border: 1px solid #e4e7ed; border-radius: 8px; padding: 15px; transition: all 0.3s; }
+        .candidate-item:hover { border-color: #667eea; box-shadow: 0 2px 12px rgba(102,126,234,0.15); }
+        .candidate-item.new { border-left: 4px solid #e6a23c; background: #fdf6ec; }
+        .candidate-item.interview { border-left: 4px solid #409eff; background: #ecf5ff; }
+        .candidate-item.offer { border-left: 4px solid #67c23a; background: #f0f9eb; }
+        .candidate-item.hired { border-left: 4px solid #67c23a; background: #d4edda; }
+
+        .candidate-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .candidate-name { font-weight: bold; color: #303133; font-size: 16px; }
+        .candidate-title { color: #606266; font-size: 14px; margin-bottom: 8px; }
+        .match-score { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+        .match-score.high { background: linear-gradient(135deg, #67c23a, #5da32e); }
+        .match-score.medium { background: linear-gradient(135deg, #e6a23c, #d4922f); }
+
+        .candidate-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+        .tag { background: #f4f4f5; color: #606266; padding: 3px 10px; border-radius: 4px; font-size: 12px; }
+        .tag.skill { background: #ecf5ff; color: #409eff; }
+        .tag.status-new { background: #fdf6ec; color: #e6a23c; }
+        .tag.status-interview { background: #ecf5ff; color: #409eff; }
+        .tag.status-offer { background: #f0f9eb; color: #67c23a; }
+        .tag.status-hired { background: #d4edda; color: #67c23a; }
+
+        .candidate-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .btn-xs { padding: 6px 12px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s; }
+        .btn-xs-primary { background: #667eea; color: white; }
+        .btn-xs-success { background: #67c23a; color: white; }
+        .btn-xs-warning { background: #e6a23c; color: white; }
+        .btn-xs:hover { opacity: 0.8; }
+
+        .jd-section { background: linear-gradient(135deg, #667eea15, #764ba215); border: 1px solid #667eea30; }
+        .jd-title { font-size: 18px; font-weight: bold; color: #303133; margin-bottom: 10px; }
+        .jd-company { color: #606266; margin-bottom: 15px; }
+        .jd-meta { display: flex; gap: 20px; color: #909399; font-size: 13px; margin-bottom: 15px; }
+        .jd-skills { display: flex; gap: 8px; flex-wrap: wrap; }
+        .jd-skill { background: #667eea; color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        @media (max-width: 800px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .stat-num { font-size: 32px; font-weight: bold; color: #667eea; margin-bottom: 5px; }
+        .stat-num.success { color: #67c23a; }
+        .stat-num.warning { color: #e6a23c; }
+        .stat-num.info { color: #409eff; }
+        .stat-label { color: #909399; font-size: 13px; }
+
+        .timeline { border-left: 2px solid #e4e7ed; margin-left: 10px; padding-left: 25px; }
+        .timeline-item { position: relative; padding: 15px 0; }
+        .timeline-item::before { content: ''; position: absolute; left: -31px; top: 20px; width: 12px; height: 12px; border-radius: 50%; background: #667eea; border: 3px solid white; box-shadow: 0 0 0 3px #667eea30; }
+        .timeline-item.done::before { background: #67c23a; box-shadow: 0 0 0 3px #67c23a30; }
+        .timeline-date { color: #909399; font-size: 12px; margin-bottom: 5px; }
+        .timeline-title { font-weight: bold; color: #303133; margin-bottom: 3px; }
+        .timeline-desc { color: #606266; font-size: 13px; }
+
+        .funnel { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 20px 0; }
+        .funnel-level { text-align: center; padding: 15px; color: white; font-weight: bold; border-radius: 4px; }
+        .funnel-level:nth-child(1) { background: #909399; width: 100%; }
+        .funnel-level:nth-child(2) { background: #e6a23c; width: 80%; }
+        .funnel-level:nth-child(3) { background: #409eff; width: 60%; }
+        .funnel-level:nth-child(4) { background: #667eea; width: 40%; }
+        .funnel-level:nth-child(5) { background: #67c23a; width: 20%; }
+
+        .toast { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 8px; color: white; font-weight: 500; z-index: 1000; animation: slideIn 0.3s ease; }
+        .toast.success { background: #67c23a; }
+        .toast.info { background: #667eea; }
+        .toast.warning { background: #e6a23c; }
+        .toast.error { background: #f56c6c; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .empty-state { text-align: center; padding: 40px; color: #909399; }
+        .empty-state .icon { font-size: 48px; margin-bottom: 10px; }
+
+        .log-panel { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; font-family: 'Consolas', monospace; font-size: 13px; max-height: 300px; overflow-y: auto; }
+        .log-entry { margin: 5px 0; padding: 3px 0; border-bottom: 1px solid #333; }
+        .log-time { color: #667eea; }
+        .log-action { color: #67c23a; }
+        .log-detail { color: #909399; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 HR端到端招聘演示</h1>
+        <p>模拟从发布JD到候选人入职的完整流程</p>
+    </div>
+
+    <div class="progress-bar">
+        <div class="step active" id="step1">
+            <div class="step-num">1</div>
+            <div class="step-label">发布JD</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step" id="step2">
+            <div class="step-num">2</div>
+            <div class="step-label">收到申请</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step" id="step3">
+            <div class="step-num">3</div>
+            <div class="step-label">AI匹配</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step" id="step4">
+            <div class="step-num">4</div>
+            <div class="step-label">安排面试</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step" id="step5">
+            <div class="step-num">5</div>
+            <div class="step-label">发送Offer</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step" id="step6">
+            <div class="step-num">6</div>
+            <div class="step-label">入职</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 统计卡片 -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-num" id="stat-jd">0</div>
+                <div class="stat-label">进行中的JD</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num success" id="stat-candidates">0</div>
+                <div class="stat-label">候选人总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num warning" id="stat-interviews">0</div>
+                <div class="stat-label">待面试</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num info" id="stat-offers">0</div>
+                <div class="stat-label">Offer中</div>
+            </div>
+        </div>
+
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <h3>⚙️ 流程控制</h3>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="step1_publishJD()">📋 第1步：发布JD</button>
+                <button class="btn btn-primary" onclick="step2_receiveApplications()" id="btn-step2" disabled>📥 第2步：收到申请</button>
+                <button class="btn btn-primary" onclick="step3_aiMatch()" id="btn-step3" disabled>🤖 第3步：AI智能匹配</button>
+                <button class="btn btn-primary" onclick="step4_scheduleInterview()" id="btn-step4" disabled>📅 第4步：安排面试</button>
+                <button class="btn btn-primary" onclick="step5_sendOffer()" id="btn-step5" disabled>💌 第5步：发送Offer</button>
+                <button class="btn btn-success" onclick="step6_onboard()" id="btn-step6" disabled>🎉 第6步：入职</button>
+                <button class="btn btn-secondary" onclick="resetDemo()">🔄 重置演示</button>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <!-- 左侧：JD和候选人 -->
+            <div>
+                <!-- JD信息 -->
+                <div class="card jd-section" id="jdCard" style="display:none;">
+                    <h3>📌 当前招聘的JD <span class="badge">进行中</span></h3>
+                    <div class="jd-title" id="jd-title">AI算法工程师</div>
+                    <div class="jd-company">🏢 CGL 高端人才咨询</div>
+                    <div class="jd-meta">
+                        <span>📍 上海浦东</span>
+                        <span>💰 50-80K·16薪</span>
+                        <span>⏰ 2026-04-22发布</span>
+                    </div>
+                    <div class="jd-skills" id="jd-skills">
+                        <span class="jd-skill">Python</span>
+                        <span class="jd-skill">TensorFlow</span>
+                        <span class="jd-skill">LLM</span>
+                        <span class="jd-skill">RAG</span>
+                        <span class="jd-skill">NLP</span>
+                    </div>
+                </div>
+
+                <!-- 候选人列表 -->
+                <div class="card">
+                    <h3>👥 候选人 <span class="badge" id="candidate-count">0</span></h3>
+                    <div class="candidate-list" id="candidateList">
+                        <div class="empty-state">
+                            <div class="icon">📭</div>
+                            <div>暂无候选人</div>
+                            <div style="font-size:12px;margin-top:5px;">发布JD后将有候选人申请</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：漏斗和时间线 -->
+            <div>
+                <!-- 招聘漏斗 -->
+                <div class="card">
+                    <h3>📊 招聘漏斗</h3>
+                    <div class="funnel" id="funnel">
+                        <div class="funnel-level" id="funnel-apply" style="opacity:0.3;">申请: 0</div>
+                    </div>
+                    <div class="funnel" id="funnel2" style="margin-top:-10px;">
+                        <div class="funnel-level" id="funnel-interview" style="opacity:0.3;">面试: 0</div>
+                    </div>
+                    <div class="funnel" id="funnel3" style="margin-top:-10px;">
+                        <div class="funnel-level" id="funnel-offer" style="opacity:0.3;">Offer: 0</div>
+                    </div>
+                    <div class="funnel" id="funnel4" style="margin-top:-10px;">
+                        <div class="funnel-level" id="funnel-hired" style="opacity:0.3;">入职: 0</div>
+                    </div>
+                </div>
+
+                <!-- 时间线 -->
+                <div class="card">
+                    <h3>📅 操作记录</h3>
+                    <div class="timeline" id="timeline">
+                        <div class="timeline-item done">
+                            <div class="timeline-date">2026-04-22 23:15</div>
+                            <div class="timeline-title">演示系统初始化</div>
+                            <div class="timeline-desc">系统准备就绪，等待开始招聘流程</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日志面板 -->
+        <div class="card" style="margin-top:20px;">
+            <h3>📝 系统日志</h3>
+            <div class="log-panel" id="logPanel">
+                <div class="log-entry">
+                    <span class="log-time">[23:15:00]</span>
+                    <span class="log-action">[系统]</span>
+                    <span class="log-detail">TalentAI Pro HR端到端演示系统已启动</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 状态管理
+        let currentStep = 0;
+        let candidates = [];
+        let stats = { jd: 0, candidates: 0, interviews: 0, offers: 0 };
+
+        // Toast提示
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // 日志记录
+        function log(action, detail) {
+            const panel = document.getElementById('logPanel');
+            const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-action">[${action}]</span> <span class="log-detail">${detail}</span>`;
+            panel.insertBefore(entry, panel.firstChild);
+        }
+
+        // 更新统计
+        function updateStats() {
+            document.getElementById('stat-jd').textContent = stats.jd;
+            document.getElementById('stat-candidates').textContent = stats.candidates;
+            document.getElementById('stat-interviews').textContent = stats.interviews;
+            document.getElementById('stat-offers').textContent = stats.offers;
+        }
+
+        // 更新漏斗
+        function updateFunnel() {
+            const apply = document.getElementById('funnel-apply');
+            const interview = document.getElementById('funnel-interview');
+            const offer = document.getElementById('funnel-offer');
+            const hired = document.getElementById('funnel-hired');
+
+            apply.textContent = `申请: ${stats.candidates}`;
+            apply.style.opacity = stats.candidates > 0 ? '1' : '0.3';
+
+            interview.textContent = `面试: ${stats.interviews}`;
+            interview.style.opacity = stats.interviews > 0 ? '1' : '0.3';
+
+            offer.textContent = `Offer: ${stats.offers}`;
+            offer.style.opacity = stats.offers > 0 ? '1' : '0.3';
+
+            hired.textContent = `入职: ${candidates.filter(c => c.status === 'hired').length}`;
+            hired.style.opacity = candidates.filter(c => c.status === 'hired').length > 0 ? '1' : '0.3';
+        }
+
+        // 更新步骤进度
+        function updateSteps(step) {
+            for (let i = 1; i <= 6; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                stepEl.classList.remove('active', 'completed');
+                if (i < step) {
+                    stepEl.classList.add('completed');
+                } else if (i === step) {
+                    stepEl.classList.add('active');
+                }
+            }
+        }
+
+        // 启用/禁用按钮
+        function setButtonState(step, enabled) {
+            document.getElementById(`btn-step${step}`).disabled = !enabled;
+        }
+
+        // 添加时间线
+        function addTimeline(title, desc) {
+            const timeline = document.getElementById('timeline');
+            const item = document.createElement('div');
+            item.className = 'timeline-item';
+            item.innerHTML = `
+                <div class="timeline-date">${new Date().toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="timeline-title">${title}</div>
+                <div class="timeline-desc">${desc}</div>
+            `;
+            timeline.insertBefore(item, timeline.firstChild);
+            item.classList.add('done');
+        }
+
+        // ========== 第1步：发布JD ==========
+        function step1_publishJD() {
+            currentStep = 1;
+
+            // 显示JD卡片
+            document.getElementById('jdCard').style.display = 'block';
+
+            // 更新状态
+            stats.jd = 1;
+            updateStats();
+            updateSteps(1);
+            setButtonState(2, true);
+
+            // 日志
+            log('JD发布', '发布了"AI算法工程师"职位，目标候选人：AI/LLM方向专家');
+            addTimeline('JD已发布', 'AI算法工程师 (50-80K·16薪)');
+
+            showToast('✅ JD发布成功！等待候选人申请...', 'success');
+        }
+
+        // ========== 第2步：收到申请 ==========
+        function step2_receiveApplications() {
+            currentStep = 2;
+
+            // 模拟3个候选人申请
+            candidates = [
+                { id: 1, name: '李明', title: '字节跳动 · 高级算法工程师', score: 95, skills: ['Python', 'TensorFlow', 'LLM'], status: 'new', match: '极高' },
+                { id: 2, name: '王芳', title: '阿里巴巴 · 算法专家', score: 88, skills: ['Python', 'PyTorch', 'RAG'], status: 'new', match: '高' },
+                { id: 3, name: '张伟', title: '创业公司 · AI负责人', score: 72, skills: ['Python', 'NLP', 'LangChain'], status: 'new', match: '中' }
+            ];
+
+            stats.candidates = candidates.length;
+            updateStats();
+            updateFunnel();
+            updateSteps(2);
+            setButtonState(2, false);
+            setButtonState(3, true);
+
+            renderCandidates();
+            log('候选人申请', `收到3份求职申请：${candidates.map(c => c.name).join('、')}`);
+            addTimeline('收到申请', '3位候选人申请AI算法工程师职位');
+
+            showToast('📥 收到3份申请！点击查看候选人详情', 'info');
+        }
+
+        // 渲染候选人列表
+        function renderCandidates() {
+            const list = document.getElementById('candidateList');
+            document.getElementById('candidate-count').textContent = candidates.length;
+
+            if (candidates.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <div>暂无候选人</div>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = candidates.map(c => `
+                <div class="candidate-item ${c.status}" id="candidate-${c.id}">
+                    <div class="candidate-header">
+                        <div>
+                            <div class="candidate-name">${c.name}</div>
+                            <div class="candidate-title">${c.title}</div>
+                        </div>
+                        <div class="match-score ${c.score >= 90 ? 'high' : c.score >= 80 ? '' : 'medium'}">${c.score}%匹配</div>
+                    </div>
+                    <div class="candidate-tags">
+                        ${c.skills.map(s => `<span class="tag skill">${s}</span>`).join('')}
+                        <span class="tag status-${c.status}">${getStatusText(c.status)}</span>
+                        <span class="tag">${c.match}</span>
+                    </div>
+                    <div class="candidate-actions" id="actions-${c.id}">
+                        ${getActionButtons(c)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusText(status) {
+            const map = { new: '新申请', interview: '面试中', offer: 'Offer中', hired: '已入职' };
+            return map[status] || status;
+        }
+
+        function getActionButtons(candidate) {
+            if (candidate.status === 'new') {
+                return `<button class="btn-xs btn-xs-primary" onclick="inviteInterview(${candidate.id})">📅 邀请面试</button>
+                        <button class="btn-xs btn-xs-warning" onclick="viewProfile(${candidate.id})">👁️ 查看</button>`;
+            } else if (candidate.status === 'interview') {
+                return `<button class="btn-xs btn-xs-success" onclick="sendOffer(${candidate.id})">💌 发送Offer</button>
+                        <button class="btn-xs btn-xs-warning" onclick="viewProfile(${candidate.id})">👁️ 查看</button>`;
+            } else if (candidate.status === 'offer') {
+                return `<button class="btn-xs btn-xs-success" onclick="confirmHired(${candidate.id})">✅ 确认入职</button>
+                        <button class="btn-xs btn-xs-warning" onclick="viewProfile(${candidate.id})">👁️ 查看</button>`;
+            } else if (candidate.status === 'hired') {
+                return `<span style="color:#67c23a;font-weight:bold;">🎉 已入职</span>`;
+            }
+            return '';
+        }
+
+        // ========== 第3步：AI智能匹配 ==========
+        function step3_aiMatch() {
+            currentStep = 3;
+
+            // AI分析每个候选人
+            candidates.forEach(c => {
+                c.aiInsight = `🎯 AI分析：${c.name}拥有丰富的${c.skills[0]}和${c.skills[1]}经验，与JD匹配度${c.match}。建议优先联系。`;
+            });
+
+            updateSteps(3);
+            setButtonState(3, false);
+            setButtonState(4, true);
+
+            renderCandidates();
+            log('AI匹配', 'TalentAI引擎完成候选人深度分析，生成个性化推荐理由');
+            addTimeline('AI匹配完成', '3位候选人匹配度分析完成，李明(95%)匹配度最高');
+
+            showToast('🤖 AI分析完成！请查看每位候选人的匹配报告', 'success');
+        }
+
+        // ========== 第4步：安排面试 ==========
+        function step4_scheduleInterview() {
+            currentStep = 4;
+
+            // 邀请李明和王芳面试
+            candidates.forEach(c => {
+                if (c.score >= 85) {
+                    c.status = 'interview';
+                }
+            });
+
+            stats.interviews = candidates.filter(c => c.status === 'interview').length;
+            updateStats();
+            updateFunnel();
+            updateSteps(4);
+            setButtonState(4, false);
+            setButtonState(5, true);
+
+            renderCandidates();
+            log('面试安排', `已安排2场面试：李明(4月25日)、王芳(4月26日)`);
+            addTimeline('面试安排', '已向李明、王芳发送面试邀请');
+
+            showToast('📅 已安排2场面试，候选人将收到日历邀请', 'info');
+        }
+
+        // ========== 第5步：发送Offer ==========
+        function step5_sendOffer() {
+            currentStep = 5;
+
+            // 李明通过面试
+            candidates.forEach(c => {
+                if (c.name === '李明') {
+                    c.status = 'offer';
+                }
+            });
+
+            stats.interviews = 0;
+            stats.offers = 1;
+            updateStats();
+            updateFunnel();
+            updateSteps(5);
+            setButtonState(5, false);
+            setButtonState(6, true);
+
+            renderCandidates();
+            log('Offer发送', `向李明发送Offer：年薪60万·16薪 + 期权`);
+            addTimeline('Offer已发送', '李明Offer: 60K·16薪 + 股票期权，等待确认');
+
+            showToast('💌 Offer已发送！等待候选人确认', 'success');
+        }
+
+        // ========== 第6步：入职 ==========
+        function step6_onboard() {
+            currentStep = 6;
+
+            // 李明接受Offer入职
+            candidates.forEach(c => {
+                if (c.name === '李明') {
+                    c.status = 'hired';
+                }
+            });
+
+            stats.offers = 0;
+            updateStats();
+            updateFunnel();
+            updateSteps(6);
+
+            renderCandidates();
+            log('入职完成', `🎉 李明已入职！TalentAI Pro成功完成一次端到端招聘`);
+            addTimeline('招聘完成', '李明正式入职CGL担任AI算法工程师');
+
+            showToast('🎉 恭喜！招聘流程圆满完成！', 'success');
+        }
+
+        // 辅助操作
+        function inviteInterview(id) {
+            const c = candidates.find(c => c.id === id);
+            c.status = 'interview';
+            stats.interviews++;
+            updateStats();
+            updateFunnel();
+            renderCandidates();
+            log('邀请面试', `已邀请${c.name}参加面试`);
+            showToast(`📅 已邀请${c.name}参加面试`, 'info');
+        }
+
+        function sendOffer(id) {
+            const c = candidates.find(c => c.id === id);
+            c.status = 'offer';
+            stats.interviews--;
+            stats.offers++;
+            updateStats();
+            updateFunnel();
+            renderCandidates();
+            log('发送Offer', `向${c.name}发送Offer：${Math.floor(Math.random()*20+50)}K·16薪`);
+            showToast(`💌 已向${c.name}发送Offer`, 'success');
+        }
+
+        function confirmHired(id) {
+            const c = candidates.find(c => c.id === id);
+            c.status = 'hired';
+            stats.offers--;
+            updateStats();
+            updateFunnel();
+            renderCandidates();
+            log('入职确认', `🎉 ${c.name}确认入职！`);
+            showToast(`✅ ${c.name}已确认入职`, 'success');
+        }
+
+        function viewProfile(id) {
+            const c = candidates.find(c => c.id === id);
+            log('查看档案', `查看${c.name}完整简历和AI分析报告`);
+            showToast(`👁️ 查看${c.name}的完整档案`, 'info');
+        }
+
+        // 重置演示
+        function resetDemo() {
+            currentStep = 0;
+            candidates = [];
+            stats = { jd: 0, candidates: 0, interviews: 0, offers: 0 };
+
+            document.getElementById('jdCard').style.display = 'none';
+            updateStats();
+            updateFunnel();
+            updateSteps(0);
+            renderCandidates();
+
+            for (let i = 2; i <= 6; i++) {
+                setButtonState(i, false);
+            }
+
+            log('系统', '演示已重置，可以重新开始招聘流程');
+            showToast('🔄 演示已重置', 'warning');
+        }
+
+        // 初始化
+        updateStats();
+        updateFunnel();
+    </script>
+</body>
+</html>
