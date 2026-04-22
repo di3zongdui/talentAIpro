@@ -12,6 +12,7 @@ from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
+import re
 
 
 class RiskLevel(Enum):
@@ -553,7 +554,7 @@ class CandidateIntelligenceEngineV2:
 
         # 公司加成
         top_companies = ["字节", "阿里", "腾讯", "百度", "美团", "大疆", "华为"]
-        if any(c in current_company for c in top_companies):
+        if current_company and any(c in current_company for c in top_companies):
             multiplier *= 1.2
             basis.append(f"大厂背景加成20%")
 

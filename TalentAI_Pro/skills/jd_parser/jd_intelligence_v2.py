@@ -93,6 +93,7 @@ class JDIntelligenceEngineV2:
         "产品": {"easy": 400, "medium": 150, "hard": 50},
         "销售": {"easy": 1000, "medium": 500, "hard": 150},
         "高管": {"easy": 50, "medium": 20, "hard": 10},
+        "通用": {"easy": 500, "medium": 200, "hard": 80},
     }
 
     # 市场薪资参考（年薪，单位：万）
