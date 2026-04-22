@@ -1,0 +1,147 @@
+# -*- coding: utf-8 -*-
+"""
+飞书Bitable连接器配置 - TalentAI Pro
+
+使用方式:
+1. 复制此文件为 config_bitables.py
+2. 填入真实的多维表格信息
+3. 在代码中导入使用:
+   from config_bitables import BITABLE_APP_ID, BITABLE_APP_SECRET, TABLES
+
+创建Bitable并获取配置:
+1. 在飞书中创建一个多维表格
+2. 获取 App Token（从URL中获取）:
+   URL格式: https://xxx.feishu.cn/base/xxxxxxxxx
+   App Token: xxxxxxxxx（9位字母，通常以M开头）
+3. 获取 Table ID:
+   打开多维表格 → 点击右上角 "..." → "获取表格链接"
+   或者在API中调用 /bitable/v1/apps/{app_token}/tables 获取
+4. 获取字段名（中文）:
+   打开多维表格 → 列标题就是字段名
+
+创建飞书应用（如果还没有）:
+1. 访问 https://open.feishu.cn/app
+2. 创建企业自建应用
+3. 添加权限:
+   - bitable:app:readonly
+   - bitable:app:write
+4. 将应用添加到多维表格:
+   打开多维表格 → 右上角 "分享" → "添加应用" → 搜索你的应用
+"""
+
+# ==============================================================================
+# 飞书应用凭证
+# ==============================================================================
+
+BITABLE_APP_ID = ""  # 例如: "cli_a1b2c3d4e5f6g7h8"
+BITABLE_APP_SECRET = ""  # 飞书应用密钥
+
+# ==============================================================================
+# 多维表格 App Token
+# 从多维表格URL获取，格式: https://xxx.feishu.cn/base/MKLxxxxxxxx
+# ==============================================================================
+
+BITABLE_APP_TOKEN = ""  # 例如: "MKLxxxxxxxx"
+
+# ==============================================================================
+# 数据表配置
+# ==============================================================================
+
+TABLES = {
+    # 候选人库 - 存储候选人信息
+    "candidates": "",  # 例如: "tblxxxxxxxx"
+
+    # 职位库 - 存储职位信息
+    "jobs": "",  # 例如: "tblxxxxxxxx"
+
+    # 招聘交易跟踪 - 存储招聘进度
+    "deals": "",  # 例如: "tblxxxxxxxx"
+
+    # 活动记录 - 存储跟进活动
+    "activities": ""  # 例如: "tblxxxxxxxx"
+}
+
+# ==============================================================================
+# 字段映射配置
+# TalentAI Pro字段名 -> Bitable字段名
+# ==============================================================================
+
+FIELD_MAPPING = {
+    "candidates": {
+        "name": "姓名",           # 候选人姓名
+        "email": "邮箱",          # 邮箱
+        "phone": "手机",          # 手机号
+        "title": "当前职位",      # 当前职位
+        "company": "当前公司",    # 当前公司
+        "skills": "技能",         # 技能列表（多选）
+        "experience_years": "工作年限",  # 工作年限
+        "current_salary": "当前薪资",    # 当前薪资
+        "expected_salary": "期望薪资",   # 期望薪资
+        "status": "状态",         # 状态（活跃/被动/面试中/Offer/入职/拒绝）
+        "source": "来源",         # 候选人来源
+        "notes": "备注"           # 备注
+    },
+    "jobs": {
+        "title": "职位名称",       # 职位名称
+        "company": "公司",         # 公司名
+        "skills_required": "所需技能",  # 所需技能（多选）
+        "experience_years_min": "最低工作年限",  # 最低工作年限
+        "salary_min": "薪资下限",   # 薪资下限
+        "salary_max": "薪资上限",   # 薪资上限
+        "location": "地点",        # 工作地点
+        "status": "状态",          # 状态（开放/已填充/关闭/暂停）
+        "priority": "优先级",      # 优先级（高/中/低）
+        "notes": "备注"            # 备注
+    },
+    "deals": {
+        "candidate_id": "候选人ID",     # 候选人记录ID
+        "job_id": "职位ID",            # 职位记录ID
+        "candidate_name": "候选人姓名",  # 候选人姓名
+        "job_title": "职位名称",        # 职位名称
+        "stage": "阶段",               # 阶段
+        "probability": "意向概率",      # 意向概率（百分比）
+        "interview_date": "面试日期",    # 面试日期时间
+        "feedback": "反馈",             # 反馈
+        "owner": "负责顾问",            # 负责顾问
+        "notes": "备注"                 # 备注
+    },
+    "activities": {
+        "deal_id": "交易ID",           # 关联的交易记录ID
+        "activity_type": "活动类型",    # 活动类型（电话/邮件/面试/其他）
+        "content": "内容",              # 活动内容
+        "timestamp": "时间"             # 活动时间
+    }
+}
+
+# ==============================================================================
+# 阶段选项配置
+# Bitable多选字段的可用选项
+# ==============================================================================
+
+DEAL_STAGES = [
+    "new",                    # 新建
+    "initial_contact",        # 初步联系
+    "interview_scheduled",    # 面试已安排
+    "interview_completed",    # 面试完成
+    "offer_extended",         # Offer已发出
+    "offer_accepted",         # Offer已接受
+    "hired",                  # 已入职
+    "rejected",               # 拒绝
+    "withdrawn"               # 撤回
+]
+
+CANDIDATE_STATUSES = [
+    "active",      # 活跃
+    "passive",     # 被动
+    "interviewing", # 面试中
+    "offered",     # 已Offer
+    "hired",       # 已入职
+    "rejected"     # 已拒绝
+]
+
+JOB_STATUSES = [
+    "open",      # 开放
+    "filled",    # 已填充
+    "closed",    # 关闭
+    "on_hold"    # 暂停
+]
