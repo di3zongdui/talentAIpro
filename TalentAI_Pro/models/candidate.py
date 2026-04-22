@@ -62,6 +62,12 @@ class CandidateIntelligence(CandidateBase):
     # 工作风格
     work_style: Optional[WorkStyle] = Field(None, description="工作风格")
 
+    # 偏好字段（从CandidateCreate提升上来）
+    preferred_locations: List[str] = Field(default_factory=list, description="偏好地点")
+    preferred_job_titles: List[str] = Field(default_factory=list, description="偏好职位")
+    expected_salary_min: Optional[int] = Field(None, description="期望薪资下限")
+    expected_salary_max: Optional[int] = Field(None, description="期望薪资上限")
+
 
 class Candidate(CandidateIntelligence):
     """完整候选人模型"""

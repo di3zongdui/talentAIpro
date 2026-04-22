@@ -56,7 +56,7 @@ class JDIntelligence(JobCreate):
     company_highlights: List[Dict[str, Any]] = Field(default_factory=list, description="公司亮点")
 
     # 分析结果
-    candidate_ rarity: Optional[str] = Field(None, description="候选人稀缺性评估")
+    candidate_rarity: Optional[str] = Field(None, description="候选人稀缺性评估")
     salary_competitiveness: Optional[str] = Field(None, description="薪资竞争力")
     difficulty_rating: JobDifficulty = Field(JobDifficulty.MEDIUM, description="匹配难度")
     attraction_score: Optional[float] = Field(None, description="JD吸引力评分", ge=0, le=100)

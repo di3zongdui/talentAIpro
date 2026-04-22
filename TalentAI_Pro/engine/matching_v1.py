@@ -14,7 +14,7 @@ import math
 import uuid
 from datetime import datetime
 
-from ..models.job import Job, JobIntelligence
+from ..models.job import Job, JDIntelligence
 from ..models.candidate import Candidate, CandidateIntelligence
 from ..models.match import MatchResult, MatchScore, MatchConfidence
 
