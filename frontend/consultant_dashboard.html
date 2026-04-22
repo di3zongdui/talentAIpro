@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顾问端 - TalentAI Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; }
+        .header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .header-actions { float: right; margin-top: -40px; }
+        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .stat-card h3 { color: #666; font-size: 13px; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-card .value { font-size: 32px; font-weight: bold; color: #1a1a2e; }
+        .stat-card .change { font-size: 13px; color: #38ef7d; margin-top: 5px; }
+        .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card h2 { font-size: 18px; color: #1a1a2e; margin-bottom: 20px; border-bottom: 2px solid #38ef7d; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; margin: 3px; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+        .btn-primary { background: #11998e; color: white; }
+        .btn-primary:hover { background: #0e8a7e; }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+        .btn-secondary:hover { background: #e0e0e0; }
+        .btn-danger { background: #ff4757; color: white; }
+        .btn-danger:hover { background: #ff3344; }
+        .btn-success { background: #38ef7d; color: white; }
+        .btn-success:hover { background: #2ed573; }
+        .btn-warning { background: #ffa502; color: white; }
+        .btn-warning:hover { background: #ff9500; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #e0e0e0; font-weight: 600; }
+        .table td { padding: 12px; border-bottom: 1px solid #e0e0e0; }
+        .match-badge { background: #e8ffea; color: #38ef7d; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .stage-badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+        .stage-sourced { background: #e8eaff; color: #667eea; }
+        .stage-qualified { background: #fff3cd; color: #856404; }
+        .stage-interview { background: #d4edda; color: #155724; }
+        .stage-offer { background: #cce5ff; color: #004085; }
+        .stage-closed { background: #f8d7da; color: #721c24; }
+        .pipeline { display: flex; gap: 15px; margin-bottom: 20px; }
+        .pipeline-stage { flex: 1; background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
+        .pipeline-stage h4 { color: #666; font-size: 12px; margin-bottom: 5px; }
+        .pipeline-stage .count { font-size: 24px; font-weight: bold; color: #1a1a2e; }
+        .action-row { display: flex; gap: 5px; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; display: none; z-index: 1000; }
+        .toast.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👔 顾问端</h1>
+        <p>猎头顾问工作台 - 候选人管理与匹配</p>
+        <div class="header-actions">
+            <button class="btn btn-sm btn-warning" onclick="showToast('搜索候选人')">🔍 搜索</button>
+            <button class="btn btn-sm btn-secondary" onclick="showToast('刷新数据')">🔄 刷新</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 统计概览 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>我的候选人</h3>
+                <div class="value">234</div>
+                <div class="change">↑ 12 本周新增</div>
+            </div>
+            <div class="stat-card">
+                <h3>匹配中</h3>
+                <div class="value">89</div>
+                <div class="change">↑ 5 进行中</div>
+            </div>
+            <div class="stat-card">
+                <h3>面试安排</h3>
+                <div class="value">23</div>
+                <div class="change">↓ 3 已完成</div>
+            </div>
+            <div class="stat-card">
+                <h3>本月成单</h3>
+                <div class="value">8</div>
+                <div class="change">¥ 2.4M 业绩</div>
+            </div>
+        </div>
+
+        <!-- 招聘漏斗 -->
+        <div class="card">
+            <h2>📊 招聘漏斗 <span style="font-size: 13px; color: #666; font-weight: normal;">2026年4月</span></h2>
+            <div class="pipeline">
+                <div class="pipeline-stage">
+                    <h4>线索收集</h4>
+                    <div class="count">1,234</div>
+                </div>
+                <div class="pipeline-stage">
+                    <h4>已筛选</h4>
+                    <div class="count">456</div>
+                </div>
+                <div class="pipeline-stage">
+                    <h4>面试中</h4>
+                    <div class="count">89</div>
+                </div>
+                <div class="pipeline-stage">
+                    <h4>Offer</h4>
+                    <div class="count">23</div>
+                </div>
+                <div class="pipeline-stage">
+                    <h4>入职</h4>
+                    <div class="count">12</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 候选人列表 -->
+        <div class="card">
+            <h2>👥 候选人管理<div><button class="btn btn-sm btn-primary" onclick="showToast('新建候选人')">+ 新建</button><button class="btn btn-sm btn-secondary" onclick="showToast('批量导入')">📥 导入</button><button class="btn btn-sm btn-secondary" onclick="showToast('导出列表')">📤 导出</button></div></h2>
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-sm btn-primary" onclick="showToast('筛选')">🔍 筛选</button>
+                <button class="btn btn-sm btn-secondary" onclick="showToast('排序')">↕️ 排序</button>
+                <button class="btn btn-sm btn-secondary" onclick="showToast('刷新')">🔄 刷新</button>
+            </div>
+            <table class="table">
+                <thead><tr><th>姓名</th><th>当前职位</th><th>匹配度</th><th>阶段</th><th>来源</th><th>操作</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>李明</td><td>字节跳动 · AI算法工程师</td><td><span class="match-badge">92%</span></td><td><span class="stage-badge stage-interview">面试中</span></td><td>猎聘</td>
+                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-primary" onclick="showToast('生成邮件')">📧 邮件</button><button class="btn btn-sm btn-warning" onclick="showToast('安排面试')">📅 面试</button><button class="btn btn-sm btn-danger" onclick="showToast('标记无效')">✕</button></td>
+                    </tr>
+                    <tr>
+                        <td>王芳</td><td>阿里巴巴 · LLM研究员</td><td><span class="match-badge">88%</span></td><td><span class="stage-badge stage-qualified">已筛选</span></td><td>LinkedIn</td>
+                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-primary" onclick="showToast('生成邮件')">📧 邮件</button><button class="btn btn-sm btn-success" onclick="showToast('推送客户')">➡️ 推送</button><button class="btn btn-sm btn-danger" onclick="showToast('标记无效')">✕</button></td>
+                    </tr>
+                    <tr>
+                        <td>张强</td><td>腾讯 · AI架构师</td><td><span class="match-badge">85%</span></td><td><span class="stage-badge stage-offer">Offer</span></td><td>内推</td>
+                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-success" onclick="showToast('确认入职')">✅ 确认</button><button class="btn btn-sm btn-danger" onclick="showToast('标记失效')">✕</button></td>
+                    </tr>
+                    <tr>
+                        <td>刘洋</td><td>美团 · 数据科学家</td><td><span class="match-badge">78%</span></td><td><span class="stage-badge stage-sourced">线索</span></td><td>简历库</td>
+                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-primary" onclick="showToast('初步联系')">📞 联系</button><button class="btn btn-sm btn-warning" onclick="showToast('标记跟进')">⭐ 跟进</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- JD管理 -->
+        <div class="card">
+            <h2>💼 JD管理<div><button class="btn btn-sm btn-primary" onclick="showToast('新建JD')">+ 新建JD</button><button class="btn btn-sm btn-secondary" onclick="showToast('批量导入')">📥 导入</button></div></h2>
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-sm btn-secondary" onclick="showToast('筛选')">🔍 筛选</button>
+                <button class="btn btn-sm btn-secondary" onclick="showToast('智能匹配')">🤖 智能匹配</button>
+            </div>
+            <table class="table">
+                <thead><tr><th>职位</th><th>客户</th><th>薪资范围</th><th>候选人</th><th>紧急度</th><th>操作</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td>AI算法专家</td><td>字节跳动</td><td>¥80-120K</td><td>12人匹配</td><td><span style="color: #ff4757;">🔥 紧急</span></td>
+                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-primary" onclick="showToast('智能推荐')">🤖 推荐</button><button class="btn btn-sm btn-warning" onclick="showToast('编辑')">✏️</button></td>
+                    </tr>
+                    <tr>
+                        <td>LLM研发工程师</td><td>阿里巴巴</td><td>¥60-100K</td><td>8人匹配</td><td><span style="color: #ffa502;">⚡ 高</span></td>
+                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-primary" onclick="showToast('智能推荐')">🤖 推荐</button><button class="btn btn-sm btn-warning" onclick="showToast('编辑')">✏️</button></td>
+                    </tr>
+                    <tr>
+                        <td>AI平台负责人</td><td>腾讯</td><td>¥90-150K</td><td>5人匹配</td><td><span style="color: #666;">📋 正常</span></td>
+                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-primary" onclick="showToast('智能推荐')">🤖 推荐</button><button class="btn btn-sm btn-warning" onclick="showToast('编辑')">✏️</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 邮件外发 -->
+        <div class="card">
+            <h2>📧 邮件外发<div><button class="btn btn-sm btn-primary" onclick="showToast('新建邮件')">✏️ 写邮件</button><button class="btn btn-sm btn-secondary" onclick="showToast('邮件模板')">📝 模板</button></div></h2>
+            <table class="table">
+                <thead><tr><th>收件人</th><th>主题</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+                <tbody>
+                    <tr><td>李明</td><td>字节跳动 AI算法专家面试邀请</td><td><span style="color: #38ef7d;">✓ 已读</span></td><td>2026-04-22 10:30</td><td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-primary" onclick="showToast('重新发送')">📤 重发</button></td></tr>
+                    <tr><td>王芳</td><td>阿里巴巴 LLM研发岗推荐</td><td><span style="color: #ffa502;">⏳ 未回复</span></td><td>2026-04-21 15:20</td><td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-warning" onclick="showToast('跟进提醒')">⏰ 跟进</button></td></tr>
+                    <tr><td>张强</td><td>腾讯AI平台负责人-Offer确认函</td><td><span style="color: #667eea;">✓ 已回复</span></td><td>2026-04-20 09:15</td><td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 日历 -->
+        <div class="card">
+            <h2>📅 面试日历<div><button class="btn btn-sm btn-primary" onclick="showToast('新建日程')">+ 新建</button><button class="btn btn-sm btn-secondary" onclick="showToast('同步飞书')">🔄 同步飞书</button></div></h2>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; text-align: center;">
+                    <div style="background: white; padding: 10px; border-radius: 8px;"><div style="color: #666; font-size: 12px;">周一 21</div><div style="margin-top: 5px;"><span style="background: #11998e; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">2场面试</span></div></div>
+                    <div style="background: white; padding: 10px; border-radius: 8px;"><div style="color: #666; font-size: 12px;">周二 22</div><div style="margin-top: 5px;"><span style="background: #667eea; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">1场面试</span></div></div>
+                    <div style="background: white; padding: 10px; border-radius: 8px;"><div style="color: #666; font-size: 12px;">周三 23</div><div style="margin-top: 5px;">-</div></div>
+                    <div style="background: white; padding: 10px; border-radius: 8px;"><div style="color: #666; font-size: 12px;">周四 24</div><div style="margin-top: 5px;"><span style="background: #ff4757; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">3场面试</span></div></div>
+                    <div style="background: white; padding: 10px; border-radius: 8px;"><div style="color: #666; font-size: 12px;">周五 25</div><div style="margin-top: 5px;"><span style="background: #38ef7d; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px;">2场面试</span></div></div>
+                    <div style="background: #e8eaff; padding: 10px; border-radius: 8px; opacity: 0.6;"><div style="color: #666; font-size: 12px;">周六 26</div><div style="margin-top: 5px;">-</div></div>
+                    <div style="background: #e8eaff; padding: 10px; border-radius: 8px; opacity: 0.6;"><div style="color: #666; font-size: 12px;">周日 27</div><div style="margin-top: 5px;">-</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script>
+        function showToast(action) { const toast = document.getElementById('toast'); toast.textContent = '✅ ' + action + ' - 操作成功'; toast.className = 'toast show'; setTimeout(() => { toast.className = 'toast'; }, 2500); }
+    </script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>候选人端 - TalentAI Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 40px; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .card { background: white; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card h2 { font-size: 18px; color: #1a1a2e; margin-bottom: 20px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .profile-grid { display: grid; grid-template-columns: 200px 1fr; gap: 30px; }
+        .avatar { width: 180px; height: 180px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 48px; }
+        .profile-info h3 { font-size: 24px; color: #1a1a2e; margin-bottom: 5px; }
+        .profile-info p { color: #666; margin-bottom: 15px; }
+        .tag-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .tag { background: #e8eaff; color: #667eea; padding: 5px 12px; border-radius: 20px; font-size: 13px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; margin: 5px; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a6fd6; transform: translateY(-1px); }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+        .btn-secondary:hover { background: #e0e0e0; }
+        .btn-danger { background: #ff4757; color: white; }
+        .btn-danger:hover { background: #ff3344; }
+        .btn-success { background: #2ed573; color: white; }
+        .btn-success:hover { background: #26c064; }
+        .jobs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .job-card { border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; transition: all 0.2s; }
+        .job-card:hover { border-color: #667eea; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15); }
+        .job-card h4 { font-size: 16px; color: #1a1a2e; margin-bottom: 8px; }
+        .job-card .company { color: #666; font-size: 14px; margin-bottom: 10px; }
+        .job-card .salary { color: #2ed573; font-weight: 600; font-size: 16px; margin-bottom: 10px; }
+        .job-match { background: #e8ffea; color: #2ed573; padding: 3px 10px; border-radius: 12px; font-size: 12px; display: inline-block; margin-bottom: 10px; }
+        .skills { display: flex; flex-wrap: wrap; gap: 6px; }
+        .skill-tag { background: #f0f0f0; color: #666; padding: 3px 10px; border-radius: 4px; font-size: 12px; }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; }
+        .nav-tab { padding: 8px 16px; border: none; background: none; cursor: pointer; color: #666; font-size: 14px; border-radius: 6px; }
+        .nav-tab.active { background: #667eea; color: white; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-interview { background: #d4edda; color: #155724; }
+        .status-offer { background: #cce5ff; color: #004085; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; display: none; z-index: 1000; }
+        .toast.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👤 候选人端</h1>
+        <p>管理您的求职申请和面试进度</p>
+    </div>
+
+    <div class="container">
+        <!-- 个人资料 -->
+        <div class="card">
+            <h2>👤 个人资料</h2>
+            <div class="profile-grid">
+                <div class="avatar">李</div>
+                <div class="profile-info">
+                    <h3>李明</h3>
+                    <p>📧 zhangming@example.com | 📱 138-0000-1234</p>
+                    <p>🏢 字节跳动 | 📍 北京 | 🎂 28岁</p>
+                    <div class="tag-group">
+                        <span class="tag">Python</span>
+                        <span class="tag">TensorFlow</span>
+                        <span class="tag">PyTorch</span>
+                        <span class="tag">LLM</span>
+                        <span class="tag">NLP</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="showToast('编辑资料')">✏️ 编辑资料</button>
+                    <button class="btn btn-secondary" onclick="showToast('上传简历')">📄 上传简历</button>
+                    <button class="btn btn-secondary" onclick="showToast('完善画像')">🔍 完善画像</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的申请 -->
+        <div class="card">
+            <h2>📋 我的申请</h2>
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="showToast('刷新状态')">🔄 刷新状态</button>
+                <button class="btn btn-secondary" onclick="showToast('导出申请')">📥 导出申请</button>
+            </div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa; text-align: left;">
+                        <th style="padding: 12px; border-bottom: 1px solid #e0e0e0;">职位</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #e0e0e0;">公司</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #e0e0e0;">匹配度</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #e0e0e0;">状态</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #e0e0e0;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">AI算法专家</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">字节跳动</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="job-match">92%</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="status-badge status-interview">面试中</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">
+                            <button class="btn btn-secondary" onclick="showToast('查看详情')">查看</button>
+                            <button class="btn btn-danger" onclick="showToast('撤回申请')">撤回</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">LLM研发工程师</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">阿里巴巴</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="job-match">85%</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="status-badge status-pending">评估中</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">
+                            <button class="btn btn-secondary" onclick="showToast('查看详情')">查看</button>
+                            <button class="btn btn-danger" onclick="showToast('撤回申请')">撤回</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">AI平台负责人</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">腾讯</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="job-match">78%</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="status-badge status-offer">待入职</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">
+                            <button class="btn btn-secondary" onclick="showToast('查看详情')">查看</button>
+                            <button class="btn btn-success" onclick="showToast('接受Offer')">接受</button>
+                            <button class="btn btn-danger" onclick="showToast('拒绝Offer')">拒绝</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 推荐职位 -->
+        <div class="card">
+            <h2>💡 为您推荐</h2>
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="showToast('刷新推荐')">🔄 刷新推荐</button>
+                <button class="btn btn-secondary" onclick="showToast('偏好设置')">⚙️ 偏好设置</button>
+            </div>
+            <div class="jobs-grid">
+                <div class="job-card">
+                    <h4>AI算法专家</h4>
+                    <div class="company">🚀 字节跳动</div>
+                    <div class="salary">¥ 80-120K · 北京</div>
+                    <div><span class="job-match">92% 匹配</span></div>
+                    <div class="skills" style="margin-top: 10px;">
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">LLM</span>
+                        <span class="skill-tag">NLP</span>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="showToast('立即投递')">立即投递</button>
+                        <button class="btn btn-secondary" onclick="showToast('查看详情')">查看详情</button>
+                    </div>
+                </div>
+                <div class="job-card">
+                    <h4>大模型研究员</h4>
+                    <div class="company">🏢 清华大学</div>
+                    <div class="salary">¥ 60-100K · 北京</div>
+                    <div><span class="job-match">88% 匹配</span></div>
+                    <div class="skills" style="margin-top: 10px;">
+                        <span class="skill-tag">PyTorch</span>
+                        <span class="skill-tag">Transformer</span>
+                        <span class="skill-tag">论文</span>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="showToast('立即投递')">立即投递</button>
+                        <button class="btn btn-secondary" onclick="showToast('查看详情')">查看详情</button>
+                    </div>
+                </div>
+                <div class="job-card">
+                    <h4>AI平台架构师</h4>
+                    <div class="company">🏢 美团</div>
+                    <div class="salary">¥ 90-150K · 北京</div>
+                    <div><span class="job-match">82% 匹配</span></div>
+                    <div class="skills" style="margin-top: 10px;">
+                        <span class="skill-tag">架构设计</span>
+                        <span class="skill-tag">MLOps</span>
+                        <span class="skill-tag">K8s</span>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="showToast('立即投递')">立即投递</button>
+                        <button class="btn btn-secondary" onclick="showToast('查看详情')">查看详情</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 面试日历 -->
+        <div class="card">
+            <h2>📅 面试日历</h2>
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="showToast('添加日历')">📅 添加到日历</button>
+                <button class="btn btn-secondary" onclick="showToast('设置提醒')">🔔 设置提醒</button>
+            </div>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div style="background: #667eea; color: white; padding: 10px 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 20px; font-weight: bold;">25</div>
+                        <div style="font-size: 12px;">周四</div>
+                    </div>
+                    <div>
+                        <h4 style="color: #1a1a2e;">技术面试 - 字节跳动</h4>
+                        <p style="color: #666; font-size: 14px;">14:00 - 15:00 | 线上视频面试</p>
+                        <p style="color: #667eea; font-size: 13px;">面试官：王老师 | 会议链接已发送</p>
+                    </div>
+                    <div style="margin-left: auto;">
+                        <button class="btn btn-success" onclick="showToast('确认参加')">确认参加</button>
+                        <button class="btn btn-secondary" onclick="showToast('重新安排')">重新安排</button>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="background: #2ed573; color: white; padding: 10px 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 20px; font-weight: bold;">28</div>
+                        <div style="font-size: 12px;">周日</div>
+                    </div>
+                    <div>
+                        <h4 style="color: #1a1a2e;">HR终面 - 腾讯</h4>
+                        <p style="color: #666; font-size: 14px;">10:00 - 11:00 | 深圳总部</p>
+                        <p style="color: #2ed573; font-size: 13px;">✅ Offer已发，待确认入职时间</p>
+                    </div>
+                    <div style="margin-left: auto;">
+                        <button class="btn btn-success" onclick="showToast('确认入职')">确认入职</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showToast(action) {
+            const toast = document.getElementById('toast');
+            toast.textContent = '✅ ' + action + ' - 操作成功';
+            toast.className = 'toast show';
+            setTimeout(() => { toast.className = 'toast'; }, 2500);
+        }
+    </script>
+</body>
+</html>
