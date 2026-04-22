@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # TalentAI Pro API Server
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: talentai-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://talentai:talentai_secret@db:5432/talentai
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+      - MOCK_MODE=false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - talentai-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: talentai-db
+    environment:
+      - POSTGRES_USER=talentai
+      - POSTGRES_PASSWORD=talentai_secret
+      - POSTGRES_DB=talentai
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U talentai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - talentai-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: talentai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - talentai-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: talentai-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - talentai-network
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  talentai-network:
+    driver: bridge
