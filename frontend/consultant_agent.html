@@ -396,11 +396,11 @@
             </div>
             <div class="quick-cmd" onclick="openModal('modal-add-deal')">
                 <span class="icon">📈</span>
-                <span>创建交易</span>
+                <span>创建招聘需求</span>
             </div>
-            <div class="quick-cmd" onclick="ask('查看所有交易')">
+            <div class="quick-cmd" onclick="ask('查看所有招聘需求')">
                 <span class="icon">💹</span>
-                <span>交易列表</span>
+                <span>招聘需求列表</span>
             </div>
             <div class="quick-cmd" onclick="ask('查看最近活动')">
                 <span class="icon">📅</span>
@@ -513,10 +513,10 @@
         </div>
     </div>
 
-    <!-- 创建交易模态框 -->
+    <!-- 创建招聘需求模态框 -->
     <div class="modal" id="modal-add-deal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
         <div style="background:#1a1a2e; border-radius:12px; padding:25px; width:450px; max-width:90%;">
-            <h3 style="color:white; margin-bottom:20px;">📈 创建交易</h3>
+            <h3 style="color:white; margin-bottom:20px;">📈 创建招聘需求</h3>
             <div style="margin-bottom:15px;">
                 <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">选择候选人</label>
                 <select id="dealCandidate" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
@@ -544,7 +544,7 @@
             </div>
             <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <button onclick="closeModal('modal-add-deal')" style="padding:10px 20px; background:#3d3d5c; border:none; color:white; border-radius:6px; cursor:pointer;">取消</button>
-                <button onclick="createDeal()" style="padding:10px 20px; background:#38ef7d; border:none; color:#0f0f23; border-radius:6px; cursor:pointer; font-weight:600;">创建交易</button>
+                <button onclick="createDeal()" style="padding:10px 20px; background:#38ef7d; border:none; color:#0f0f23; border-radius:6px; cursor:pointer; font-weight:600;">创建招聘需求</button>
             </div>
         </div>
     </div>
@@ -1017,7 +1017,7 @@
         // ========== 模态框函数 ==========
         function openModal(id) {
             document.getElementById(id).style.display = 'flex';
-            // 如果是创建交易，加载候选人和职位列表
+            // 如果是创建招聘需求，加载候选人和职位列表
             if (id === 'modal-add-deal') {
                 loadCandidatesAndJobsForDeal();
             }
@@ -1121,7 +1121,7 @@
             }
         }
 
-        // ========== 创建交易 ==========
+        // ========== 创建招聘需求 ==========
         async function createDeal() {
             const candidateId = document.getElementById('dealCandidate').value;
             const jobId = document.getElementById('dealJob').value;
@@ -1142,9 +1142,9 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    showToast('交易创建成功！');
+                    showToast('招聘需求创建成功！');
                     closeModal('modal-add-deal');
-                    addMessage(`✅ 交易创建成功！<br>交易ID: ${data.deal_id || '新ID'}<br>阶段: 候选人 → 面试中`, 'bot');
+                    addMessage(`✅ 招聘需求创建成功！<br>招聘需求ID: ${data.deal_id || '新ID'}<br>阶段: 候选人 → 面试中`, 'bot');
                 } else {
                     throw new Error('创建失败');
                 }
@@ -1154,13 +1154,13 @@
                 const newId = 'd_' + Date.now();
                 deals.push({ id: newId, candidate_id: candidateId, job_id: jobId, probability: parseInt(probability), stage: 'interview', created_at: new Date().toISOString() });
                 localStorage.setItem('talentAI_deals', JSON.stringify(deals));
-                showToast('交易创建成功！');
+                showToast('招聘需求创建成功！');
                 closeModal('modal-add-deal');
-                addMessage(`✅ 交易创建成功！<br>交易ID: ${newId}<br>阶段: 候选人 → 面试中`, 'bot');
+                addMessage(`✅ 招聘需求创建成功！<br>招聘需求ID: ${newId}<br>阶段: 候选人 → 面试中`, 'bot');
             }
         }
 
-        // 加载候选人和职位到交易模态框
+        // 加载候选人和职位到招聘需求模态框
         async function loadCandidatesAndJobsForDeal() {
             // 加载候选人
             try {
@@ -1266,7 +1266,7 @@
             };
         }
 
-        // ========== 查看所有交易 ==========
+        // ========== 查看所有招聘需求 ==========
         async function listAllDeals() {
             try {
                 const res = await fetch(`${API_BASE}/api/deals`);
@@ -1288,7 +1288,7 @@
                     `).join('');
                     return {
                         type: 'table',
-                        content: `<strong>📈 交易列表（共 ${deals.length} 个）</strong><br><br>
+                        content: `<strong>📈 招聘需求列表（共 ${deals.length} 个）</strong><br><br>
                         <table style="width:100%; text-align:left; font-size:0.85rem;">
                             <tr style="border-bottom:2px solid #333;">
                                 <th style="padding:8px 0;">候选人</th>
@@ -1305,7 +1305,7 @@
             // 回退到模拟数据
             return {
                 type: 'table',
-                content: `<strong>📈 交易列表（共 5 个）</strong><br><br>
+                content: `<strong>📈 招聘需求列表（共 5 个）</strong><br><br>
                 <table style="width:100%; text-align:left; font-size:0.85rem;">
                     <tr style="border-bottom:2px solid #333;"><th>候选人</th><th>职位</th><th>阶段</th><th>概率</th><th>操作</th></tr>
                     <tr style="border-bottom:1px solid #222;"><td>张明</td><td>Python工程师</td><td><span style="background:#667eea;color:white;padding:2px 8px;border-radius:4px;">面试中</span></td><td>60%</td><td><button class="action-btn" style="padding:4px 8px;font-size:0.75rem;">推进</button><button class="action-btn" style="padding:4px 8px;font-size:0.75rem;">详情</button></td></tr>
@@ -1314,7 +1314,7 @@
             };
         }
 
-        // ========== 推进交易 ==========
+        // ========== 推进招聘需求 ==========
         async function updateDealStage(id) {
             try {
                 const res = await fetch(`${API_BASE}/api/deals/update-stage`, {
@@ -1323,29 +1323,29 @@
                     body: JSON.stringify({ deal_id: id })
                 });
                 if (res.ok) {
-                    showToast('交易阶段已推进！');
-                    addMessage(`✅ 交易 <strong>${id}</strong> 阶段已推进：候选人 → 面试中 → Offer → 入职`, 'bot');
+                    showToast('招聘需求阶段已推进！');
+                    addMessage(`✅ 招聘需求 <strong>${id}</strong> 阶段已推进：候选人 → 面试中 → Offer → 入职`, 'bot');
                 } else {
                     throw new Error();
                 }
             } catch (e) {
-                showToast('交易阶段已推进！');
-                addMessage(`✅ 交易 <strong>${id}</strong> 阶段已推进：候选人 → 面试中 → Offer → 入职`, 'bot');
+                showToast('招聘需求阶段已推进！');
+                addMessage(`✅ 招聘需求 <strong>${id}</strong> 阶段已推进：候选人 → 面试中 → Offer → 入职`, 'bot');
             }
         }
 
-        // ========== 查看交易详情 ==========
+        // ========== 查看招聘需求详情 ==========
         async function viewDealDetail(id) {
             try {
                 const res = await fetch(`${API_BASE}/api/deals/${id}`);
                 if (res.ok) {
                     const data = await res.json();
-                    addMessage(`📋 <strong>交易详情 - ID: ${id}</strong><br><br>候选人: ${data.candidate_name || '未知'}<br>职位: ${data.job_title || '未知'}<br>阶段: ${data.stage || '候选人'}<br>概率: ${data.probability || 50}%`, 'bot');
+                    addMessage(`📋 <strong>招聘需求详情 - ID: ${id}</strong><br><br>候选人: ${data.candidate_name || '未知'}<br>职位: ${data.job_title || '未知'}<br>阶段: ${data.stage || '候选人'}<br>概率: ${data.probability || 50}%`, 'bot');
                 } else {
                     throw new Error();
                 }
             } catch (e) {
-                addMessage(`📋 <strong>交易详情 - ID: ${id}</strong><br><br>候选人: 张明<br>职位: Python工程师<br>阶段: 面试中<br>概率: 60%<br><br>活动日志:<br>• 2024-04-20: 创建交易<br>• 2024-04-21: 推进到面试中`, 'bot');
+                addMessage(`📋 <strong>招聘需求详情 - ID: ${id}</strong><br><br>候选人: 张明<br>职位: Python工程师<br>阶段: 面试中<br>概率: 60%<br><br>活动日志:<br>• 2024-04-20: 创建招聘需求<br>• 2024-04-21: 推进到面试中`, 'bot');
             }
         }
 
@@ -1389,7 +1389,7 @@
                 content: `<strong>📅 最近活动日志</strong><br><br>
                 <table style="width:100%; text-align:left; font-size:0.85rem;">
                     <tr style="border-bottom:2px solid #333;"><th style="padding:6px 0;">时间</th><th style="padding:6px 0;">动作</th><th style="padding:6px 0;">描述</th></tr>
-                    <tr style="border-bottom:1px solid #222;"><td style="padding:6px 0;">今天 14:30</td><td style="padding:6px 0;">创建交易</td><td style="padding:6px 0;color:#888;">张明 → Python工程师</td></tr>
+                    <tr style="border-bottom:1px solid #222;"><td style="padding:6px 0;">今天 14:30</td><td style="padding:6px 0;">创建招聘需求</td><td style="padding:6px 0;color:#888;">张明 → Python工程师</td></tr>
                     <tr style="border-bottom:1px solid #222;"><td style="padding:6px 0;">今天 11:20</td><td style="padding:6px 0;">推进阶段</td><td style="padding:6px 0;color:#888;">李华: 面试中 → Offer</td></tr>
                     <tr style="border-bottom:1px solid #222;"><td style="padding:6px 0;">今天 10:00</td><td style="padding:6px 0;">新建候选人</td><td style="padding:6px 0;color:#888;">王芳 加入候选人库</td></tr>
                     <tr><td style="padding:6px 0;">昨天 16:45</td><td style="padding:6px 0;">面试安排</td><td style="padding:6px 0;color:#888;">张明 明天14:00技术面</td></tr>
@@ -1412,8 +1412,8 @@
                 return await listAllJobs();
             }
 
-            // 交易列表
-            if ((lower.includes('所有') || lower.includes('列表')) && lower.includes('交易')) {
+            // 招聘需求列表
+            if ((lower.includes('所有') || lower.includes('列表')) && lower.includes('招聘需求')) {
                 return await listAllDeals();
             }
 
