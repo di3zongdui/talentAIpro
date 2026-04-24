@@ -110,9 +110,9 @@
                         <span class="tag">LLM</span>
                         <span class="tag">NLP</span>
                     </div>
-                    <button class="btn btn-primary" onclick="showToast('编辑资料')">✏️ 编辑资料</button>
-                    <button class="btn btn-secondary" onclick="showToast('上传简历')">📄 上传简历</button>
-                    <button class="btn btn-secondary" onclick="showToast('完善画像')">🔍 完善画像</button>
+                    <button class="btn btn-primary" onclick="openEditProfile()">✏️ 编辑资料</button>
+                    <button class="btn btn-secondary" onclick="openUploadResume()">📄 上传简历</button>
+                    <button class="btn btn-secondary" onclick="startProfileAnalysis()">🔍 完善画像</button>
                 </div>
             </div>
         </div>
@@ -122,7 +122,7 @@
             <h2>📋 我的申请</h2>
             <div style="margin-bottom: 15px;">
                 <button class="btn btn-primary" onclick="refreshApplications()">🔄 刷新状态</button>
-                <button class="btn btn-secondary" onclick="showToast('导出申请')">📥 导出申请</button>
+                <button class="btn btn-secondary" onclick="exportApplications()">📥 导出申请</button>
             </div>
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
@@ -145,7 +145,7 @@
             <h2>💡 为您推荐</h2>
             <div style="margin-bottom: 15px;">
                 <button class="btn btn-primary" onclick="refreshRecommendations()">🔄 刷新推荐</button>
-                <button class="btn btn-secondary" onclick="showToast('偏好设置')">⚙️ 偏好设置</button>
+                <button class="btn btn-secondary" onclick="openPreferences()">⚙️ 偏好设置</button>
             </div>
             <div class="jobs-grid" id="recommendationsGrid">
                 <!-- 动态数据 -->
@@ -156,8 +156,8 @@
         <div class="card">
             <h2>📅 面试日历</h2>
             <div style="margin-bottom: 15px;">
-                <button class="btn btn-primary" onclick="showToast('添加日历')">📅 添加到日历</button>
-                <button class="btn btn-secondary" onclick="showToast('设置提醒')">🔔 设置提醒</button>
+                <button class="btn btn-primary" onclick="addToCalendar()">📅 添加到日历</button>
+                <button class="btn btn-secondary" onclick="setReminder()">🔔 设置提醒</button>
             </div>
             <div id="interviewsCalendar">
                 <!-- 动态数据 -->
@@ -203,6 +203,174 @@
             </div>
             <div id="interviewDetailContent">
                 <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑资料模态框 -->
+    <div class="modal" id="modal-edit-profile">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">✏️ 编辑个人资料</div>
+                <div class="modal-close" onclick="closeModal('modal-edit-profile')">×</div>
+            </div>
+            <div style="padding: 10px 0;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 5px; font-size: 14px;">姓名</label>
+                    <input type="text" id="editName" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 5px; font-size: 14px;">邮箱</label>
+                    <input type="email" id="editEmail" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 5px; font-size: 14px;">电话</label>
+                    <input type="tel" id="editPhone" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 5px; font-size: 14px;">公司</label>
+                    <input type="text" id="editCompany" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 5px; font-size: 14px;">地点</label>
+                    <input type="text" id="editLocation" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 5px; font-size: 14px;">年龄</label>
+                    <input type="number" id="editAge" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 5px; font-size: 14px;">个人简介</label>
+                    <textarea id="editBio" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="saveProfile()">💾 保存修改</button>
+                    <button class="btn btn-secondary" onclick="closeModal('modal-edit-profile')">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上传简历模态框 -->
+    <div class="modal" id="modal-upload-resume">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📄 上传简历</div>
+                <div class="modal-close" onclick="closeModal('modal-upload-resume')">×</div>
+            </div>
+            <div style="padding: 10px 0;">
+                <div style="border: 2px dashed #667eea; border-radius: 12px; padding: 40px; text-align: center; margin-bottom: 20px; cursor: pointer;" onclick="document.getElementById('resumeFile').click()" ondragover="event.preventDefault()" ondrop="handleFileDrop(event)">
+                    <div style="font-size: 48px; margin-bottom: 15px;">📎</div>
+                    <div style="color: #333; font-size: 16px; margin-bottom: 10px;">拖拽简历到此处，或点击选择文件</div>
+                    <div style="color: #888; font-size: 13px;">支持 PDF、DOCX、TXT 格式</div>
+                    <input type="file" id="resumeFile" style="display: none;" accept=".pdf,.docx,.doc,.txt" onchange="handleFileSelect(event)">
+                </div>
+                <div id="resumeUploadStatus" style="display: none; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div id="resumeFileName" style="font-weight: 600; margin-bottom: 8px;"></div>
+                    <div id="resumeProgress" style="height: 6px; background: #eee; border-radius: 3px; overflow: hidden;">
+                        <div id="resumeProgressBar" style="height: 100%; background: #667eea; width: 0%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+                <div id="resumeResult" style="display: none;">
+                    <div style="background: #e8ffea; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <div style="color: #2ed573; font-weight: 600; margin-bottom: 8px;">✅ 简历解析完成！</div>
+                        <div id="resumeParsedInfo"></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" onclick="confirmResumeUpdate()">💾 确认更新画像</button>
+                        <button class="btn btn-secondary" onclick="closeModal('modal-upload-resume')">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 完善画像模态框 -->
+    <div class="modal" id="modal-profile-analysis">
+        <div class="modal-content" style="width: 700px;">
+            <div class="modal-header">
+                <div class="modal-title">🔍 AI画像分析</div>
+                <div class="modal-close" onclick="closeModal('modal-profile-analysis')">×</div>
+            </div>
+            <div style="padding: 10px 0;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 36px; margin-bottom: 10px;">🤖</div>
+                    <div style="font-size: 18px; font-weight: 600;">AI正在分析您的简历...</div>
+                    <div style="font-size: 14px; opacity: 0.9; margin-top: 5px;">提取技能、工作经历、教育背景等信息</div>
+                </div>
+                <div id="analysisProgress" style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <div id="step1Dot" style="width: 24px; height: 24px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white;">1</div>
+                        <div style="flex: 1; height: 6px; background: #eee; border-radius: 3px;"><div id="step1Bar" style="height: 100%; background: #667eea; width: 0%; transition: width 0.5s;"></div></div>
+                        <span id="step1Text" style="color: #888; font-size: 13px;">等待开始</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <div id="step2Dot" style="width: 24px; height: 24px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white;">2</div>
+                        <div style="flex: 1; height: 6px; background: #eee; border-radius: 3px;"><div id="step2Bar" style="height: 100%; background: #667eea; width: 0%; transition: width 0.5s;"></div></div>
+                        <span id="step2Text" style="color: #888; font-size: 13px;">等待开始</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div id="step3Dot" style="width: 24px; height: 24px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white;">3</div>
+                        <div style="flex: 1; height: 6px; background: #eee; border-radius: 3px;"><div id="step3Bar" style="height: 100%; background: #667eea; width: 0%; transition: width 0.5s;"></div></div>
+                        <span id="step3Text" style="color: #888; font-size: 13px;">等待开始</span>
+                    </div>
+                </div>
+                <div id="analysisResult" style="display: none;">
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 15px;">
+                        <h4 style="margin-bottom: 15px; color: #333;">📊 分析结果预览</h4>
+                        <div id="analysisContent"></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <button class="btn btn-success" onclick="applyAnalysisResult()">✅ 确认应用</button>
+                        <button class="btn btn-secondary" onclick="closeModal('modal-profile-analysis')">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 偏好设置模态框 -->
+    <div class="modal" id="modal-preferences">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">⚙️ 求职偏好设置</div>
+                <div class="modal-close" onclick="closeModal('modal-preferences')">×</div>
+            </div>
+            <div style="padding: 10px 0;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 8px; font-size: 14px;">期望职位（多个用逗号分隔）</label>
+                    <input type="text" id="prefPositions" placeholder="例如：AI算法工程师, LLM研究员" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 8px; font-size: 14px;">期望城市</label>
+                    <input type="text" id="prefCities" placeholder="例如：北京, 上海, 深圳" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 8px; font-size: 14px;">期望薪资范围</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" id="prefSalaryMin" placeholder="最低" style="width: 50%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                        <span style="color: #888;">-</span>
+                        <input type="number" id="prefSalaryMax" placeholder="最高" style="width: 50%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; margin-bottom: 8px; font-size: 14px;">工作类型</label>
+                    <div style="display: flex; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="checkbox" id="prefFulltime" checked> 全职
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="checkbox" id="prefParttime"> 兼职
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                            <input type="checkbox" id="prefRemote"> 远程
+                        </label>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="savePreferences()">💾 保存偏好</button>
+                    <button class="btn btn-secondary" onclick="closeModal('modal-preferences')">取消</button>
+                </div>
             </div>
         </div>
     </div>
@@ -576,6 +744,31 @@
             renderInterviews();
         }
 
+        function addToCalendar() {
+            if (interviewsData.length === 0) { showToast('暂无面试安排', 'error'); return; }
+            const upcoming = interviewsData.filter(i => i.status === 'scheduled')[0];
+            if (!upcoming) { showToast('暂无即将到来的面试', 'error'); return; }
+            const startTime = upcoming.time.replace(/[-:]/g, '').replace(' ', 'T') + '00+08:00';
+            const endTime = new Date(new Date(upcoming.time).getTime() + 60 * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + '+08:00';
+            const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(upcoming.type + ' - ' + upcoming.company)}&dates=${startTime}/${endTime}&details=${encodeURIComponent(upcoming.location + ' | ' + upcoming.interviewer)}`;
+            window.open(googleCalUrl, '_blank');
+            showToast('已打开Google日历');
+        }
+
+        function setReminder() {
+            if (interviewsData.length === 0) { showToast('暂无面试安排', 'error'); return; }
+            const upcoming = interviewsData.filter(i => i.status === 'scheduled')[0];
+            if (!upcoming) { showToast('暂无即将到来的面试', 'error'); return; }
+            if (Notification.permission === 'granted') {
+                new Notification('面试提醒', { body: `${upcoming.type} - ${upcoming.company}\n时间：${upcoming.time}\n地点：${upcoming.location}`, icon: '📅' });
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(p => {
+                    if (p === 'granted') new Notification('面试提醒已开启', { body: `下次面试：${upcoming.time}`, icon: '📅' });
+                });
+            }
+            showToast('已设置面试提醒！');
+        }
+
         function refreshApplications() {
             loadApplications();
             showToast('申请状态已刷新');
@@ -603,6 +796,155 @@
                 }
             });
         });
+
+        // ========== 编辑资料功能 ==========
+        function openEditProfile() {
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            document.getElementById('editName').value = document.getElementById('profileName').textContent;
+            document.getElementById('editEmail').value = session.email || 'zhangming@example.com';
+            document.getElementById('editPhone').value = session.phone || '138-0000-1234';
+            document.getElementById('editCompany').value = session.company || '字节跳动';
+            document.getElementById('editLocation').value = session.location || '北京';
+            document.getElementById('editAge').value = session.age || '28';
+            openModal('modal-edit-profile');
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('editName').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            if (!name || !email) { showToast('请填写姓名和邮箱', 'error'); return; }
+            document.getElementById('profileName').textContent = name;
+            document.getElementById('profileContact').textContent = `📧 ${email} | 📱 ${document.getElementById('editPhone').value}`;
+            document.getElementById('profileBasic').textContent = `🏢 ${document.getElementById('editCompany').value} | 📍 ${document.getElementById('editLocation').value} | 🎂 ${document.getElementById('editAge').value}岁`;
+            document.getElementById('profileAvatar').textContent = name.charAt(0);
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            Object.assign(session, { name, email, phone: document.getElementById('editPhone').value, company: document.getElementById('editCompany').value, location: document.getElementById('editLocation').value, age: document.getElementById('editAge').value });
+            localStorage.setItem('talentAI_session', JSON.stringify(session));
+            closeModal('modal-edit-profile');
+            showToast('个人资料已保存！');
+        }
+
+        // ========== 上传简历功能 ==========
+        let pendingResumeData = null;
+        function openUploadResume() {
+            document.getElementById('resumeUploadStatus').style.display = 'none';
+            document.getElementById('resumeResult').style.display = 'none';
+            document.getElementById('resumeFile').value = '';
+            openModal('modal-upload-resume');
+        }
+        function handleFileDrop(event) { event.preventDefault(); const file = event.dataTransfer.files[0]; if (file) processResumeFile(file); }
+        function handleFileSelect(event) { const file = event.target.files[0]; if (file) processResumeFile(file); }
+        async function processResumeFile(file) {
+            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword', 'text/plain'];
+            if (!validTypes.includes(file.type)) { showToast('请上传 PDF、DOCX 或 TXT 格式', 'error'); return; }
+            const statusDiv = document.getElementById('resumeUploadStatus');
+            const progressBar = document.getElementById('resumeProgressBar');
+            statusDiv.style.display = 'block';
+            document.getElementById('resumeFileName').textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            for (let p = 0; p <= 100; p += 10) { progressBar.style.width = p + '%'; await sleep(100); }
+            pendingResumeData = { name: document.getElementById('profileName').textContent, skills: ['Python', 'TensorFlow', 'PyTorch', 'LLM', 'NLP', 'LangChain', 'RAG'], experience: '5年AI算法研发经验', education: '硕士 - 清华大学', summary: '专注大语言模型研发' };
+            document.getElementById('resumeResult').style.display = 'block';
+            document.getElementById('resumeParsedInfo').innerHTML = `<div><strong>技能：</strong>${pendingResumeData.skills.join(', ')}</div><div><strong>经验：</strong>${pendingResumeData.experience}</div><div><strong>学历：</strong>${pendingResumeData.education}</div>`;
+            showToast('简历解析完成！');
+        }
+        function confirmResumeUpdate() {
+            if (!pendingResumeData) return;
+            document.getElementById('profileSkills').innerHTML = pendingResumeData.skills.map(s => `<span class="tag">${s}</span>`).join('');
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            session.skills = pendingResumeData.skills;
+            localStorage.setItem('talentAI_session', JSON.stringify(session));
+            closeModal('modal-upload-resume');
+            showToast('画像已更新！');
+            pendingResumeData = null;
+        }
+
+        // ========== 完善画像功能 ==========
+        async function startProfileAnalysis() {
+            openModal('modal-profile-analysis');
+            const steps = [
+                { id: 'step1', text: '基本信息提取' },
+                { id: 'step2', text: '技能标签分析' },
+                { id: 'step3', text: '画像生成完成' }
+            ];
+            for (const step of steps) {
+                await sleep(600);
+                document.getElementById(step.id + 'Dot').style.background = '#667eea';
+                document.getElementById(step.id + 'Dot').textContent = '✓';
+                document.getElementById(step.id + 'Bar').style.width = '100%';
+                document.getElementById(step.id + 'Text').textContent = step.text;
+                document.getElementById(step.id + 'Text').style.color = '#2ed573';
+            }
+            await sleep(300);
+            document.getElementById('analysisResult').style.display = 'block';
+            document.getElementById('analysisContent').innerHTML = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; color: #667eea;">🚀</div>
+                        <div style="font-size: 12px; color: #888; margin-top: 5px;">技术深度</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #333;">4.2/5</div>
+                    </div>
+                    <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; color: #667eea;">💼</div>
+                        <div style="font-size: 12px; color: #888; margin-top: 5px;">业务能力</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #333;">3.8/5</div>
+                    </div>
+                    <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; color: #667eea;">🤝</div>
+                        <div style="font-size: 12px; color: #888; margin-top: 5px;">沟通协作</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #333;">4.0/5</div>
+                    </div>
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px;">
+                    <div style="font-size: 13px; color: #888; margin-bottom: 5px;">AI综合评价</div>
+                    <div style="color: #333; line-height: 1.5;">具有扎实的AI算法基础，在NLP和大模型领域有深入研究。具备良好的工程落地能力，适合高级AI算法岗位。</div>
+                </div>`;
+        }
+        function applyAnalysisResult() {
+            const newSkills = ['Python', 'TensorFlow', 'PyTorch', 'LLM', 'NLP', 'LangChain', 'RAG', 'Agent', '向量数据库'];
+            document.getElementById('profileSkills').innerHTML = newSkills.map(s => `<span class="tag">${s}</span>`).join('');
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            session.skills = newSkills;
+            localStorage.setItem('talentAI_session', JSON.stringify(session));
+            closeModal('modal-profile-analysis');
+            showToast('画像分析完成！已更新技能标签');
+        }
+
+        // ========== 偏好设置功能 ==========
+        function openPreferences() {
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            document.getElementById('prefPositions').value = session.prefPositions || 'AI算法工程师, LLM研究员';
+            document.getElementById('prefCities').value = session.prefCities || '北京, 上海';
+            document.getElementById('prefSalaryMin').value = session.prefSalaryMin || '60';
+            document.getElementById('prefSalaryMax').value = session.prefSalaryMax || '120';
+            openModal('modal-preferences');
+        }
+        function savePreferences() {
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            session.prefPositions = document.getElementById('prefPositions').value;
+            session.prefCities = document.getElementById('prefCities').value;
+            session.prefSalaryMin = document.getElementById('prefSalaryMin').value;
+            session.prefSalaryMax = document.getElementById('prefSalaryMax').value;
+            localStorage.setItem('talentAI_session', JSON.stringify(session));
+            closeModal('modal-preferences');
+            showToast('偏好设置已保存！');
+        }
+
+        // ========== 导出申请功能 ==========
+        function exportApplications() {
+            const headers = ['职位', '公司', '匹配度', '状态', '投递时间'];
+            const rows = applicationsData.map(a => [a.title, a.company, a.match_score + '%', a.status, a.applied_at]);
+            let csv = '\uFEFF' + headers.join(',') + '\n';
+            rows.forEach(r => csv += r.join(',') + '\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '我的申请_' + new Date().toISOString().split('T')[0] + '.csv';
+            link.click();
+            showToast('申请记录已导出！');
+        }
+
+        // ========== 辅助函数 ==========
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
         // 退出
         function logout() {

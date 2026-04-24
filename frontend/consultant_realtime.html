@@ -566,6 +566,67 @@
         </div>
     </div>
 
+    <!-- 新建职位模态框 -->
+    <div class="modal" id="modal-add-job">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📋 创建新职位</div>
+                <div class="modal-close" onclick="closeModal('modal-add-job')">×</div>
+            </div>
+            <form id="form-add-job">
+                <div class="form-group">
+                    <label>职位名称 *</label>
+                    <input type="text" name="title" required placeholder="如: 高级前端工程师">
+                </div>
+                <div class="form-group">
+                    <label>公司 *</label>
+                    <select name="company_id" id="job-company-id" required>
+                        <option value="">请选择公司</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>薪资范围 (K)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" name="salary_min" placeholder="最低" min="0">
+                        <span style="line-height: 38px;">-</span>
+                        <input type="number" name="salary_max" placeholder="最高" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>工作地点</label>
+                    <input type="text" name="location" placeholder="如: 北京">
+                </div>
+                <div class="form-group">
+                    <label>部门</label>
+                    <input type="text" name="department" placeholder="如: 技术部">
+                </div>
+                <div class="form-group">
+                    <label>招聘人数</label>
+                    <input type="number" name="headcount" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>优先级</label>
+                    <select name="priority">
+                        <option value="normal">普通</option>
+                        <option value="high">高优</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>职位描述</label>
+                    <textarea name="description" placeholder="描述职位的主要工作内容..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>职位要求</label>
+                    <textarea name="requirements" placeholder="描述候选人的要求..."></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-job')">取消</button>
+                    <button type="submit" class="btn btn-primary">创建职位</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- 交易详情模态框 -->
     <div class="modal" id="modal-deal-detail">
         <div class="modal-content" style="max-width: 700px;">
@@ -1141,7 +1202,17 @@
         }
 
         function openAddJob() {
-            showToast('新建职位功能开发中', 'info');
+            // 加载公司列表
+            api('/companies').then(result => {
+                if (result.items) {
+                    const select = document.getElementById('job-company-id');
+                    select.innerHTML = '<option value="">请选择公司</option>' +
+                        result.items.map(c =>
+                            `<option value="${c.id}">${c.name} (${c.industry || '-'})</option>`
+                        ).join('');
+                }
+            });
+            openModal('modal-add-job');
         }
 
         // 打开新建交易模态框
@@ -1259,12 +1330,67 @@
             window.location.href = 'login.html';
         }
 
-        // 表单提交
-        document.getElementById('form-add-candidate').addEventListener('submit', function(e) {
+        // 候选人创建表单提交
+        document.getElementById('form-add-candidate').addEventListener('submit', async function(e) {
             e.preventDefault();
-            showToast('候选人创建成功', 'success');
-            closeModal('modal-add-candidate');
-            loadCandidates();
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email') || '',
+                phone: formData.get('phone') || '',
+                current_company: formData.get('current_company') || '',
+                current_title: formData.get('current_title') || '',
+                expected_salary: formData.get('expected_salary') || '',
+                skills: formData.get('skills') || ''
+            };
+
+            const result = await api('/candidates/create', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+
+            if (result.error) {
+                showToast('创建失败: ' + result.error, 'error');
+            } else {
+                showToast('候选人创建成功!', 'success');
+                closeModal('modal-add-candidate');
+                e.target.reset();
+                loadCandidates();
+            }
+        });
+
+        // 职位创建表单提交
+        document.getElementById('form-add-job').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const salaryMin = formData.get('salary_min');
+            const salaryMax = formData.get('salary_max');
+            const data = {
+                title: formData.get('title'),
+                company_id: parseInt(formData.get('company_id')),
+                salary_min: salaryMin ? parseInt(salaryMin) : 0,
+                salary_max: salaryMax ? parseInt(salaryMax) : 0,
+                location: formData.get('location') || '',
+                department: formData.get('department') || '',
+                headcount: parseInt(formData.get('headcount')) || 1,
+                description: formData.get('description') || '',
+                requirements: formData.get('requirements') || '',
+                priority: formData.get('priority') || 'normal'
+            };
+
+            const result = await api('/jobs/create', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+
+            if (result.error) {
+                showToast('创建失败: ' + result.error, 'error');
+            } else {
+                showToast('职位创建成功!', 'success');
+                closeModal('modal-add-job');
+                e.target.reset();
+                loadJobs();
+            }
         });
 
         // 新建交易表单提交

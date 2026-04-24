@@ -75,6 +75,10 @@ class APIHandler(BaseHTTPRequestHandler):
             self.handle_login()
         elif path == '/api/logout':
             self.send_json({'success': True})
+        elif path == '/api/candidates/create':
+            self.handle_candidate_create()
+        elif path == '/api/jobs/create':
+            self.handle_job_create()
         elif path == '/api/deals/create':
             self.handle_create_deal()
         elif path == '/api/deals/update-stage':
@@ -284,6 +288,88 @@ class APIHandler(BaseHTTPRequestHandler):
             self.send_json({'error': 'Candidate not found'}, 404)
 
         conn.close()
+
+    def handle_candidate_create(self):
+        """创建新候选人"""
+        body = self.parse_body()
+        name = body.get('name')
+        email = body.get('email', '')
+        phone = body.get('phone', '')
+        current_company = body.get('current_company', '')
+        current_title = body.get('current_title', '')
+        expected_salary = body.get('expected_salary', '')
+        skills = body.get('skills', '')
+
+        if not name:
+            self.send_json({'error': '姓名不能为空'}, 400)
+            return
+
+        conn = get_db_connection()
+        c = conn.cursor()
+
+        c.execute('''
+            INSERT INTO candidates (name, email, phone, current_company, current_title,
+                                   expected_salary, skills, status, last_contact)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'new', datetime('now'))
+        ''', (name, email, phone, current_company, current_title, expected_salary, skills))
+
+        candidate_id = c.lastrowid
+
+        # 记录活动日志
+        c.execute('''
+            INSERT INTO activities (candidate_id, action, content, user_name)
+            VALUES (?, 'created', ?, '李明')
+        ''', (candidate_id, f'新建候选人: {name}'))
+
+        conn.commit()
+        conn.close()
+
+        self.send_json({'success': True, 'id': candidate_id, 'message': '候选人创建成功'})
+
+    def handle_job_create(self):
+        """创建新职位"""
+        body = self.parse_body()
+        title = body.get('title')
+        company_id = body.get('company_id')
+        salary_min = body.get('salary_min', 0)
+        salary_max = body.get('salary_max', 0)
+        location = body.get('location', '')
+        department = body.get('department', '')
+        headcount = body.get('headcount', 1)
+        description = body.get('description', '')
+        requirements = body.get('requirements', '')
+        priority = body.get('priority', 'normal')
+
+        if not title:
+            self.send_json({'error': '职位名称不能为空'}, 400)
+            return
+
+        if not company_id:
+            self.send_json({'error': '请选择公司'}, 400)
+            return
+
+        conn = get_db_connection()
+        c = conn.cursor()
+
+        c.execute('''
+            INSERT INTO jobs (company_id, title, salary_min, salary_max, location,
+                            department, headcount, description, requirements, status, priority)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)
+        ''', (company_id, title, salary_min, salary_max, location, department,
+              headcount, description, requirements, priority))
+
+        job_id = c.lastrowid
+
+        # 记录活动日志
+        c.execute('''
+            INSERT INTO activities (action, content, user_name)
+            VALUES ('created', ?, '李明')
+        ''', (f'新建职位: {title}'))
+
+        conn.commit()
+        conn.close()
+
+        self.send_json({'success': True, 'id': job_id, 'message': '职位创建成功'})
 
     def handle_jobs(self, query):
         """职位列表"""
