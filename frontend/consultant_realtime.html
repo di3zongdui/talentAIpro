@@ -530,6 +530,42 @@
         </div>
     </div>
 
+    <!-- 新建交易模态框 -->
+    <div class="modal" id="modal-add-deal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📈 创建招聘交易</div>
+                <div class="modal-close" onclick="closeModal('modal-add-deal')">×</div>
+            </div>
+            <form id="form-add-deal">
+                <div class="form-group">
+                    <label>候选人 *</label>
+                    <select name="candidate_id" id="deal-candidate-id" required>
+                        <option value="">请选择候选人</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>职位 *</label>
+                    <select name="job_id" id="deal-job-id" required>
+                        <option value="">请选择职位</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>预计成功概率 (%)</label>
+                    <input type="number" name="probability" id="deal-probability" value="20" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea name="notes" id="deal-notes" placeholder="备注信息..."></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-deal')">取消</button>
+                    <button type="submit" class="btn btn-primary">创建交易</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // API地址
         const API_BASE = 'http://localhost:8088/api';
@@ -1027,8 +1063,31 @@
             showToast('新建职位功能开发中', 'info');
         }
 
-        function openAddDeal() {
-            showToast('新建交易功能开发中', 'info');
+        // 打开新建交易模态框
+        async function openAddDeal() {
+            // 加载候选人和职位列表
+            const [candidatesResult, jobsResult] = await Promise.all([
+                api('/candidates?limit=100'),
+                api('/jobs?status=open')
+            ]);
+
+            if (candidatesResult.items) {
+                const candidateSelect = document.getElementById('deal-candidate-id');
+                candidateSelect.innerHTML = '<option value="">请选择候选人</option>' +
+                    candidatesResult.items.map(c =>
+                        `<option value="${c.id}">${c.name} - ${c.current_title || '-'}</option>`
+                    ).join('');
+            }
+
+            if (jobsResult.items) {
+                const jobSelect = document.getElementById('deal-job-id');
+                jobSelect.innerHTML = '<option value="">请选择职位</option>' +
+                    jobsResult.items.map(j =>
+                        `<option value="${j.id}">${j.title} @ ${j.company_name || '-'}</option>`
+                    ).join('');
+            }
+
+            openModal('modal-add-deal');
         }
 
         function refreshCandidates() {
@@ -1046,9 +1105,25 @@
             showToast('活动已刷新', 'success');
         }
 
-        function createDeal(candidateId, jobId) {
-            showToast(`已创建交易: 候选人${candidateId} -> 职位${jobId}`, 'success');
-            switchTab('deals');
+        async function createDeal(candidateId, jobId) {
+            // 从匹配推荐创建交易
+            const result = await api('/deals/create', {
+                method: 'POST',
+                body: JSON.stringify({
+                    candidate_id: candidateId,
+                    job_id: jobId,
+                    probability: 20,
+                    notes: '从智能匹配推荐创建'
+                })
+            });
+
+            if (result.error) {
+                showToast('创建失败: ' + result.error, 'error');
+            } else {
+                showToast('交易创建成功!', 'success');
+                switchTab('deals');
+                loadDeals();
+            }
         }
 
         function viewDealDetail(id) {
@@ -1065,6 +1140,33 @@
             showToast('候选人创建成功', 'success');
             closeModal('modal-add-candidate');
             loadCandidates();
+        });
+
+        // 新建交易表单提交
+        document.getElementById('form-add-deal').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                candidate_id: parseInt(formData.get('candidate_id')),
+                job_id: parseInt(formData.get('job_id')),
+                probability: parseInt(formData.get('probability')) || 20,
+                notes: formData.get('notes') || ''
+            };
+
+            const result = await api('/deals/create', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+
+            if (result.error) {
+                showToast('创建失败: ' + result.error, 'error');
+            } else {
+                showToast('交易创建成功!', 'success');
+                closeModal('modal-add-deal');
+                // 切换到交易列表并刷新
+                switchTab('deals');
+                loadDeals();
+            }
         });
 
         // 启动

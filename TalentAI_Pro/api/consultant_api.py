@@ -45,8 +45,20 @@ class APIHandler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header('Content-Type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        self.send_header('Access-Control-Max-Age', '86400')
         self.end_headers()
         self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
+
+    def do_OPTIONS(self):
+        """处理CORS预检请求"""
+        self.send_response(204)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        self.send_header('Access-Control-Max-Age', '86400')
+        self.end_headers()
 
     def parse_body(self):
         content_length = int(self.headers.get('Content-Length', 0))
@@ -63,6 +75,8 @@ class APIHandler(BaseHTTPRequestHandler):
             self.handle_login()
         elif path == '/api/logout':
             self.send_json({'success': True})
+        elif path == '/api/deals/create':
+            self.handle_create_deal()
         else:
             self.send_json({'error': 'Not found'}, 404)
 
@@ -95,6 +109,8 @@ class APIHandler(BaseHTTPRequestHandler):
         # 交易列表
         elif path == '/api/deals':
             self.handle_deals(query)
+        elif path == '/api/deals/create':
+            self.handle_create_deal()
         # 漏斗统计
         elif path == '/api/funnel':
             self.handle_funnel()
@@ -388,6 +404,50 @@ class APIHandler(BaseHTTPRequestHandler):
         conn.close()
         self.send_json({'items': deals})
 
+    def handle_create_deal(self):
+        """创建新交易"""
+        body = self.parse_body()
+        candidate_id = body.get('candidate_id')
+        job_id = body.get('job_id')
+        probability = body.get('probability', 20)
+        notes = body.get('notes', '')
+
+        if not candidate_id or not job_id:
+            self.send_json({'error': '缺少必要参数: candidate_id, job_id'}, 400)
+            return
+
+        conn = get_db_connection()
+        c = conn.cursor()
+
+        # 获取职位对应的公司ID
+        c.execute('SELECT company_id FROM jobs WHERE id = ?', (job_id,))
+        job = c.fetchone()
+        if not job:
+            conn.close()
+            self.send_json({'error': '职位不存在'}, 404)
+            return
+
+        company_id = job['company_id']
+
+        # 插入交易记录
+        c.execute('''
+            INSERT INTO deals (candidate_id, job_id, company_id, stage, probability, notes)
+            VALUES (?, ?, ?, 'candidate', ?, ?)
+        ''', (candidate_id, job_id, company_id, probability, notes))
+
+        deal_id = c.lastrowid
+
+        # 记录活动日志
+        c.execute('''
+            INSERT INTO activities (deal_id, candidate_id, job_id, action, content)
+            VALUES (?, ?, ?, 'created', '创建招聘交易')
+        ''', (deal_id, candidate_id, job_id))
+
+        conn.commit()
+        conn.close()
+
+        self.send_json({'success': True, 'deal_id': deal_id})
+
     def handle_funnel(self):
         """招聘漏斗"""
         conn = get_db_connection()
@@ -438,29 +498,29 @@ def run_server():
     """启动API服务器"""
     # 确保数据库存在
     if not os.path.exists(DB_PATH):
-        print("❌ 数据库不存在，正在初始化...")
+        print("[X] 数据库不存在，正在初始化...")
         import init_database
         init_database.main()
         print()
 
     server = HTTPServer(('localhost', PORT), APIHandler)
     print(f"""
-╔════════════════════════════════════════════════════════════════╗
-║         TalentAI Pro 顾问端 API 服务                          ║
-╠════════════════════════════════════════════════════════════════╣
-║  🌐 地址: http://localhost:{PORT}                              ║
-║  📊 API文档: http://localhost:{PORT}/api/dashboard/stats        ║
-╠════════════════════════════════════════════════════════════════╣
-║  可用端点:                                                     ║
-║  • POST /api/login          登录                              ║
-║  • GET  /api/dashboard/stats  仪表盘统计                       ║
-║  • GET  /api/candidates     候选人列表                        ║
-║  • GET  /api/jobs           职位列表                          ║
-║  • GET  /api/matches        匹配列表                          ║
-║  • GET  /api/deals          交易列表                          ║
-║  • GET  /api/funnel         漏斗统计                          ║
-║  • GET  /api/activities     活动日志                          ║
-╚════════════════════════════════════════════════════════════════╝
+=================================================================
+           TalentAI Pro 顾问端 API 服务
+=================================================================
+  [*] 地址: http://localhost:{PORT}
+  [*] API文档: http://localhost:{PORT}/api/dashboard/stats
+-----------------------------------------------------------------
+  可用端点:
+  - POST /api/login          登录
+  - GET  /api/dashboard/stats  仪表盘统计
+  - GET  /api/candidates     候选人列表
+  - GET  /api/jobs           职位列表
+  - GET  /api/matches        匹配列表
+  - GET  /api/deals          交易列表
+  - GET  /api/funnel         漏斗统计
+  - GET  /api/activities     活动日志
+=================================================================
     """)
     server.serve_forever()
 
