@@ -77,6 +77,8 @@ class APIHandler(BaseHTTPRequestHandler):
             self.send_json({'success': True})
         elif path == '/api/deals/create':
             self.handle_create_deal()
+        elif path == '/api/deals/update-stage':
+            self.handle_update_deal_stage()
         else:
             self.send_json({'error': 'Not found'}, 404)
 
@@ -111,6 +113,13 @@ class APIHandler(BaseHTTPRequestHandler):
             self.handle_deals(query)
         elif path == '/api/deals/create':
             self.handle_create_deal()
+        # 交易详情
+        elif path.startswith('/api/deals/'):
+            deal_id = path.split('/')[-1]
+            if deal_id.isdigit():
+                self.handle_deal_detail(int(deal_id))
+            else:
+                self.send_json({'error': 'Invalid deal ID'}, 400)
         # 漏斗统计
         elif path == '/api/funnel':
             self.handle_funnel()
@@ -447,6 +456,98 @@ class APIHandler(BaseHTTPRequestHandler):
         conn.close()
 
         self.send_json({'success': True, 'deal_id': deal_id})
+
+    def handle_update_deal_stage(self):
+        """更新交易阶段（推进）"""
+        body = self.parse_body()
+        deal_id = body.get('deal_id')
+        next_stage = body.get('stage')  # candidate -> interview -> offer -> hired
+
+        if not deal_id:
+            self.send_json({'error': '缺少参数: deal_id'}, 400)
+            return
+
+        stage_order = ['candidate', 'interview', 'offer', 'hired']
+        if next_stage not in stage_order:
+            # 自动推进到下一阶段
+            conn = get_db_connection()
+            c = conn.cursor()
+            c.execute('SELECT stage FROM deals WHERE id = ?', (deal_id,))
+            row = c.fetchone()
+            if not row:
+                conn.close()
+                self.send_json({'error': '交易不存在'}, 404)
+                return
+            current_stage = row['stage']
+            try:
+                current_idx = stage_order.index(current_stage)
+                if current_idx < len(stage_order) - 1:
+                    next_stage = stage_order[current_idx + 1]
+                else:
+                    conn.close()
+                    self.send_json({'error': '已是最后阶段'}, 400)
+                    return
+            except ValueError:
+                conn.close()
+                self.send_json({'error': '无效的当前阶段'}, 400)
+                return
+            conn.close()
+
+        conn = get_db_connection()
+        c = conn.cursor()
+
+        # 更新阶段
+        c.execute('UPDATE deals SET stage = ? WHERE id = ?', (next_stage, deal_id))
+
+        # 记录活动日志
+        stage_name_map = {'candidate': '候选人', 'interview': '面试中', 'offer': 'Offer', 'hired': '已入职'}
+        c.execute('''
+            INSERT INTO activities (deal_id, action, content)
+            VALUES (?, 'stage_update', ?)
+        ''', (deal_id, f'交易阶段更新为: {stage_name_map.get(next_stage, next_stage)}'))
+
+        conn.commit()
+        conn.close()
+
+        self.send_json({'success': True, 'stage': next_stage})
+
+    def handle_deal_detail(self, deal_id):
+        """获取交易详情"""
+        conn = get_db_connection()
+        c = conn.cursor()
+
+        c.execute('''
+            SELECT d.*,
+                   c.name as candidate_name, c.current_title as candidate_title, c.phone as candidate_phone, c.email as candidate_email,
+                   j.title as job_title, j.salary_max, j.location as job_location,
+                   co.name as company_name, co.industry as company_industry
+            FROM deals d
+            LEFT JOIN candidates c ON d.candidate_id = c.id
+            LEFT JOIN jobs j ON d.job_id = j.id
+            LEFT JOIN companies co ON d.company_id = co.id
+            WHERE d.id = ?
+        ''', (deal_id,))
+        deal = c.fetchone()
+
+        if not deal:
+            conn.close()
+            self.send_json({'error': '交易不存在'}, 404)
+            return
+
+        # 获取该交易的活动日志
+        c.execute('''
+            SELECT * FROM activities
+            WHERE deal_id = ?
+            ORDER BY created_at DESC
+            LIMIT 20
+        ''', (deal_id,))
+        activities = [row_to_dict(r) for r in c.fetchall()]
+
+        conn.close()
+
+        result = row_to_dict(deal)
+        result['activities'] = activities
+        self.send_json(result)
 
     def handle_funnel(self):
         """招聘漏斗"""

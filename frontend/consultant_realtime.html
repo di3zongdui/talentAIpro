@@ -566,6 +566,63 @@
         </div>
     </div>
 
+    <!-- 交易详情模态框 -->
+    <div class="modal" id="modal-deal-detail">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <div class="modal-title">📋 交易详情</div>
+                <div class="modal-close" onclick="closeModal('modal-deal-detail')">×</div>
+            </div>
+            <div style="padding: 20px;">
+                <!-- 候选人信息 -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px; font-size: 0.95rem;">👤 候选人信息</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div><strong>姓名:</strong> <span id="detail-candidate-name">-</span></div>
+                        <div><strong>当前职位:</strong> <span id="detail-candidate-title">-</span></div>
+                        <div style="grid-column: 1/-1;"><strong>联系方式:</strong> <span id="detail-candidate-contact">-</span></div>
+                    </div>
+                </div>
+
+                <!-- 职位信息 -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px; font-size: 0.95rem;">💼 职位信息</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div><strong>职位:</strong> <span id="detail-job-title">-</span></div>
+                        <div><strong>薪资上限:</strong> <span id="detail-job-salary">-</span></div>
+                        <div><strong>地点:</strong> <span id="detail-job-location">-</span></div>
+                    </div>
+                </div>
+
+                <!-- 公司信息 -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px; font-size: 0.95rem;">🏢 公司信息</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div><strong>公司:</strong> <span id="detail-company">-</span></div>
+                        <div><strong>行业:</strong> <span id="detail-company-industry">-</span></div>
+                    </div>
+                </div>
+
+                <!-- 交易状态 -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #667eea; margin-bottom: 10px; font-size: 0.95rem;">📈 交易状态</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+                        <div><strong>阶段:</strong> <span id="detail-stage">-</span></div>
+                        <div><strong>概率:</strong> <span id="detail-probability">-</span></div>
+                        <div><strong>Offer:</strong> <span id="detail-offer">-</span></div>
+                    </div>
+                    <div style="margin-top: 10px;"><strong>备注:</strong> <span id="detail-notes">-</span></div>
+                </div>
+
+                <!-- 活动日志 -->
+                <div>
+                    <h4 style="color: #667eea; margin-bottom: 10px; font-size: 0.95rem;">📜 活动日志</h4>
+                    <div id="detail-activities" style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // API地址
         const API_BASE = 'http://localhost:8088/api';
@@ -607,8 +664,11 @@
             document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
             document.getElementById('tab-' + tab).style.display = 'block';
 
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event.target.closest('.nav-item').classList.add('active');
+            // 如果是点击事件，更新导航状态
+            if (event && event.target && event.target.closest) {
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                event.target.closest('.nav-item').classList.add('active');
+            }
 
             // 加载对应数据
             if (tab === 'dashboard') loadDashboard();
@@ -946,9 +1006,21 @@
 
         // ========== 交易 ==========
         async function loadDeals() {
-            const result = await api('/deals');
-            if (result.items) {
-                renderDeals(result.items);
+            try {
+                const result = await api('/deals');
+                if (result.error) {
+                    console.error('loadDeals error:', result.error);
+                    showToast('加载交易列表失败', 'error');
+                    return;
+                }
+                if (result.items) {
+                    renderDeals(result.items);
+                } else {
+                    console.error('Unexpected response:', result);
+                }
+            } catch (e) {
+                console.error('loadDeals exception:', e);
+                showToast('加载交易列表失败', 'error');
             }
         }
 
@@ -995,9 +1067,18 @@
             `;
         }
 
-        function updateDealStage(id) {
-            showToast('交易阶段已更新', 'success');
-            loadDeals();
+        async function updateDealStage(id) {
+            const result = await api('/deals/update-stage', {
+                method: 'POST',
+                body: JSON.stringify({ deal_id: id })
+            });
+
+            if (result.error) {
+                showToast('推进失败: ' + result.error, 'error');
+            } else {
+                showToast('交易已推进到: ' + (result.stage === 'interview' ? '面试中' : result.stage === 'offer' ? 'Offer' : result.stage === 'hired' ? '已入职' : result.stage), 'success');
+                loadDeals();
+            }
         }
 
         // ========== 活动 ==========
@@ -1126,8 +1207,52 @@
             }
         }
 
-        function viewDealDetail(id) {
-            showToast('详情功能开发中', 'info');
+        async function viewDealDetail(id) {
+            const deal = await api('/deals/' + id);
+            if (deal.error) {
+                showToast('获取详情失败', 'error');
+                return;
+            }
+
+            const stageMap = { candidate: '候选人', interview: '面试中', offer: 'Offer', hired: '已入职', rejected: '已拒绝' };
+            const stageClass = { candidate: 'tag-primary', interview: 'tag-warning', offer: 'tag-success', hired: 'tag-success', rejected: 'tag-danger' };
+
+            // 填充详情
+            document.getElementById('detail-candidate-name').textContent = deal.candidate_name || '-';
+            document.getElementById('detail-candidate-title').textContent = deal.candidate_title || '-';
+            document.getElementById('detail-candidate-contact').textContent = (deal.candidate_email || '-') + ' | ' + (deal.candidate_phone || '-');
+            document.getElementById('detail-job-title').textContent = deal.job_title || '-';
+            document.getElementById('detail-job-salary').textContent = deal.salary_max ? '上限 ' + deal.salary_max + 'K' : '-';
+            document.getElementById('detail-job-location').textContent = deal.job_location || '-';
+            document.getElementById('detail-company').textContent = deal.company_name || '-';
+            document.getElementById('detail-company-industry').textContent = deal.company_industry || '-';
+            document.getElementById('detail-stage').innerHTML = `<span class="tag ${stageClass[deal.stage] || 'tag-primary'}">${stageMap[deal.stage] || deal.stage}</span>`;
+            document.getElementById('detail-probability').textContent = (deal.probability || 0) + '%';
+            document.getElementById('detail-offer').textContent = deal.offer_salary ? deal.offer_salary + 'K' : '-';
+            document.getElementById('detail-notes').textContent = deal.notes || '-';
+
+            // 填充活动日志
+            const activityList = document.getElementById('detail-activities');
+            if (deal.activities && deal.activities.length > 0) {
+                const actionMap = {
+                    'created': '创建',
+                    'matched': '智能匹配',
+                    'interview_scheduled': '安排面试',
+                    'offer_sent': '发送Offer',
+                    'hired': '已入职',
+                    'stage_update': '阶段更新'
+                };
+                activityList.innerHTML = deal.activities.map(a => `
+                    <div style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div style="font-size: 0.8rem; color: #999;">${new Date(a.created_at).toLocaleString('zh-CN')}</div>
+                        <div style="margin-top: 3px;">${actionMap[a.action] || a.action} ${a.content || ''}</div>
+                    </div>
+                `).join('');
+            } else {
+                activityList.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">暂无活动记录</div>';
+            }
+
+            openModal('modal-deal-detail');
         }
 
         function logout() {
