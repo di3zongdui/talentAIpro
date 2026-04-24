@@ -28,6 +28,7 @@
         .btn-danger:hover { background: #ff3344; }
         .btn-success { background: #2ed573; color: white; }
         .btn-success:hover { background: #26c064; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
         .jobs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .job-card { border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; transition: all 0.2s; }
         .job-card:hover { border-color: #667eea; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15); }
@@ -37,17 +38,49 @@
         .job-match { background: #e8ffea; color: #2ed573; padding: 3px 10px; border-radius: 12px; font-size: 12px; display: inline-block; margin-bottom: 10px; }
         .skills { display: flex; flex-wrap: wrap; gap: 6px; }
         .skill-tag { background: #f0f0f0; color: #666; padding: 3px 10px; border-radius: 4px; font-size: 12px; }
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; }
-        .nav-tab { padding: 8px 16px; border: none; background: none; cursor: pointer; color: #666; font-size: 14px; border-radius: 6px; }
-        .nav-tab.active { background: #667eea; color: white; }
         .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-interview { background: #d4edda; color: #155724; }
         .status-offer { background: #cce5ff; color: #004085; }
         .status-rejected { background: #f8d7da; color: #721c24; }
+        .status-hired { background: #d4edda; color: #155724; }
+
+        /* Toast */
         .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 15px 25px; border-radius: 8px; display: none; z-index: 1000; }
         .toast.show { display: block; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Modal */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 12px; padding: 25px; width: 600px; max-height: 85vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .modal-title { font-size: 1.3rem; font-weight: 600; color: #1a1a2e; }
+        .modal-close { cursor: pointer; font-size: 1.5rem; color: #999; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; }
+        .modal-close:hover { background: #f0f0f0; color: #333; }
+
+        /* Detail */
+        .detail-section { margin-bottom: 20px; }
+        .detail-label { font-size: 0.85rem; color: #888; margin-bottom: 5px; }
+        .detail-value { font-size: 1rem; color: #333; font-weight: 500; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .process-timeline { margin-top: 15px; }
+        .process-step { display: flex; gap: 15px; padding: 10px 0; border-bottom: 1px dashed #eee; }
+        .process-step:last-child { border-bottom: none; }
+        .process-dot { width: 10px; height: 10px; border-radius: 50%; background: #ddd; margin-top: 5px; }
+        .process-dot.done { background: #2ed573; }
+        .process-dot.current { background: #667eea; }
+        .process-dot.pending { background: #ddd; }
+        .process-info { flex: 1; }
+        .process-title { font-weight: 600; color: #333; }
+        .process-time { font-size: 0.85rem; color: #888; }
+        .salary-tag { background: #e8ffea; color: #2ed573; padding: 5px 12px; border-radius: 8px; font-weight: 600; display: inline-block; margin: 5px 0; }
+        .interview-card { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .interview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .interview-type { font-weight: 600; color: #667eea; }
+        .interview-time { color: #666; font-size: 0.9rem; }
+        .interview-info { font-size: 0.9rem; color: #555; }
     </style>
 </head>
 <body>
@@ -65,12 +98,12 @@
         <div class="card">
             <h2>👤 个人资料</h2>
             <div class="profile-grid">
-                <div class="avatar">李</div>
+                <div class="avatar" id="profileAvatar">李</div>
                 <div class="profile-info">
-                    <h3>李明</h3>
-                    <p>📧 zhangming@example.com | 📱 138-0000-1234</p>
-                    <p>🏢 字节跳动 | 📍 北京 | 🎂 28岁</p>
-                    <div class="tag-group">
+                    <h3 id="profileName">李明</h3>
+                    <p id="profileContact">📧 zhangming@example.com | 📱 138-0000-1234</p>
+                    <p id="profileBasic">🏢 字节跳动 | 📍 北京 | 🎂 28岁</p>
+                    <div class="tag-group" id="profileSkills">
                         <span class="tag">Python</span>
                         <span class="tag">TensorFlow</span>
                         <span class="tag">PyTorch</span>
@@ -88,7 +121,7 @@
         <div class="card">
             <h2>📋 我的申请</h2>
             <div style="margin-bottom: 15px;">
-                <button class="btn btn-primary" onclick="showToast('刷新状态')">🔄 刷新状态</button>
+                <button class="btn btn-primary" onclick="refreshApplications()">🔄 刷新状态</button>
                 <button class="btn btn-secondary" onclick="showToast('导出申请')">📥 导出申请</button>
             </div>
             <table style="width: 100%; border-collapse: collapse;">
@@ -101,38 +134,8 @@
                         <th style="padding: 12px; border-bottom: 1px solid #e0e0e0;">操作</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">AI算法专家</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">字节跳动</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="job-match">92%</span></td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="status-badge status-interview">面试中</span></td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">
-                            <button class="btn btn-secondary" onclick="showToast('查看详情')">查看</button>
-                            <button class="btn btn-danger" onclick="showToast('撤回申请')">撤回</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">LLM研发工程师</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">阿里巴巴</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="job-match">85%</span></td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="status-badge status-pending">评估中</span></td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">
-                            <button class="btn btn-secondary" onclick="showToast('查看详情')">查看</button>
-                            <button class="btn btn-danger" onclick="showToast('撤回申请')">撤回</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">AI平台负责人</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">腾讯</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="job-match">78%</span></td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="status-badge status-offer">待入职</span></td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">
-                            <button class="btn btn-secondary" onclick="showToast('查看详情')">查看</button>
-                            <button class="btn btn-success" onclick="showToast('接受Offer')">接受</button>
-                            <button class="btn btn-danger" onclick="showToast('拒绝Offer')">拒绝</button>
-                        </td>
-                    </tr>
+                <tbody id="applicationsTable">
+                    <!-- 动态数据 -->
                 </tbody>
             </table>
         </div>
@@ -141,55 +144,11 @@
         <div class="card">
             <h2>💡 为您推荐</h2>
             <div style="margin-bottom: 15px;">
-                <button class="btn btn-primary" onclick="showToast('刷新推荐')">🔄 刷新推荐</button>
+                <button class="btn btn-primary" onclick="refreshRecommendations()">🔄 刷新推荐</button>
                 <button class="btn btn-secondary" onclick="showToast('偏好设置')">⚙️ 偏好设置</button>
             </div>
-            <div class="jobs-grid">
-                <div class="job-card">
-                    <h4>AI算法专家</h4>
-                    <div class="company">🚀 字节跳动</div>
-                    <div class="salary">¥ 80-120K · 北京</div>
-                    <div><span class="job-match">92% 匹配</span></div>
-                    <div class="skills" style="margin-top: 10px;">
-                        <span class="skill-tag">Python</span>
-                        <span class="skill-tag">LLM</span>
-                        <span class="skill-tag">NLP</span>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <button class="btn btn-primary" onclick="showToast('立即投递')">立即投递</button>
-                        <button class="btn btn-secondary" onclick="showToast('查看详情')">查看详情</button>
-                    </div>
-                </div>
-                <div class="job-card">
-                    <h4>大模型研究员</h4>
-                    <div class="company">🏢 清华大学</div>
-                    <div class="salary">¥ 60-100K · 北京</div>
-                    <div><span class="job-match">88% 匹配</span></div>
-                    <div class="skills" style="margin-top: 10px;">
-                        <span class="skill-tag">PyTorch</span>
-                        <span class="skill-tag">Transformer</span>
-                        <span class="skill-tag">论文</span>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <button class="btn btn-primary" onclick="showToast('立即投递')">立即投递</button>
-                        <button class="btn btn-secondary" onclick="showToast('查看详情')">查看详情</button>
-                    </div>
-                </div>
-                <div class="job-card">
-                    <h4>AI平台架构师</h4>
-                    <div class="company">🏢 美团</div>
-                    <div class="salary">¥ 90-150K · 北京</div>
-                    <div><span class="job-match">82% 匹配</span></div>
-                    <div class="skills" style="margin-top: 10px;">
-                        <span class="skill-tag">架构设计</span>
-                        <span class="skill-tag">MLOps</span>
-                        <span class="skill-tag">K8s</span>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <button class="btn btn-primary" onclick="showToast('立即投递')">立即投递</button>
-                        <button class="btn btn-secondary" onclick="showToast('查看详情')">查看详情</button>
-                    </div>
-                </div>
+            <div class="jobs-grid" id="recommendationsGrid">
+                <!-- 动态数据 -->
             </div>
         </div>
 
@@ -200,74 +159,465 @@
                 <button class="btn btn-primary" onclick="showToast('添加日历')">📅 添加到日历</button>
                 <button class="btn btn-secondary" onclick="showToast('设置提醒')">🔔 设置提醒</button>
             </div>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                    <div style="background: #667eea; color: white; padding: 10px 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 20px; font-weight: bold;">25</div>
-                        <div style="font-size: 12px;">周四</div>
-                    </div>
-                    <div>
-                        <h4 style="color: #1a1a2e;">技术面试 - 字节跳动</h4>
-                        <p style="color: #666; font-size: 14px;">14:00 - 15:00 | 线上视频面试</p>
-                        <p style="color: #667eea; font-size: 13px;">面试官：王老师 | 会议链接已发送</p>
-                    </div>
-                    <div style="margin-left: auto;">
-                        <button class="btn btn-success" onclick="showToast('确认参加')">确认参加</button>
-                        <button class="btn btn-secondary" onclick="showToast('重新安排')">重新安排</button>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="background: #2ed573; color: white; padding: 10px 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 20px; font-weight: bold;">28</div>
-                        <div style="font-size: 12px;">周日</div>
-                    </div>
-                    <div>
-                        <h4 style="color: #1a1a2e;">HR终面 - 腾讯</h4>
-                        <p style="color: #666; font-size: 14px;">10:00 - 11:00 | 深圳总部</p>
-                        <p style="color: #2ed573; font-size: 13px;">✅ Offer已发，待确认入职时间</p>
-                    </div>
-                    <div style="margin-left: auto;">
-                        <button class="btn btn-success" onclick="showToast('确认入职')">确认入职</button>
-                    </div>
-                </div>
+            <div id="interviewsCalendar">
+                <!-- 动态数据 -->
             </div>
         </div>
     </div>
 
+    <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <!-- 申请详情模态框 -->
+    <div class="modal" id="modal-application">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="appDetailTitle">职位详情</div>
+                <div class="modal-close" onclick="closeModal('modal-application')">×</div>
+            </div>
+            <div id="appDetailContent">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 推荐职位详情模态框 -->
+    <div class="modal" id="modal-job">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="jobDetailTitle">推荐职位详情</div>
+                <div class="modal-close" onclick="closeModal('modal-job')">×</div>
+            </div>
+            <div id="jobDetailContent">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 面试详情模态框 -->
+    <div class="modal" id="modal-interview">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">面试详情</div>
+                <div class="modal-close" onclick="closeModal('modal-interview')">×</div>
+            </div>
+            <div id="interviewDetailContent">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
     <script>
-        function showToast(action) {
+        // API地址
+        const API_BASE = 'http://localhost:8088/api';
+
+        // 申请数据
+        let applicationsData = [];
+        let recommendationsData = [];
+        let interviewsData = [];
+
+        // Toast提示
+        function showToast(action, type = 'success') {
             const toast = document.getElementById('toast');
-            toast.textContent = '✅ ' + action + ' - 操作成功';
+            toast.textContent = (type === 'success' ? '✅ ' : '⚠️ ') + action;
             toast.className = 'toast show';
             setTimeout(() => { toast.className = 'toast'; }, 2500);
         }
 
-        // 显示当前用户
-        function displayCurrentUser() {
-            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
-            if (session.name) {
-                document.getElementById('userDisplay').textContent = '👤 ' + session.name + ' (candidate)';
+        // API请求
+        async function api(endpoint) {
+            try {
+                const response = await fetch(API_BASE + endpoint);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return null;
             }
         }
 
-        // 退出登录
+        // 初始化页面
+        async function initPage() {
+            // 获取当前用户
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            if (session.username) {
+                document.getElementById('userDisplay').textContent = '👤 ' + (session.name || session.username) + ' (candidate)';
+                if (session.name) {
+                    document.getElementById('profileAvatar').textContent = session.name.charAt(0);
+                    document.getElementById('profileName').textContent = session.name;
+                }
+            }
+
+            // 加载数据
+            await loadApplications();
+            await loadRecommendations();
+            await loadInterviews();
+        }
+
+        // 加载申请数据
+        async function loadApplications() {
+            // 静态数据作为兜底
+            const staticData = [
+                { id: 1, job_id: 101, title: 'AI算法专家', company: '字节跳动', match_score: 92, status: 'interview', applied_at: '2026-04-10', process: ['简历筛选', 'HR面试', '技术面试', '录用'] },
+                { id: 2, job_id: 102, title: 'LLM研发工程师', company: '阿里巴巴', match_score: 85, status: 'pending', applied_at: '2026-04-12', process: ['简历筛选', '笔试', '面试'] },
+                { id: 3, job_id: 103, title: 'AI平台负责人', company: '腾讯', match_score: 78, status: 'offer', applied_at: '2026-04-08', process: ['简历筛选', '多轮面试', '背调', 'Offer'] }
+            ];
+
+            // 尝试从API获取
+            const apiData = await api('/candidate/applications');
+            applicationsData = apiData || staticData;
+            renderApplications();
+        }
+
+        // 渲染申请列表
+        function renderApplications() {
+            const tbody = document.getElementById('applicationsTable');
+            const statusMap = {
+                'pending': { text: '评估中', class: 'status-pending' },
+                'interview': { text: '面试中', class: 'status-interview' },
+                'offer': { text: 'Offer', class: 'status-offer' },
+                'hired': { text: '已入职', class: 'status-hired' },
+                'rejected': { text: '已拒绝', class: 'status-rejected' }
+            };
+
+            tbody.innerHTML = applicationsData.map(app => {
+                const status = statusMap[app.status] || statusMap['pending'];
+                return `
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">
+                            <strong>${app.title}</strong><br>
+                            <small style="color:#888">投递于 ${app.applied_at}</small>
+                        </td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">${app.company}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="job-match">${app.match_score}%</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;"><span class="status-badge ${status.class}">${status.text}</span></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e0e0e0;">
+                            <button class="btn btn-secondary btn-sm" onclick="viewApplication(${app.id})">查看</button>
+                            ${app.status === 'pending' ? '<button class="btn btn-danger btn-sm" onclick="withdrawApplication(' + app.id + ')">撤回</button>' : ''}
+                            ${app.status === 'offer' ? '<button class="btn btn-success btn-sm" onclick="acceptOffer(' + app.id + ')">接受</button><button class="btn btn-danger btn-sm" onclick="rejectOffer(' + app.id + ')">拒绝</button>' : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 加载推荐职位
+        async function loadRecommendations() {
+            const staticData = [
+                { id: 201, title: 'AI算法专家', company: '字节跳动', salary: '80-120K', location: '北京', match_score: 92, skills: ['Python', 'LLM', 'NLP'], desc: '负责公司AI算法研发，推动技术创新。', requirements: '5年以上AI算法经验，发表过顶会论文优先。' },
+                { id: 202, title: '大模型研究员', company: '清华大学', salary: '60-100K', location: '北京', match_score: 88, skills: ['PyTorch', 'Transformer', '论文'], desc: '参与国家级AI科研项目。', requirements: '博士学历，NLP方向优先。' },
+                { id: 203, title: 'AI平台架构师', company: '美团', salary: '90-150K', location: '北京', match_score: 82, skills: ['架构设计', 'MLOps', 'K8s'], desc: '负责AI平台架构设计与优化。', requirements: '架构经验，分布式系统背景。' }
+            ];
+
+            const apiData = await api('/jobs/recommendations');
+            recommendationsData = apiData || staticData;
+            renderRecommendations();
+        }
+
+        // 渲染推荐职位
+        function renderRecommendations() {
+            const grid = document.getElementById('recommendationsGrid');
+            grid.innerHTML = recommendationsData.map(job => `
+                <div class="job-card">
+                    <h4>${job.title}</h4>
+                    <div class="company">🚀 ${job.company}</div>
+                    <div class="salary">¥ ${job.salary} · ${job.location}</div>
+                    <div><span class="job-match">${job.match_score}% 匹配</span></div>
+                    <div class="skills" style="margin-top: 10px;">
+                        ${(job.skills || []).map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-primary" onclick="applyJob(${job.id})">立即投递</button>
+                        <button class="btn btn-secondary" onclick="viewJobDetail(${job.id})">查看详情</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 加载面试日历
+        async function loadInterviews() {
+            const staticData = [
+                { id: 301, type: '技术面试', company: '字节跳动', position: 'AI算法专家', time: '2026-04-25 14:00', duration: '60分钟', location: '线上视频', interviewer: '王老师', status: 'scheduled', link: 'https://meeting.example.com/abc' },
+                { id: 302, type: 'HR终面', company: '腾讯', position: 'AI平台负责人', time: '2026-04-28 10:00', duration: '60分钟', location: '深圳总部', interviewer: '张经理', status: 'offer', note: 'Offer已发，待确认入职时间' }
+            ];
+
+            interviewsData = staticData;
+            renderInterviews();
+        }
+
+        // 渲染面试日历
+        function renderInterviews() {
+            const container = document.getElementById('interviewsCalendar');
+            if (interviewsData.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:30px;color:#999">暂无面试安排</div>';
+                return;
+            }
+
+            container.innerHTML = interviewsData.map(interview => {
+                const date = new Date(interview.time);
+                const day = date.getDate();
+                const weekDay = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()];
+                const bgColor = interview.status === 'offer' ? '#2ed573' : '#667eea';
+
+                return `
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="background: ${bgColor}; color: white; padding: 10px 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 20px; font-weight: bold;">${day}</div>
+                                <div style="font-size: 12px;">${weekDay}</div>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="color: #1a1a2e;">${interview.type} - ${interview.company}</h4>
+                                <p style="color: #666; font-size: 14px;">${interview.time} | ${interview.location}</p>
+                                <p style="color: ${bgColor}; font-size: 13px;">${interview.interviewer}${interview.link ? ' | 会议链接已发送' : ''}</p>
+                                ${interview.note ? `<p style="color: #2ed573; font-size: 13px; margin-top: 5px;">✅ ${interview.note}</p>` : ''}
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary btn-sm" onclick="viewInterviewDetail(${interview.id})">详情</button>
+                                ${interview.status === 'scheduled' ? `
+                                    <button class="btn btn-success btn-sm" onclick="confirmInterview(${interview.id})">确认参加</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="rescheduleInterview(${interview.id})">重新安排</button>
+                                ` : ''}
+                                ${interview.status === 'offer' ? `
+                                    <button class="btn btn-success btn-sm" onclick="confirmHired(${interview.id})">确认入职</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ========== 操作函数 ==========
+
+        function viewApplication(id) {
+            const app = applicationsData.find(a => a.id === id);
+            if (!app) return;
+
+            const statusMap = {
+                'pending': { text: '评估中', class: 'status-pending' },
+                'interview': { text: '面试中', class: 'status-interview' },
+                'offer': { text: 'Offer', class: 'status-offer' }
+            };
+            const status = statusMap[app.status] || statusMap['pending'];
+
+            // 进度点状态
+            const stepStatus = app.status === 'offer' ? ['done', 'done', 'done', 'current'] :
+                               app.status === 'interview' ? ['done', 'done', 'current', 'pending'] :
+                               app.status === 'pending' ? ['done', 'pending', 'pending', 'pending'] :
+                               ['done', 'done', 'done', 'done'];
+
+            document.getElementById('appDetailTitle').textContent = app.title + ' - ' + app.company;
+            document.getElementById('appDetailContent').innerHTML = `
+                <div class="detail-section">
+                    <div class="detail-label">当前状态</div>
+                    <div><span class="status-badge ${status.class}">${status.text}</span></div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">匹配度</div>
+                    <div><span class="job-match">${app.match_score}%</span></div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">投递时间</div>
+                    <div class="detail-value">${app.applied_at}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">招聘进度</div>
+                    <div class="process-timeline">
+                        ${app.process.map((step, i) => `
+                            <div class="process-step">
+                                <div class="process-dot ${stepStatus[i]}"></div>
+                                <div class="process-info">
+                                    <div class="process-title">${step}</div>
+                                    ${stepStatus[i] === 'done' ? '<div class="process-time">已完成</div>' : ''}
+                                    ${stepStatus[i] === 'current' ? '<div class="process-time" style="color:#667eea">进行中</div>' : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    ${app.status === 'pending' ? '<button class="btn btn-danger" onclick="withdrawApplication(' + app.id + '); closeModal(\'modal-application\')">撤回申请</button>' : ''}
+                    ${app.status === 'offer' ? '<button class="btn btn-success" onclick="acceptOffer(' + app.id + '); closeModal(\'modal-application\')">接受Offer</button><button class="btn btn-danger" onclick="rejectOffer(' + app.id + '); closeModal(\'modal-application\')">拒绝</button>' : ''}
+                    <button class="btn btn-secondary" onclick="closeModal('modal-application')">关闭</button>
+                </div>
+            `;
+            openModal('modal-application');
+        }
+
+        function viewJobDetail(id) {
+            const job = recommendationsData.find(j => j.id === id);
+            if (!job) return;
+
+            document.getElementById('jobDetailTitle').textContent = job.title + ' - ' + job.company;
+            document.getElementById('jobDetailContent').innerHTML = `
+                <div class="detail-section">
+                    <div class="detail-label">薪资范围</div>
+                    <div class="salary-tag">¥ ${job.salary}</div>
+                </div>
+                <div class="detail-grid">
+                    <div>
+                        <div class="detail-label">公司</div>
+                        <div class="detail-value">${job.company}</div>
+                    </div>
+                    <div>
+                        <div class="detail-label">工作地点</div>
+                        <div class="detail-value">${job.location}</div>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">匹配度</div>
+                    <div><span class="job-match" style="font-size:14px;padding:5px 15px;">${job.match_score}%</span></div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">技能要求</div>
+                    <div class="detail-tags">
+                        ${(job.skills || []).map(s => `<span class="skill-tag" style="background:#e8eaff;color:#667eea">${s}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">职位描述</div>
+                    <div style="color:#555;line-height:1.6;margin-top:5px;">${job.desc}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">任职要求</div>
+                    <div style="color:#555;line-height:1.6;margin-top:5px;">${job.requirements}</div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="applyJob(${job.id}); closeModal('modal-job')">立即投递</button>
+                    <button class="btn btn-secondary" onclick="closeModal('modal-job')">关闭</button>
+                </div>
+            `;
+            openModal('modal-job');
+        }
+
+        function viewInterviewDetail(id) {
+            const interview = interviewsData.find(i => i.id === id);
+            if (!interview) return;
+
+            document.getElementById('interviewDetailContent').innerHTML = `
+                <div class="interview-card">
+                    <div class="interview-header">
+                        <span class="interview-type">${interview.type}</span>
+                        <span class="status-badge ${interview.status === 'offer' ? 'status-offer' : 'status-interview'}">${interview.status === 'offer' ? 'Offer阶段' : '已安排'}</span>
+                    </div>
+                    <div class="interview-info"><strong>公司：</strong>${interview.company}</div>
+                    <div class="interview-info"><strong>职位：</strong>${interview.position}</div>
+                    <div class="interview-info"><strong>时间：</strong>${interview.time} (${interview.duration})</div>
+                    <div class="interview-info"><strong>地点：</strong>${interview.location}</div>
+                    <div class="interview-info"><strong>面试官：</strong>${interview.interviewer}</div>
+                    ${interview.link ? `<div class="interview-info"><strong>会议链接：</strong><a href="${interview.link}" target="_blank" style="color:#667eea">点击加入会议</a></div>` : ''}
+                    ${interview.note ? `<div style="margin-top:10px;padding:10px;background:#e8ffea;border-radius:5px;color:#2ed573;">${interview.note}</div>` : ''}
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    ${interview.status === 'scheduled' ? `
+                        <button class="btn btn-success" onclick="confirmInterview(${interview.id}); closeModal('modal-interview')">确认参加</button>
+                        <button class="btn btn-secondary" onclick="rescheduleInterview(${interview.id})">重新安排</button>
+                    ` : ''}
+                    ${interview.status === 'offer' ? `
+                        <button class="btn btn-success" onclick="confirmHired(${interview.id}); closeModal('modal-interview')">确认入职</button>
+                    ` : ''}
+                    <button class="btn btn-secondary" onclick="closeModal('modal-interview')">关闭</button>
+                </div>
+            `;
+            openModal('modal-interview');
+        }
+
+        // 其他操作
+        function withdrawApplication(id) {
+            showToast('申请已撤回');
+            applicationsData = applicationsData.filter(a => a.id !== id);
+            renderApplications();
+        }
+
+        function acceptOffer(id) {
+            showToast('已接受Offer！');
+            const app = applicationsData.find(a => a.id === id);
+            if (app) app.status = 'hired';
+            renderApplications();
+        }
+
+        function rejectOffer(id) {
+            showToast('已拒绝Offer');
+            applicationsData = applicationsData.filter(a => a.id !== id);
+            renderApplications();
+        }
+
+        function applyJob(id) {
+            showToast('简历已投递成功！');
+            // 模拟添加到申请列表
+            const job = recommendationsData.find(j => j.id === id);
+            if (job) {
+                applicationsData.unshift({
+                    id: Date.now(),
+                    job_id: id,
+                    title: job.title,
+                    company: job.company,
+                    match_score: job.match_score,
+                    status: 'pending',
+                    applied_at: new Date().toISOString().split('T')[0],
+                    process: ['简历筛选', '笔试', '面试']
+                });
+                renderApplications();
+            }
+        }
+
+        function confirmInterview(id) {
+            showToast('已确认参加面试');
+        }
+
+        function rescheduleInterview(id) {
+            showToast('重新安排请求已发送');
+        }
+
+        function confirmHired(id) {
+            showToast('已确认入职！恭喜！');
+            const interview = interviewsData.find(i => i.id === id);
+            if (interview) interview.note = '入职已确认';
+            renderInterviews();
+        }
+
+        function refreshApplications() {
+            loadApplications();
+            showToast('申请状态已刷新');
+        }
+
+        function refreshRecommendations() {
+            loadRecommendations();
+            showToast('推荐已刷新');
+        }
+
+        // 模态框
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // 点击外部关闭
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+
+        // 退出
         function logout() {
             localStorage.removeItem('talentAI_session');
-            alert('已退出登录');
             window.location.href = 'login.html';
         }
 
-        // 检查登录状态
+        // 检查登录
         (function checkAuth() {
             const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
             if (!session.isLoggedIn) {
-                alert('请先登录');
                 window.location.href = 'login.html';
                 return;
             }
-            displayCurrentUser();
+            initPage();
         })();
     </script>
 </body>
