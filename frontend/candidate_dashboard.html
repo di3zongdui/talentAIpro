@@ -915,8 +915,42 @@
         }
 
         // ========== 完善画像功能 ==========
+        // 分析结果暂存，用于 applyAnalysisResult
+        let analysisResultData = {
+            skills: ['Python', 'TensorFlow', 'PyTorch', 'LLM', 'NLP', 'LangChain', 'RAG', 'Agent', '向量数据库'],
+            techScore: 4.2,
+            businessScore: 3.8,
+            commScore: 4.0,
+            commentary: '具有扎实的AI算法基础，在NLP和大模型领域有深入研究。具备良好的工程落地能力，适合高级AI算法岗位。'
+        };
+
         async function startProfileAnalysis() {
             openModal('modal-profile-analysis');
+
+            // 从上传的简历数据中提取技能
+            if (pendingResumeData && pendingResumeData.skills && pendingResumeData.skills.length > 0) {
+                const resumeSkills = pendingResumeData.skills;
+                // 基于简历技能动态生成分析结果
+                const skillCount = resumeSkills.length;
+                analysisResultData.skills = resumeSkills;
+                // 技术深度评分：根据技能数量计算 2.0-5.0
+                analysisResultData.techScore = Math.min(5.0, Math.max(2.0, 2.0 + skillCount * 0.3)).toFixed(1);
+                // 业务能力评分：默认3.5-4.5
+                analysisResultData.businessScore = (3.5 + Math.random() * 1.0).toFixed(1);
+                // 沟通协作评分：默认3.8-4.5
+                analysisResultData.commScore = (3.8 + Math.random() * 0.7).toFixed(1);
+                // 根据技能生成评价
+                const topSkills = resumeSkills.slice(0, 5).join('、');
+                analysisResultData.commentary = `您已掌握 ${topSkills} 等${skillCount}项核心技能，具有扎实的专业背景。建议重点提升项目经验的深度和广度，以增强职场竞争力。`;
+            } else {
+                // 无简历数据，使用当前session中的技能
+                const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+                if (session.skills && session.skills.length > 0) {
+                    analysisResultData.skills = session.skills;
+                    analysisResultData.techScore = (3.5 + session.skills.length * 0.15).toFixed(1);
+                }
+            }
+
             const steps = [
                 { id: 'step1', text: '基本信息提取' },
                 { id: 'step2', text: '技能标签分析' },
@@ -937,32 +971,36 @@
                     <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
                         <div style="font-size: 24px; color: #667eea;">🚀</div>
                         <div style="font-size: 12px; color: #888; margin-top: 5px;">技术深度</div>
-                        <div style="font-size: 16px; font-weight: 600; color: #333;">4.2/5</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #333;">${analysisResultData.techScore}/5</div>
                     </div>
                     <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
                         <div style="font-size: 24px; color: #667eea;">💼</div>
                         <div style="font-size: 12px; color: #888; margin-top: 5px;">业务能力</div>
-                        <div style="font-size: 16px; font-weight: 600; color: #333;">3.8/5</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #333;">${analysisResultData.businessScore}/5</div>
                     </div>
                     <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
                         <div style="font-size: 24px; color: #667eea;">🤝</div>
                         <div style="font-size: 12px; color: #888; margin-top: 5px;">沟通协作</div>
-                        <div style="font-size: 16px; font-weight: 600; color: #333;">4.0/5</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #333;">${analysisResultData.commScore}/5</div>
                     </div>
                 </div>
                 <div style="background: white; padding: 12px; border-radius: 8px;">
                     <div style="font-size: 13px; color: #888; margin-bottom: 5px;">AI综合评价</div>
-                    <div style="color: #333; line-height: 1.5;">具有扎实的AI算法基础，在NLP和大模型领域有深入研究。具备良好的工程落地能力，适合高级AI算法岗位。</div>
+                    <div style="color: #333; line-height: 1.5;">${analysisResultData.commentary}</div>
                 </div>`;
         }
         function applyAnalysisResult() {
-            const newSkills = ['Python', 'TensorFlow', 'PyTorch', 'LLM', 'NLP', 'LangChain', 'RAG', 'Agent', '向量数据库'];
+            // 使用分析结果中的技能
+            const newSkills = analysisResultData.skills;
             document.getElementById('profileSkills').innerHTML = newSkills.map(s => `<span class="tag">${s}</span>`).join('');
             const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
             session.skills = newSkills;
+            session.resumeData = pendingResumeData || session.resumeData;
             localStorage.setItem('talentAI_session', JSON.stringify(session));
             closeModal('modal-profile-analysis');
             showToast('画像分析完成！已更新技能标签');
+            // 清除待处理简历数据
+            pendingResumeData = null;
         }
 
         // ========== 偏好设置功能 ==========
