@@ -971,6 +971,311 @@
             gap: 12px;
             justify-content: flex-end;
         }
+
+        /* Negotiation Styles */
+        .negotiation-gauge {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg-input);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .gauge-label {
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        .gauge-bar {
+            flex: 1;
+            height: 24px;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.8s ease;
+        }
+
+        .gauge-value {
+            font-size: 14px;
+            font-weight: 700;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .gap-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+
+        .gap-indicator.positive { background: rgba(52, 211, 153, 0.2); color: var(--accent-green); }
+        .gap-indicator.negative { background: rgba(248, 113, 113, 0.2); color: var(--accent-red); }
+        .gap-indicator.neutral { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
+
+        .package-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .package-item {
+            padding: 12px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .package-item.current {
+            border: 1px solid var(--accent-blue);
+            background: rgba(79, 142, 247, 0.08);
+        }
+
+        .package-item.proposed {
+            border: 1px solid var(--accent-green);
+            background: rgba(52, 211, 153, 0.08);
+        }
+
+        .proposal-card {
+            padding: 16px;
+            background: var(--bg-input);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--accent-purple);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .proposal-card:hover {
+            transform: translateX(4px);
+            border-left-color: var(--accent-green);
+        }
+
+        .proposal-card.selected {
+            border-left-color: var(--accent-green);
+            background: rgba(52, 211, 153, 0.1);
+        }
+
+        .proposal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .proposal-title {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .proposal-tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .proposal-tag.recommended { background: rgba(52, 211, 153, 0.2); color: var(--accent-green); }
+        .proposal-tag.alternative { background: rgba(167, 139, 250, 0.2); color: var(--accent-purple); }
+        .proposal-tag.creative { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
+
+        .proposal-summary {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .proposal-changes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .change-tag {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .change-tag.increase { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); }
+        .change-tag.decrease { background: rgba(248, 113, 113, 0.15); color: var(--accent-red); }
+        .change-tag.new { background: rgba(79, 142, 247, 0.15); color: var(--accent-blue); }
+        .change-tag.trade { background: rgba(167, 139, 250, 0.15); color: var(--accent-purple); }
+
+        .agent-message {
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(79, 142, 247, 0.1));
+            border-radius: 12px;
+            margin: 16px 0;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+
+        .agent-message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+
+        .agent-message-body {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .agent-message-body em {
+            color: var(--accent-orange);
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .analysis-card {
+            padding: 20px;
+            background: var(--bg-input);
+            border-radius: 12px;
+        }
+
+        .analysis-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .leverage-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .leverage-icon {
+            font-size: 20px;
+        }
+
+        .leverage-text {
+            font-size: 13px;
+        }
+
+        .round-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-purple);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .counter-offer-form {
+            padding: 20px;
+            background: var(--bg-input);
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+
+        .counter-form-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .slider-group {
+            margin-bottom: 16px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .slider-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .slider-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-dark);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(79, 142, 247, 0.5);
+        }
+
+        .victory-message {
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.15), rgba(79, 142, 247, 0.15));
+            border-radius: 12px;
+            text-align: center;
+            margin: 16px 0;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .victory-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-green);
+            margin-bottom: 8px;
+        }
+
+        .victory-message p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
@@ -1318,6 +1623,63 @@
                     </button>
                 </div>
                 <div class="report-preview" id="reportContent"></div>
+            </div>
+        </div>
+
+        <!-- Negotiation Panel -->
+        <div class="interview-section" id="negotiationSection" style="display: none;">
+            <div class="section-title">🤝 薪资谈判中</div>
+            <div class="tabs">
+                <div class="tab active" data-tab="negotiation-overview">谈判概览</div>
+                <div class="tab" data-tab="negotiation-history">提议历史</div>
+                <div class="tab" data-tab="negotiation-analysis">深度分析</div>
+            </div>
+
+            <div class="tab-content active" id="negotiation-overview">
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">📊 差距分析</div>
+                    </div>
+                    <div id="gapAnalysis"></div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">💰 当前方案 vs 期望</div>
+                        <span class="result-badge" id="negotiationStatus">谈判中</span>
+                    </div>
+                    <div id="offerComparison"></div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">💡 Agent建议方案</div>
+                    </div>
+                    <div id="agentProposals"></div>
+                </div>
+
+                <div class="action-bar" id="negotiationActions">
+                    <button class="btn btn-success" onclick="acceptProposal(0)">
+                        <span>✅</span> 接受最优方案
+                    </button>
+                    <button class="btn btn-primary" onclick="counterProposal()">
+                        <span>🔄</span> 还价
+                    </button>
+                    <button class="btn btn-secondary" onclick="requestMoreTime()">
+                        <span>⏰</span> 再考虑
+                    </button>
+                    <button class="btn btn-danger" onclick="endNegotiation()">
+                        <span>❌</span> 终止谈判
+                    </button>
+                </div>
+            </div>
+
+            <div class="tab-content" id="negotiation-history">
+                <div class="log-container" id="negotiationLog" style="max-height: 400px;"></div>
+            </div>
+
+            <div class="tab-content" id="negotiation-analysis">
+                <div id="negotiationAnalysis"></div>
             </div>
         </div>
 
@@ -2509,6 +2871,688 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
 
         function resetAll() {
             location.reload();
+        }
+
+        // ==================== Negotiation Engine ====================
+        const NegotiationEngine = {
+            state: {
+                round: 0,
+                companyOffer: null,
+                candidateExpectation: null,
+                history: [],
+                proposals: [],
+                leverage: null,
+                gapAnalysis: null,
+                stuck: false,
+                breakthroughRound: 0
+            },
+
+            // Initialize negotiation with both parties' positions
+            init(data) {
+                this.state = {
+                    round: 0,
+                    companyOffer: data.companyOffer,
+                    candidateExpectation: data.candidateExpectation,
+                    history: [],
+                    proposals: [],
+                    leverage: data.leverage, // 'company' | 'candidate' | 'equal'
+                    gapAnalysis: null,
+                    stuck: false,
+                    breakthroughRound: 0
+                };
+                this.analyzeGap();
+            },
+
+            // Analyze the gap between offer and expectation
+            analyzeGap() {
+                const offer = this.state.companyOffer;
+                const expect = this.state.candidateExpectation;
+                const gap = {};
+
+                // Calculate gaps
+                gap.salary = ((offer.salary - expect.salary) / expect.salary * 100).toFixed(1);
+                gap.totalAnnual = ((offer.totalAnnual - expect.totalAnnual) / expect.totalAnnual * 100).toFixed(1);
+                gap.signingBonus = offer.signingBonus - expect.signingBonus;
+                gap.equity = offer.equity - expect.equity;
+                gap.vacation = offer.vacationDays - expect.vacationDays;
+                gap.remoteDays = offer.remoteDays - expect.remoteDays;
+
+                // Determine leverage
+                const totalGap = Math.abs(gap.salary) + Math.abs(gap.totalAnnual);
+                if (totalGap > 20) {
+                    this.state.leverage = gap.salary > 0 ? 'candidate' : 'company';
+                } else {
+                    this.state.leverage = 'equal';
+                }
+
+                this.state.gapAnalysis = gap;
+            },
+
+            // Generate creative proposals to bridge the gap
+            generateProposals() {
+                const { companyOffer, candidateExpectation, leverage, gapAnalysis } = this.state;
+                const proposals = [];
+
+                if (leverage === 'candidate') {
+                    // Company needs to sweeten the deal
+                    proposals.push(this.proposalHighSalary());
+                    proposals.push(this.proposalFrontLoad());
+                    proposals.push(this.proposalTotalRewards());
+                    proposals.push(this.proposalCreative());
+                } else if (leverage === 'company') {
+                    // Candidate needs to be grounded
+                    proposals.push(this.proposalPerformanceBased());
+                    proposals.push(this.proposalGraduated());
+                    proposals.push(this.proposalMarketCheck());
+                    proposals.push(this.proposalEquityTrade());
+                } else {
+                    // Equal leverage - find middle ground
+                    proposals.push(this.proposalBalanced());
+                    proposals.push(this.proposalFrontLoad());
+                }
+
+                // Sort by recommended first
+                proposals.sort((a, b) => b.recommended - a.recommended);
+                return proposals;
+            },
+
+            // High base salary proposal
+            proposalHighSalary() {
+                const { companyOffer, candidateExpectation } = this.state;
+                const targetSalary = Math.round((companyOffer.salary + candidateExpectation.salary) / 2 / 1000) * 1000;
+                return {
+                    title: '方案A：提升基础薪资',
+                    summary: `基础月薪调整至¥${targetSalary.toLocaleString()}，接近候选人期望，同时保持其他福利不变`,
+                    changes: [
+                        { label: `月薪`, from: `¥${companyOffer.salary.toLocaleString()}`, to: `¥${targetSalary.toLocaleString()}`, type: 'increase' }
+                    ],
+                    forCompany: '候选人匹配度最高，但成本较高',
+                    forCandidate: '完全满足薪资期望',
+                    recommended: 1,
+                    tag: 'recommended',
+                    victoryFor: 'candidate'
+                };
+            },
+
+            // Front-load compensation
+            proposalFrontLoad() {
+                const { companyOffer } = this.state;
+                const signingBonus = companyOffer.signingBonus + 15000;
+                const targetSalary = Math.round(companyOffer.salary * 1.05 / 1000) * 1000;
+                return {
+                    title: '方案B：前端激励型',
+                    summary: `提高签字费到¥${signingBonus.toLocaleString()}，前6个月月薪¥${targetSalary.toLocaleString()}，之后恢复标准薪资`,
+                    changes: [
+                        { label: `签字费`, from: `¥${companyOffer.signingBonus.toLocaleString()}`, to: `¥${signingBonus.toLocaleString()}`, type: 'new' },
+                        { label: `前6月月薪`, from: `¥${companyOffer.salary.toLocaleString()}`, to: `¥${targetSalary.toLocaleString()}`, type: 'increase' }
+                    ],
+                    forCompany: '总体成本可控，但短期现金流出较高',
+                    forCandidate: '立即获得更多现金',
+                    recommended: 2,
+                    tag: 'alternative',
+                    victoryFor: 'both'
+                };
+            },
+
+            // Total rewards re-framing
+            proposalTotalRewards() {
+                const { companyOffer, candidateExpectation } = this.state;
+                const equity = companyOffer.equity + 3000;
+                const vacation = companyOffer.vacationDays + 3;
+                const targetSalary = Math.round((companyOffer.salary + candidateExpectation.salary) / 2 / 1000) * 1000;
+                return {
+                    title: '方案C：综合福利提升',
+                    summary: `薪资小幅提升至¥${targetSalary.toLocaleString()}，同时增加RSU和年假，体现对人才的重视`,
+                    changes: [
+                        { label: `月薪`, from: `¥${companyOffer.salary.toLocaleString()}`, to: `¥${targetSalary.toLocaleString()}`, type: 'increase' },
+                        { label: `RSU`, from: `${companyOffer.equity}股`, to: `${equity}股`, type: 'increase' },
+                        { label: `年假`, from: `${companyOffer.vacationDays}天`, to: `${vacation}天`, type: 'new' }
+                    ],
+                    forCompany: '用福利代替现金，降低短期成本',
+                    forCandidate: '总包价值提升，长期收益更大',
+                    recommended: 3,
+                    tag: 'alternative',
+                    victoryFor: 'both'
+                };
+            },
+
+            // Creative proposal with unique perks
+            proposalCreative() {
+                const { companyOffer } = this.state;
+                return {
+                    title: '方案D：个性化定制',
+                    summary: `除基础薪资外，提供"成长基金"和"弹性工作升级包"，打造差异化福利组合`,
+                    changes: [
+                        { label: `成长基金`, from: `¥0`, to: `¥20000/年`, type: 'new' },
+                        { label: `远程工作`, from: `${companyOffer.remoteDays}天/周`, to: `${companyOffer.remoteDays + 1}天/周`, type: 'new' },
+                        { label: `学习预算`, from: `¥0`, to: `¥8000/年`, type: 'new' }
+                    ],
+                    forCompany: '成本可控，但展现诚意',
+                    forCandidate: '满足成长需求，而非单纯金钱',
+                    recommended: 4,
+                    tag: 'creative',
+                    victoryFor: 'candidate'
+                };
+            },
+
+            // Performance-based proposal
+            proposalPerformanceBased() {
+                const { companyOffer, candidateExpectation } = this.state;
+                return {
+                    title: '方案A：绩效导向型',
+                    summary: `基础薪资¥${companyOffer.salary.toLocaleString()}，但加入绩效奖金，目标达成后实际年包可达¥${candidateExpectation.salary.toLocaleString()}×14`,
+                    changes: [
+                        { label: `绩效奖金`, from: `0`, to: `¥${(candidateExpectation.salary - companyOffer.salary).toLocaleString()}×季度`, type: 'new' }
+                    ],
+                    forCompany: '风险共担，激励候选人表现',
+                    forCandidate: '高绩效=高收入，但有不确定性',
+                    recommended: 1,
+                    tag: 'recommended',
+                    victoryFor: 'company'
+                };
+            },
+
+            // Graduated increase proposal
+            proposalGraduated() {
+                const { companyOffer, candidateExpectation } = this.state;
+                const midPoint = Math.round((companyOffer.salary + candidateExpectation.salary) / 2 / 1000) * 1000;
+                return {
+                    title: '方案B：阶梯式调薪',
+                    summary: `入职薪资¥${companyOffer.salary.toLocaleString()}，3个月后¥${midPoint.toLocaleString()}，6个月后¥${candidateExpectation.salary.toLocaleString()}`,
+                    changes: [
+                        { label: `入职薪资`, from: `¥${companyOffer.salary.toLocaleString()}`, to: `¥${companyOffer.salary.toLocaleString()}`, type: 'same' },
+                        { label: `3个月后`, from: `¥${companyOffer.salary.toLocaleString()}`, to: `¥${midPoint.toLocaleString()}`, type: 'increase' },
+                        { label: `6个月后`, from: `¥${companyOffer.salary.toLocaleString()}`, to: `¥${candidateExpectation.salary.toLocaleString()}`, type: 'increase' }
+                    ],
+                    forCompany: '分散成本压力，给双方缓冲',
+                    forCandidate: '清晰看到成长路径',
+                    recommended: 2,
+                    tag: 'alternative',
+                    victoryFor: 'both'
+                };
+            },
+
+            // Market data check
+            proposalMarketCheck() {
+                const { companyOffer, candidateExpectation } = this.state;
+                return {
+                    title: '方案C：市场数据参考',
+                    summary: `提供同级别岗位市场薪资报告，显示¥${companyOffer.salary.toLocaleString()}在市场中具有竞争力，但可额外提供签字费补偿`,
+                    changes: [
+                        { label: `签字费`, from: `¥${companyOffer.signingBonus.toLocaleString()}`, to: `¥${(companyOffer.signingBonus + 10000).toLocaleString()}`, type: 'increase' },
+                        { label: `说明`, from: `无数据`, to: `市场薪资报告`, type: 'new' }
+                    ],
+                    forCompany: '数据说话，合理解释薪资差异',
+                    forCandidate: '了解市场行情，增加信任',
+                    recommended: 3,
+                    tag: 'alternative',
+                    victoryFor: 'company'
+                };
+            },
+
+            // Equity vs cash trade
+            proposalEquityTrade() {
+                const { companyOffer, candidateExpectation } = this.state;
+                return {
+                    title: '方案D：股权换现金',
+                    summary: `候选人选择：更高RSU（+5000股）换取薪资维持¥${companyOffer.salary.toLocaleString()}，或更低RSU换取薪资提升至¥${candidateExpectation.salary.toLocaleString()}`,
+                    changes: [
+                        { label: `期权方案A`, from: `${companyOffer.equity}股`, to: `${companyOffer.equity + 5000}股`, type: 'trade' },
+                        { label: `期权方案B`, from: `${companyOffer.equity}股`, to: `${companyOffer.equity - 2000}股`, type: 'trade' }
+                    ],
+                    forCompany: '保留现金成本控制',
+                    forCandidate: '自主选择风险/收益偏好',
+                    recommended: 4,
+                    tag: 'creative',
+                    victoryFor: 'both'
+                };
+            },
+
+            // Balanced middle ground
+            proposalBalanced() {
+                const { companyOffer, candidateExpectation } = this.state;
+                const midSalary = Math.round((companyOffer.salary + candidateExpectation.salary) / 2 / 1000) * 1000;
+                return {
+                    title: '方案A：平衡方案',
+                    summary: `薪资调整至¥${midSalary.toLocaleString()}（双方各让步50%），签字费增加¥5000表示诚意`,
+                    changes: [
+                        { label: `月薪`, from: `¥${companyOffer.salary.toLocaleString()}`, to: `¥${midSalary.toLocaleString()}`, type: 'trade' },
+                        { label: `签字费`, from: `¥${companyOffer.signingBonus.toLocaleString()}`, to: `¥${(companyOffer.signingBonus + 5000).toLocaleString()}`, type: 'increase' }
+                    ],
+                    forCompany: '合理成本范围内的最优方案',
+                    forCandidate: '接近期望，显示公司诚意',
+                    recommended: 1,
+                    tag: 'recommended',
+                    victoryFor: 'both'
+                };
+            },
+
+            // Generate agent mediator message
+            generateMediatorMessage() {
+                const { leverage, round, stuck } = this.state;
+                const messages = {
+                    company: {
+                        opening: `我与候选人深入沟通后了解到，<em>他们对成长空间和团队文化非常看重</em>，这可能比纯粹的数字更关键。`,
+                        stuck: `目前双方确实存在一定差距。但我想指出一个关键点：<em>候选人在面试中表现出的技术能力和问题解决能力非常突出</em>，这种人才能给团队带来的价值可能远超当前的薪资差距。`,
+                        breakthrough: `我有个想法：与其在月薪上僵持，不如<em>用综合福利方案来弥补差距</em>。这样公司控制住了成本，候选人也得到了他们真正看重的东西。`
+                    },
+                    candidate: {
+                        opening: `我跟招聘团队聊了，他们对您的加入<em>非常期待</em>。但坦白说，目前的薪资包已经是<em>在预算范围内能给到的最优方案</em>了。`,
+                        stuck: `理解您对薪资的期望。让我帮您分析一下：您目前的期望比市场同级别岗位高出约<em>18%</em>。当然，您的技术栈确实很匹配，但如果我们过分偏离市场定位，后续也可能会遇到内部公平性的问题。`,
+                        breakthrough: `我有个建议供您参考：<em>总包价值</em>可能比月薪更重要。比如我们把签字费提高、增加RSU、或者提供更多年假，这些对您来说是实实在在的价值，但公司的现金成本压力会小很多。`
+                    },
+                    equal: {
+                        opening: `好消息是双方诉求其实<em>并没有那么大差距</em>，核心分歧主要在几个关键点上。`,
+                        stuck: `让我来帮双方算一笔账：如果我们把视角放到<em>12个月的总回报</em>，实际上差距只有约8%，完全在可协商范围内。`,
+                        breakthrough: `我觉得现在已经到了一个<em>很接近达成一致的点</em>。不如我们各退一步，找一个双方都能接受的中间方案，这样大家都能体面地结束这场谈判。`
+                    }
+                };
+
+                if (stuck && round >= 2) {
+                    return messages[leverage].breakthrough;
+                } else if (round >= 1) {
+                    return messages[leverage].stuck;
+                }
+                return messages[leverage].opening;
+            },
+
+            // Process counter offer
+            processCounter(counter) {
+                this.state.round++;
+                this.state.history.push({
+                    round: this.state.round,
+                    companyOffer: { ...this.state.companyOffer },
+                    counter: counter,
+                    timestamp: new Date().toISOString()
+                });
+
+                // Adjust based on counter
+                const adjustment = this.calculateAdjustment(counter);
+                this.state.companyOffer.salary += adjustment;
+
+                // Check if stuck
+                const gap = Math.abs(this.state.companyOffer.salary - this.state.candidateExpectation.salary);
+                if (gap < 2000 || this.state.round >= 4) {
+                    this.state.stuck = true;
+                }
+
+                return {
+                    round: this.state.round,
+                    stuck: this.state.stuck,
+                    newOffer: this.state.companyOffer
+                };
+            },
+
+            calculateAdjustment(counter) {
+                // Simulate realistic negotiation dynamics
+                if (counter.aggressive) {
+                    return -1000;
+                } else if (counter.reasonable) {
+                    return 500;
+                } else if (counter.accepting) {
+                    return 0;
+                }
+                return 0;
+            }
+        };
+
+        // Global negotiation state
+        let negotiationState = {
+            active: false,
+            round: 0,
+            proposals: [],
+            selectedProposal: null,
+            counterOffers: []
+        };
+
+        // Start negotiation flow
+        async function startNegotiation() {
+            negotiationState.active = true;
+            negotiationState.round = 0;
+
+            // Initialize engine with mock data
+            NegotiationEngine.init({
+                companyOffer: {
+                    salary: 42000,
+                    signingBonus: 20000,
+                    equity: 5000,
+                    vacationDays: 12,
+                    remoteDays: 2,
+                    totalAnnual: 560000
+                },
+                candidateExpectation: {
+                    salary: 48000,
+                    signingBonus: 30000,
+                    equity: 5000,
+                    vacationDays: 15,
+                    remoteDays: 3,
+                    totalAnnual: 680000
+                },
+                leverage: 'candidate'
+            });
+
+            // Show negotiation panel
+            document.getElementById('negotiationSection').style.display = 'block';
+            document.getElementById('offerSection').style.display = 'none';
+
+            // Add to timeline
+            addLog('Recruiter', 'info', '候选人期望薪资¥48000，公司Offer ¥42000，启动薪资谈判...');
+            addTimeline('System', '薪资谈判环节启动', 'warning');
+            showToast('🤝 进入薪资谈判环节', 'info');
+
+            // Simulate agent processing
+            await sleep(2000);
+
+            // Generate and display proposals
+            negotiationState.proposals = NegotiationEngine.generateProposals();
+            negotiationState.round = 1;
+
+            // Agent mediator message
+            addLog('HR Agent', 'info', '正在分析双方诉求，准备调解方案...');
+            await sleep(1500);
+            addLog('HR Agent', 'success', NegotiationEngine.generateMediatorMessage().replace(/<[^>]*>/g, ''));
+
+            // Display everything
+            displayGapAnalysis();
+            displayOfferComparison();
+            displayAgentProposals();
+            displayNegotiationLog();
+        }
+
+        function displayGapAnalysis() {
+            const gap = NegotiationEngine.state.gapAnalysis;
+            const leverage = NegotiationEngine.state.leverage;
+            const leverageText = {
+                company: '公司主导 💼',
+                candidate: '候选人主导 🎯',
+                equal: '双方均衡 ⚖️'
+            };
+
+            document.getElementById('gapAnalysis').innerHTML = `
+                <div style="margin-bottom: 16px; text-align: center;">
+                    <span class="gap-indicator ${leverage === 'candidate' ? 'positive' : leverage === 'company' ? 'negative' : 'neutral'}">
+                        ${leverageText[leverage]}
+                    </span>
+                </div>
+                <div class="negotiation-gauge">
+                    <span class="gauge-label">月薪差距</span>
+                    <div class="gauge-bar">
+                        <div class="gauge-fill ${parseFloat(gap.salary) >= 0 ? 'bg-green' : 'bg-red'}"
+                             style="width: ${Math.min(100, Math.abs(parseFloat(gap.salary)))}%; background: ${parseFloat(gap.salary) >= 0 ? 'var(--accent-green)' : 'var(--accent-red)}"></div>
+                    </div>
+                    <span class="gauge-value" style="color: ${parseFloat(gap.salary) >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">${gap.salary}%</span>
+                </div>
+                <div class="negotiation-gauge">
+                    <span class="gauge-label">年薪差距</span>
+                    <div class="gauge-bar">
+                        <div class="gauge-fill"
+                             style="width: ${Math.min(100, Math.abs(parseFloat(gap.totalAnnual)))}%; background: ${parseFloat(gap.totalAnnual) >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}"></div>
+                    </div>
+                    <span class="gauge-value" style="color: ${parseFloat(gap.totalAnnual) >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">${gap.totalAnnual}%</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px;">
+                    <div class="package-item">
+                        <span style="font-size: 12px; color: var(--text-secondary);">签字费差距</span>
+                        <span style="color: ${gap.signingBonus >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">¥${Math.abs(gap.signingBonus).toLocaleString()}</span>
+                    </div>
+                    <div class="package-item">
+                        <span style="font-size: 12px; color: var(--text-secondary);">年假差距</span>
+                        <span style="color: ${gap.vacation >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'}">${gap.vacation}天</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayOfferComparison() {
+            const offer = NegotiationEngine.state.companyOffer;
+            const expect = NegotiationEngine.state.candidateExpectation;
+
+            document.getElementById('offerComparison').innerHTML = `
+                <div class="package-breakdown">
+                    <div class="package-item current">
+                        <div>
+                            <div style="font-size: 11px; color: var(--accent-blue); margin-bottom: 4px;">当前Offer</div>
+                            <div style="font-size: 18px; font-weight: 700;">¥${offer.salary.toLocaleString()}/月</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">年薪约¥${offer.totalAnnual.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--text-secondary);">⟷</div>
+                    <div class="package-item proposed">
+                        <div>
+                            <div style="font-size: 11px; color: var(--accent-green); margin-bottom: 4px;">候选人期望</div>
+                            <div style="font-size: 18px; font-weight: 700;">¥${expect.salary.toLocaleString()}/月</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">年薪约¥${expect.totalAnnual.toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: center; padding: 16px; background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-top: 16px;">
+                    <div style="font-size: 13px; color: var(--text-secondary);">
+                        💡 核心差距：月薪 <strong style="color: var(--accent-orange)">¥${(expect.salary - offer.salary).toLocaleString()}</strong>
+                        年包差距约 <strong style="color: var(--accent-orange)">¥${((expect.totalAnnual - offer.totalAnnual) / 10000).toFixed(1)}万</strong>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayAgentProposals() {
+            const proposals = negotiationState.proposals;
+
+            document.getElementById('agentProposals').innerHTML = `
+                <div class="agent-message">
+                    <div class="agent-message-header">
+                        <span>🎯</span> HR Agent 智能调解
+                    </div>
+                    <div class="agent-message-body">
+                        ${NegotiationEngine.generateMediatorMessage()}
+                    </div>
+                </div>
+
+                ${proposals.map((p, i) => `
+                    <div class="proposal-card ${i === 0 ? 'selected' : ''}" onclick="selectProposal(${i})">
+                        <div class="proposal-header">
+                            <div class="proposal-title">
+                                <span class="round-badge">${i + 1}</span>
+                                ${p.title}
+                                <span class="proposal-tag ${p.tag}">${p.tag === 'recommended' ? '推荐' : p.tag === 'alternative' ? '备选' : '创意'}</span>
+                            </div>
+                        </div>
+                        <div class="proposal-summary">${p.summary}</div>
+                        <div class="proposal-changes">
+                            ${p.changes.map(c => `
+                                <span class="change-tag ${c.type}">${c.label}: ${c.from} → ${c.to}</span>
+                            `).join('')}
+                        </div>
+                        <div style="margin-top: 12px; font-size: 11px; color: var(--text-secondary);">
+                            <div>🏢 对公司: ${p.forCompany}</div>
+                            <div>👤 对候选人: ${p.forCandidate}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function displayNegotiationLog() {
+            const log = document.getElementById('negotiationLog');
+            const history = NegotiationEngine.state.history;
+
+            if (history.length === 0) {
+                log.innerHTML = `
+                    <div class="log-entry info">
+                        <span class="log-time">${getTimestamp()}</span>
+                        <span class="log-agent system">HR Agent</span>
+                        <span class="log-message">谈判开始，双方进入协商阶段...</span>
+                    </div>
+                `;
+                return;
+            }
+
+            log.innerHTML = history.map(h => `
+                <div class="log-entry ${h.counter ? 'warning' : 'info'}">
+                    <span class="log-time">${new Date(h.timestamp).toTimeString().split(' ')[0]}</span>
+                    <span class="log-agent recruiter">Recruiter</span>
+                    <span class="log-message">第${h.round}轮: ${h.counter ? `收到还价 ¥${h.counter.salary?.toLocaleString()}` : '发出Offer'}</span>
+                </div>
+            `).join('');
+        }
+
+        function selectProposal(index) {
+            negotiationState.selectedProposal = negotiationState.proposals[index];
+            document.querySelectorAll('.proposal-card').forEach((card, i) => {
+                card.classList.toggle('selected', i === index);
+            });
+            showToast(`已选择方案${['A', 'B', 'C', 'D'][index]}`, 'info');
+        }
+
+        async function acceptProposal(index) {
+            const proposal = negotiationState.proposals[index] || negotiationState.selectedProposal;
+            if (!proposal) {
+                showToast('请先选择一个方案', 'warning');
+                return;
+            }
+
+            addLog('HR Agent', 'success', `双方达成一致！采用${proposal.title}`);
+            addTimeline('System', `薪资谈判完成 - 达成<strong>${proposal.title}</strong>`, 'success');
+
+            // Show victory message
+            document.getElementById('negotiationSection').style.display = 'none';
+
+            const victoryHTML = `
+                <div class="victory-message">
+                    <div class="victory-title">🎉 谈判成功！</div>
+                    <p>双方达成一致，采用<b>${proposal.title}</b></p>
+                    <p style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">
+                        ${proposal.summary}
+                    </p>
+                </div>
+            `;
+
+            document.getElementById('offerSection').style.display = 'block';
+            document.getElementById('offerDetails').innerHTML = `
+                ${victoryHTML}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>最终月薪</label>
+                        <input type="text" value="${proposal.changes.find(c => c.label === '月薪')?.to || '待确认'}" readonly>
+                    </div>
+                    ${proposal.changes.find(c => c.label === '签字费') ? `
+                    <div class="form-group">
+                        <label>签字费</label>
+                        <input type="text" value="${proposal.changes.find(c => c.label === '签字费')?.to}" readonly>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-success btn-block" onclick="acceptOffer()">
+                        <span>✅</span> 确认并接受Offer
+                    </button>
+                </div>
+            `;
+
+            showToast('谈判成功！请确认最终Offer', 'success');
+            negotiationState.active = false;
+        }
+
+        async function counterProposal() {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('modalTitle').textContent = '还价详情';
+            document.getElementById('modalBody').innerHTML = `
+                <div class="counter-offer-form">
+                    <div class="counter-form-title">请选择还价策略：</div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-dark); border-radius: 8px; cursor: pointer;">
+                            <input type="radio" name="counterType" value="reasonable" checked>
+                            <div>
+                                <div style="font-weight: 600;">🤝 合理还价</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">要求小幅提升，显示诚意</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-dark); border-radius: 8px; cursor: pointer;">
+                            <input type="radio" name="counterType" value="aggressive">
+                            <div>
+                                <div style="font-weight: 600;">🎯 激进还价</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">坚持理想薪资，不轻易让步</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-dark); border-radius: 8px; cursor: pointer;">
+                            <input type="radio" name="counterType" value="accepting">
+                            <div>
+                                <div style="font-weight: 600;">✅ 接受当前</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">对当前方案满意，接受谈判结果</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            `;
+            modal.classList.add('active');
+
+            // Override confirm button
+            document.getElementById('modalConfirmBtn').onclick = async () => {
+                const counterType = document.querySelector('input[name="counterType"]:checked').value;
+                closeModal();
+
+                // Simulate agent processing
+                addLog('Candidate', 'info', `发出还价请求: ${counterType === 'reasonable' ? '合理还价' : counterType === 'aggressive' ? '坚持期望' : '接受当前方案'}`);
+                showToast('正在处理还价...', 'info');
+                await sleep(2000);
+
+                if (counterType === 'accepting') {
+                    acceptProposal(0);
+                    return;
+                }
+
+                // Process counter and regenerate proposals
+                const result = NegotiationEngine.processCounter({
+                    aggressive: counterType === 'aggressive',
+                    reasonable: counterType === 'reasonable'
+                });
+
+                negotiationState.round = result.round;
+                negotiationState.proposals = NegotiationEngine.generateProposals();
+
+                addLog('HR Agent', 'info', `收到还价，进入第${result.round}轮调解...`);
+                await sleep(1500);
+                addLog('HR Agent', 'success', NegotiationEngine.generateMediatorMessage().replace(/<[^>]*>/g, ''));
+
+                displayGapAnalysis();
+                displayOfferComparison();
+                displayAgentProposals();
+                displayNegotiationLog();
+
+                if (result.stuck) {
+                    addLog('HR Agent', 'warning', '双方诉求差距已大幅缩小，建议接受当前最优方案');
+                    showToast('建议接受最优方案以达成一致', 'warning');
+                }
+            };
+        }
+
+        async function requestMoreTime() {
+            addLog('HR Agent', 'info', '候选人表示需要时间考虑，约定24小时内回复...');
+            showToast('已记录，24小时后自动提醒', 'info');
+
+            // Simulate follow-up
+            await sleep(3000);
+            addLog('HR Agent', 'info', '💡 小提示：研究表明，在薪资谈判后24小时内跟进，成功率提高约35%');
+            showToast('Agent建议：主动一点往往效果更好 😊', 'success');
+        }
+
+        function endNegotiation() {
+            showModal(
+                '终止谈判',
+                '<p>确定要终止薪资谈判吗？这可能导致候选人流失。</p>',
+                () => {
+                    addLog('System', 'error', '薪资谈判终止');
+                    addTimeline('System', '薪资谈判<strong>终止</strong>', 'error');
+                    document.getElementById('negotiationSection').style.display = 'none';
+                    showToast('谈判已终止', 'error');
+                    negotiationState.active = false;
+                    closeModal();
+                }
+            );
+        }
+
+        // Update the negotiateOffer function
+        function negotiateOffer() {
+            startNegotiation();
         }
 
         // Initialize
