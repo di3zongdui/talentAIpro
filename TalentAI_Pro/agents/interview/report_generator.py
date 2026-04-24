@@ -10,7 +10,6 @@ from datetime import datetime
 import json
 
 from .evaluation_engine import InterviewEvaluation, QuestionEvaluation
-from . import EVALUATION_DIMENSIONS
 
 
 @dataclass

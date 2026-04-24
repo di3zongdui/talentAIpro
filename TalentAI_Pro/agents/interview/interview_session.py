@@ -11,10 +11,14 @@ from enum import Enum
 import uuid
 import json
 
-from . import InterviewState
-from .question_generator import StructuredQuestions
-from .evaluation_engine import InterviewEvaluation, QuestionEvaluation, EvaluationEngine
-from .report_generator import ReportGenerator, InterviewReport
+
+class InterviewState:
+    """面试状态枚举"""
+    CREATED = "created"
+    QUESTIONS_GENERATED = "questions_generated"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
 
 
 class InterviewType(Enum):
@@ -43,18 +47,18 @@ class InterviewSession:
     state: InterviewState = InterviewState.CREATED
 
     # 问题
-    questions: Optional[StructuredQuestions] = None
+    questions: Optional['StructuredQuestions'] = None
     current_question_index: int = 0
 
     # 回答
     answers: Dict[str, str] = field(default_factory=dict)  # question_id -> answer
 
     # 评估
-    evaluations: List[QuestionEvaluation] = field(default_factory=list)
-    final_evaluation: Optional[InterviewEvaluation] = None
+    evaluations: List['QuestionEvaluation'] = field(default_factory=list)
+    final_evaluation: Optional['InterviewEvaluation'] = None
 
     # 报告
-    report: Optional[InterviewReport] = None
+    report: Optional['InterviewReport'] = None
 
     # 元数据
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
@@ -141,7 +145,7 @@ class InterviewSessionManager:
     def set_questions(
         self,
         session_id: str,
-        questions: StructuredQuestions
+        questions: 'StructuredQuestions'
     ) -> InterviewSession:
         """设置面试问题"""
         session = self.sessions.get(session_id)
@@ -233,7 +237,7 @@ class InterviewSessionManager:
 
         return None
 
-    def complete_interview(self, session_id: str) -> InterviewReport:
+    def complete_interview(self, session_id: str) -> 'InterviewReport':
         """完成面试并生成报告"""
         session = self.sessions.get(session_id)
         if not session:

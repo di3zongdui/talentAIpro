@@ -940,12 +940,12 @@
                 potential: potentialScore.toFixed(1),
                 overall: overall.toFixed(1),
                 recommendation: overall >= 4.0 ? '强烈推荐' : overall >= 3.5 ? '推荐' : overall >= 3.0 ? '可以考虑' : '谨慎考虑',
-                report: generateReport(technicalScore, problemScore, communicationScore, cultureScore, potentialScore)
+                report: generateReport(technicalScore, problemScore, communicationScore, cultureScore, potentialScore, overall)
             };
         }
 
         // Generate report
-        function generateReport(tech, problem, comm, culture, potential) {
+        function generateReport(tech, problem, comm, culture, potential, overall) {
             const candidate = document.getElementById('candidate-name').value;
             const job = document.getElementById('job-title').value;
 

@@ -188,7 +188,7 @@ class InterviewPreparer:
                     "example": "我首先分析了现有系统的瓶颈，然后设计了新的数据库架构，使用Redis缓存来提升性能...",
                     "tips": [
                         "重点描述你的贡献",
-                        "使用'action verbs'(设计、开发、优化)',
+                        "使用 action verbs (设计、开发、优化)",
                         "展示你的技术能力",
                     ],
                 },

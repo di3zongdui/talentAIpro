@@ -8,7 +8,44 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 
-from . import EVALUATION_DIMENSIONS, RECOMMENDATION_LEVELS
+
+# Evaluation dimensions definition
+EVALUATION_DIMENSIONS = {
+    "technical_depth": {
+        "name": "Technical Depth",
+        "weight": 0.30,
+        "levels": {1: "Basic", 2: "Competent", 3: "Proficient", 4: "Advanced", 5: "Expert"}
+    },
+    "problem_solving": {
+        "name": "Problem Solving",
+        "weight": 0.25,
+        "levels": {1: "Needs guidance", 2: "Can solve common", 3: "Independent", 4: "Complex problems", 5: "Unknown domains"}
+    },
+    "communication": {
+        "name": "Communication",
+        "weight": 0.20,
+        "levels": {1: "Confused", 2: "Basic", 3: "Clear", 4: "Fluent", 5: "Exceptional"}
+    },
+    "culture_fit": {
+        "name": "Culture Fit",
+        "weight": 0.15,
+        "levels": {1: "Poor fit", 2: "Basic", 3: "Good fit", 4: "Great fit", 5: "Perfect"}
+    },
+    "growth_potential": {
+        "name": "Growth Potential",
+        "weight": 0.10,
+        "levels": {1: "Limited", 2: "Some space", 3: "Good", 4: "Great", 5: "Unlimited"}
+    }
+}
+
+# Recommendation levels
+RECOMMENDATION_LEVELS = {
+    (4.5, 5.0): "Strong Recommend",
+    (4.0, 4.5): "Recommend",
+    (3.5, 4.0): "Consider",
+    (3.0, 3.5): "Proceed with Caution",
+    (0.0, 3.0): "Not Recommend"
+}
 
 
 class AnswerQuality(Enum):

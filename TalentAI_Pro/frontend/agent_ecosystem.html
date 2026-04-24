@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Ecosystem - TalentAI Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d9ff, #00ff88, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(90deg, #00d9ff, #00b4d8);
+            color: #1a1a2e;
+            border-color: transparent;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2.recruiter { color: #00d9ff; }
+        .card h2.candidate { color: #00ff88; }
+        .card h2.interview { color: #ff6b9d; }
+        .card h2.workflow { color: #ffc107; }
+
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 15px rgba(0,217,255,0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d9ff, #00b4d8);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,217,255,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(90deg, #00ff88, #00d9ff);
+            color: #1a1a2e;
+        }
+
+        .btn-warning {
+            background: linear-gradient(90deg, #ffc107, #ff9800);
+            color: #1a1a2e;
+        }
+
+        .btn-danger {
+            background: linear-gradient(90deg, #ff6b9d, #ff5252);
+            color: #fff;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        /* Results */
+        .results {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .results h3 {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: #00d9ff;
+        }
+
+        .result-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid #00d9ff;
+        }
+
+        .result-item.success { border-left-color: #00ff88; }
+        .result-item.warning { border-left-color: #ffc107; }
+        .result-item.error { border-left-color: #ff6b9d; }
+
+        .result-item pre {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Workflow Diagram */
+        .workflow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 40px 20px;
+            flex-wrap: wrap;
+        }
+
+        .workflow-step {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            min-width: 150px;
+        }
+
+        .workflow-step .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .workflow-step .title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .workflow-step .desc {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .workflow-arrow {
+            font-size: 2rem;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* Status Badge */
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status.pending { background: rgba(255,193,7,0.2); color: #ffc107; }
+        .status.running { background: rgba(0,217,255,0.2); color: #00d9ff; }
+        .status.success { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .status.error { background: rgba(255,107,157,0.2); color: #ff6b9d; }
+
+        /* Section visibility */
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 14px 20px;
+            background: rgba(0,255,136,0.9);
+            color: #1a1a2e;
+            border-radius: 8px;
+            font-weight: 600;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.error { background: rgba(255,107,157,0.9); color: #fff; }
+
+        /* Tabs Content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top-color: #00d9ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Agent Status Grid */
+        .agent-status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .agent-status-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .agent-status-card .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .agent-status-card .name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .agent-status-card .status {
+            margin-top: 8px;
+        }
+
+        /* Log */
+        .log-container {
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .log-entry .time {
+            color: rgba(255,255,255,0.4);
+            margin-right: 10px;
+        }
+
+        .log-entry.recruiter { color: #00d9ff; }
+        .log-entry.candidate { color: #00ff88; }
+        .log-entry.interview { color: #ff6b9d; }
+        .log-entry.system { color: #ffc107; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8rem; }
+            .workflow-container { flex-direction: column; }
+            .workflow-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 TalentAI Pro - Agent Ecosystem</h1>
+            <p>多Agent招聘系统演示</p>
+        </div>
+
+        <!-- Agent Status -->
+        <div class="agent-status-grid">
+            <div class="agent-status-card">
+                <div class="icon">👤</div>
+                <div class="name">Recruiter Agent</div>
+                <div class="desc">HR/猎头代理</div>
+                <span class="status success" id="recruiter-status">就绪</span>
+            </div>
+            <div class="agent-status-card">
+                <div class="icon">👤</div>
+                <div class="name">Candidate Agent</div>
+                <div class="desc">求职者代理</div>
+                <span class="status success" id="candidate-status">就绪</span>
+            </div>
+            <div class="agent-status-card">
+                <div class="icon">🤖</div>
+                <div class="name">Interview Agent</div>
+                <div class="desc">面试官代理</div>
+                <span class="status success" id="interview-status">就绪</span>
+            </div>
+            <div class="agent-status-card">
+                <div class="icon">🔗</div>
+                <div class="name">Coordinator</div>
+                <div class="desc">协调器</div>
+                <span class="status success" id="coordinator-status">就绪</span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('workflow')">🔄 工作流</button>
+            <button class="nav-tab" onclick="switchTab('recruiter')">👤 Recruiter</button>
+            <button class="nav-tab" onclick="switchTab('candidate')">👤 Candidate</button>
+            <button class="nav-tab" onclick="switchTab('interview')">🤖 Interview</button>
+            <button class="nav-tab" onclick="switchTab('logs')">📋 运行日志</button>
+        </div>
+
+        <!-- Workflow Section -->
+        <div id="workflow" class="tab-content active">
+            <div class="card">
+                <h2 class="workflow">🔄 完整招聘工作流</h2>
+
+                <div class="workflow-container">
+                    <div class="workflow-step">
+                        <div class="icon">📝</div>
+                        <div class="title">Recruiter</div>
+                        <div class="desc">创建招聘需求</div>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="icon">🔍</div>
+                        <div class="title">匹配</div>
+                        <div class="desc">搜索候选人</div>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="icon">📄</div>
+                        <div class="title">筛选</div>
+                        <div class="desc">简历评估</div>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="icon">🤖</div>
+                        <div class="title">面试</div>
+                        <div class="desc">AI面试</div>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="icon">💰</div>
+                        <div class="title">Offer</div>
+                        <div class="desc">谈判与接收</div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="runFullWorkflow()">
+                        ▶️ 运行完整工作流
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetWorkflow()">
+                        🔄 重置
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="workflow">📊 工作流状态</h2>
+                <div id="workflow-status" class="results">
+                    <p style="color: rgba(255,255,255,0.5);">点击"运行完整工作流"开始演示...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recruiter Section -->
+        <div id="recruiter" class="tab-content">
+            <div class="card">
+                <h2 class="recruiter">👤 Recruiter Agent - 创建招聘需求</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>职位名称</label>
+                        <input type="text" id="req-title" value="高级Python工程师" placeholder="职位名称">
+                    </div>
+                    <div class="form-group">
+                        <label>部门</label>
+                        <input type="text" id="req-department" value="技术部" placeholder="部门">
+                    </div>
+                    <div class="form-group">
+                        <label>技能要求 (逗号分隔)</label>
+                        <input type="text" id="req-skills" value="Python, FastAPI, PostgreSQL" placeholder="技能">
+                    </div>
+                    <div class="form-group">
+                        <label>薪资范围</label>
+                        <select id="req-level">
+                            <option value="junior">初级 (20-30K)</option>
+                            <option value="mid" selected>中级 (30-45K)</option>
+                            <option value="senior">高级 (45-60K)</option>
+                            <option value="lead">专家 (60K+)</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>职位描述</label>
+                        <textarea id="req-description" placeholder="职位描述...">负责后端系统设计与开发
+主导技术方案设计与实现
+指导初级工程师
+参与技术架构优化</textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="createRequisition()">
+                        ➕ 创建需求
+                    </button>
+                    <button class="btn btn-secondary" onclick="searchCandidates()">
+                        🔍 搜索候选人
+                    </button>
+                    <button class="btn btn-warning" onclick="screenCandidates()">
+                        📄 筛选简历
+                    </button>
+                </div>
+                <div id="recruiter-results" class="results" style="display:none;">
+                    <h3>执行结果</h3>
+                    <div id="recruiter-log"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="recruiter">📋 招聘需求列表</h2>
+                <div id="requisition-list">
+                    <p style="color: rgba(255,255,255,0.5);">暂无招聘需求</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Candidate Section -->
+        <div id="candidate" class="tab-content">
+            <div class="card">
+                <h2 class="candidate">👤 Candidate Agent - 个人资料</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>姓名</label>
+                        <input type="text" id="cand-name" value="李明" placeholder="姓名">
+                    </div>
+                    <div class="form-group">
+                        <label>当前职位</label>
+                        <input type="text" id="cand-title" value="中级Python工程师" placeholder="职位">
+                    </div>
+                    <div class="form-group">
+                        <label>工作年限</label>
+                        <input type="number" id="cand-years" value="5" min="0" max="30">
+                    </div>
+                    <div class="form-group">
+                        <label>期望薪资</label>
+                        <input type="number" id="cand-salary" value="40000">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>技能 (逗号分隔)</label>
+                        <input type="text" id="cand-skills" value="Python, FastAPI, PostgreSQL, Redis, Docker">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>偏好设置</label>
+                        <textarea id="cand-preferences" placeholder="偏好...">{
+    "remote_flexible": true,
+    "locations": ["北京", "上海"],
+    "work_life_balance": "high"
+}</textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="setupCandidate()">
+                        ✅ 设置资料
+                    </button>
+                    <button class="btn btn-primary" onclick="searchJobs()">
+                        🔍 搜索职位
+                    </button>
+                    <button class="btn btn-secondary" onclick="applyToJobs()">
+                        📤 投递职位
+                    </button>
+                    <button class="btn btn-warning" onclick="prepareInterview()">
+                        📚 面试准备
+                    </button>
+                </div>
+                <div id="candidate-results" class="results" style="display:none;">
+                    <h3>执行结果</h3>
+                    <div id="candidate-log"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="candidate">💼 求职状态</h2>
+                <div id="candidate-status-panel">
+                    <p style="color: rgba(255,255,255,0.5);">请先设置个人资料</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interview Section -->
+        <div id="interview" class="tab-content">
+            <div class="card">
+                <h2 class="interview">🤖 Interview Agent - 发起面试</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>候选人</label>
+                        <input type="text" id="int-candidate" value="李明" placeholder="候选人">
+                    </div>
+                    <div class="form-group">
+                        <label>职位</label>
+                        <input type="text" id="int-position" value="高级Python工程师" placeholder="职位">
+                    </div>
+                    <div class="form-group">
+                        <label>面试时长</label>
+                        <select id="int-duration">
+                            <option value="30">30分钟</option>
+                            <option value="45" selected>45分钟</option>
+                            <option value="60">60分钟</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>问题数量</label>
+                        <select id="int-count">
+                            <option value="3">3题</option>
+                            <option value="5" selected>5题</option>
+                            <option value="8">8题</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="startInterview()">
+                        🚀 开始面试
+                    </button>
+                    <button class="btn btn-secondary" onclick="viewInterviewReport()">
+                        📊 查看报告
+                    </button>
+                </div>
+                <div id="interview-results" class="results" style="display:none;">
+                    <h3>面试状态</h3>
+                    <div id="interview-log"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="interview">📝 面试问题预览</h2>
+                <div id="question-preview">
+                    <p style="color: rgba(255,255,255,0.5);">点击"开始面试"生成问题</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div id="logs" class="tab-content">
+            <div class="card">
+                <h2 class="workflow">📋 运行日志</h2>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="clearLogs()">
+                        🗑️ 清空日志
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportLogs()">
+                        📥 导出日志
+                    </button>
+                </div>
+                <div id="log-container" class="log-container">
+                    <div class="log-entry system">
+                        <span class="time">[--:--:--]</span>
+                        系统就绪，等待操作...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // ==================== State ====================
+        const state = {
+            requisitions: [],
+            candidates: [],
+            interviews: [],
+            jobs: [],
+            applications: [],
+            logs: []
+        };
+
+        // ==================== Tab Navigation ====================
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            document.querySelector(`.nav-tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // ==================== Logging ====================
+        function log(message, type = 'system') {
+            const time = new Date().toLocaleTimeString('zh-CN');
+            const entry = { time, message, type };
+            state.logs.push(entry);
+
+            const container = document.getElementById('log-container');
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.innerHTML = `<span class="time">[${time}]</span> ${message}`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearLogs() {
+            state.logs = [];
+            document.getElementById('log-container').innerHTML = '';
+            log('日志已清空', 'system');
+        }
+
+        function exportLogs() {
+            const text = state.logs.map(l => `[${l.time}] [${l.type}] ${l.message}`).join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('日志已复制到剪贴板');
+            });
+        }
+
+        // ==================== Toast ====================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ==================== Recruiter Agent ====================
+        function createRequisition() {
+            log('Recruiter Agent: 创建招聘需求...', 'recruiter');
+
+            const title = document.getElementById('req-title').value;
+            const department = document.getElementById('req-department').value;
+            const skills = document.getElementById('req-skills').value.split(',').map(s => s.trim());
+            const level = document.getElementById('req-level').value;
+            const description = document.getElementById('req-description').value;
+
+            const salaryRanges = {
+                junior: { min: 20000, max: 30000 },
+                mid: { min: 30000, max: 45000 },
+                senior: { min: 45000, max: 60000 },
+                lead: { min: 60000, max: 100000 }
+            };
+
+            const req = {
+                id: `REQ-${Date.now()}`,
+                title,
+                department,
+                skills,
+                level,
+                salary_range: salaryRanges[level],
+                description,
+                status: 'open',
+                created_at: new Date().toISOString()
+            };
+
+            state.requisitions.push(req);
+
+            log(`✅ 招聘需求创建成功: ${req.id}`, 'recruiter');
+            log(`   职位: ${title}`, 'recruiter');
+            log(`   薪资: ${req.salary_range.min/1000}K - ${req.salary_range.max/1000}K`, 'recruiter');
+
+            updateRequisitionList();
+            showResults('recruiter', req, '创建成功');
+        }
+
+        function updateRequisitionList() {
+            const container = document.getElementById('requisition-list');
+            if (state.requisitions.length === 0) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.5);">暂无招聘需求</p>';
+                return;
+            }
+
+            container.innerHTML = state.requisitions.map(req => `
+                <div class="result-item ${req.status === 'open' ? 'success' : ''}">
+                    <strong>${req.title}</strong> (${req.id})
+                    <br>
+                    <small>部门: ${req.department} | 技能: ${req.skills.join(', ')}</small>
+                    <br>
+                    <span class="status ${req.status === 'open' ? 'running' : 'pending'}">${req.status === 'open' ? '招聘中' : req.status}</span>
+                </div>
+            `).join('');
+        }
+
+        function searchCandidates() {
+            log('Recruiter Agent: 搜索候选人...', 'recruiter');
+            showStatus('recruiter-status', 'running', '搜索中');
+
+            setTimeout(() => {
+                const mockCandidates = [
+                    { id: 'C001', name: '李明', skills: ['Python', 'FastAPI'], experience: 5 },
+                    { id: 'C002', name: '王芳', skills: ['Python', 'Django'], experience: 6 },
+                    { id: 'C003', name: '张伟', skills: ['Python', 'PostgreSQL', 'Redis'], experience: 4 },
+                ];
+
+                state.candidates = mockCandidates;
+                log(`✅ 找到 ${mockCandidates.length} 位候选人`, 'recruiter');
+
+                mockCandidates.forEach(c => {
+                    log(`   - ${c.name}: ${c.skills.join(', ')} (${c.experience}年)`, 'recruiter');
+                });
+
+                showStatus('recruiter-status', 'success', '就绪');
+                showResults('recruiter', mockCandidates, '搜索结果');
+            }, 1000);
+        }
+
+        function screenCandidates() {
+            log('Recruiter Agent: 筛选简历...', 'recruiter');
+
+            if (state.candidates.length === 0) {
+                log('⚠️ 请先搜索候选人', 'recruiter');
+                return;
+            }
+
+            const screened = state.candidates.map(c => ({
+                ...c,
+                match_score: (0.7 + Math.random() * 0.3).toFixed(2),
+                recommendation: Math.random() > 0.3 ? '推荐' : '待定'
+            }));
+
+            screened.forEach(c => {
+                log(`   ${c.name}: 匹配度 ${c.match_score} - ${c.recommendation}`, 'recruiter');
+            });
+
+            log('✅ 简历筛选完成', 'recruiter');
+            showResults('recruiter', screened, '筛选结果');
+        }
+
+        // ==================== Candidate Agent ====================
+        function setupCandidate() {
+            log('Candidate Agent: 设置个人资料...', 'candidate');
+
+            const name = document.getElementById('cand-name').value;
+            const title = document.getElementById('cand-title').value;
+            const years = document.getElementById('cand-years').value;
+            const salary = document.getElementById('cand-salary').value;
+            const skills = document.getElementById('cand-skills').value.split(',').map(s => s.trim());
+
+            const profile = {
+                id: `CAND-${Date.now()}`,
+                name, title, years, salary, skills,
+                status: 'active'
+            };
+
+            state.candidateProfile = profile;
+
+            log(`✅ 个人资料已设置: ${name}`, 'candidate');
+            log(`   职位: ${title} | 年限: ${years}年 | 期望: ${salary/1000}K`, 'candidate');
+
+            updateCandidateStatus();
+            showToast('资料设置成功');
+        }
+
+        function updateCandidateStatus() {
+            const container = document.getElementById('candidate-status-panel');
+            if (!state.candidateProfile) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.5);">请先设置个人资料</p>';
+                return;
+            }
+
+            const p = state.candidateProfile;
+            container.innerHTML = `
+                <div class="result-item success">
+                    <strong>${p.name}</strong> - ${p.title}
+                    <br>
+                    <small>工作年限: ${p.years}年 | 期望薪资: ${p.salary/1000}K</small>
+                    <br>
+                    <small>技能: ${p.skills.join(', ')}</small>
+                    <br>
+                    <span class="status success">求职中</span>
+                </div>
+            `;
+        }
+
+        function searchJobs() {
+            log('Candidate Agent: 搜索职位...', 'candidate');
+            showStatus('candidate-status', 'running', '搜索中');
+
+            setTimeout(() => {
+                const mockJobs = [
+                    { id: 'J001', title: '高级Python工程师', company: '字节跳动', salary: '35-50K', location: '北京' },
+                    { id: 'J002', title: 'Python开发专家', company: '美团', salary: '40-55K', location: '北京' },
+                    { id: 'J003', title: 'Senior Backend Engineer', company: '某外企', salary: '45-60K', location: '上海' },
+                ];
+
+                state.jobs = mockJobs;
+                log(`✅ 找到 ${mockJobs.length} 个匹配职位`, 'candidate');
+
+                mockJobs.forEach(j => {
+                    log(`   - ${j.title} @ ${j.company} (${j.salary})`, 'candidate');
+                });
+
+                showStatus('candidate-status', 'success', '就绪');
+                showResults('candidate', mockJobs, '职位列表');
+            }, 1000);
+        }
+
+        function applyToJobs() {
+            log('Candidate Agent: 投递职位...', 'candidate');
+
+            if (state.jobs.length === 0) {
+                log('⚠️ 请先搜索职位', 'candidate');
+                return;
+            }
+
+            const applications = state.jobs.slice(0, 2).map(job => ({
+                ...job,
+                app_id: `APP-${Date.now()}-${job.id}`,
+                status: 'submitted',
+                submitted_at: new Date().toISOString()
+            }));
+
+            state.applications = applications;
+
+            applications.forEach(a => {
+                log(`✅ 已投递: ${a.title} @ ${a.company}`, 'candidate');
+                log(`   申请ID: ${a.app_id}`, 'candidate');
+            });
+
+            log('✅ 职位投递完成', 'candidate');
+            showResults('candidate', applications, '投递记录');
+        }
+
+        function prepareInterview() {
+            log('Candidate Agent: 生成面试准备材料...', 'candidate');
+
+            const prep = {
+                company_research: {
+                    name: '目标公司',
+                    industry: '互联网',
+                    culture: '工程师文化'
+                },
+                questions: [
+                    '请介绍一下你自己',
+                    '为什么对这个职位感兴趣？',
+                    '你最大的技术成就是什么？'
+                ],
+                star_guide: {
+                    situation: '描述项目背景',
+                    task: '明确你的任务',
+                    action: '你做了什么',
+                    result: '结果如何'
+                },
+                tips: [
+                    '使用STAR方法组织答案',
+                    '量化你的成果',
+                    '展示解决问题的能力'
+                ]
+            };
+
+            log('✅ 面试准备材料已生成', 'candidate');
+            log('   - 公司研究资料', 'candidate');
+            log('   - 常见面试问题列表', 'candidate');
+            log('   - STAR法则指南', 'candidate');
+
+            showResults('candidate', prep, '面试准备');
+        }
+
+        // ==================== Interview Agent ====================
+        function startInterview() {
+            log('Interview Agent: 初始化面试...', 'interview');
+            showStatus('interview-status', 'running', '面试中');
+
+            const candidate = document.getElementById('int-candidate').value;
+            const position = document.getElementById('int-position').value;
+            const count = parseInt(document.getElementById('int-count').value);
+
+            const questions = generateQuestions(count);
+
+            state.currentInterview = {
+                id: `INT-${Date.now()}`,
+                candidate,
+                position,
+                questions,
+                answers: [],
+                status: 'in_progress',
+                started_at: new Date().toISOString()
+            };
+
+            log(`✅ 面试已创建: ${state.currentInterview.id}`, 'interview');
+            log(`   候选人: ${candidate}`, 'interview');
+            log(`   职位: ${position}`, 'interview');
+            log(`   问题数量: ${count}`, 'interview');
+
+            renderQuestionPreview(questions);
+
+            setTimeout(() => {
+                showStatus('interview-status', 'success', '已完成');
+                log('✅ 面试流程模拟完成', 'interview');
+                showResults('interview', state.currentInterview, '面试状态');
+            }, 2000);
+        }
+
+        function generateQuestions(count) {
+            const techQuestions = [
+                '请解释Python中的GIL是什么，它如何影响多线程编程？',
+                'FastAPI相比Django有哪些优势？',
+                '如何优化PostgreSQL查询性能？',
+                '描述一下你使用Redis的场景',
+                '如何设计一个高可用的系统？',
+                'Python中的装饰器是如何工作的？'
+            ];
+
+            const behaviorQuestions = [
+                '请描述一个你遇到的最大技术挑战',
+                '讲述一次你需要同时处理多个紧急任务的经历',
+                '分享一个你与团队成员产生分歧的故事'
+            ];
+
+            const questions = [];
+            for (let i = 0; i < count; i++) {
+                if (i % 2 === 0) {
+                    questions.push({
+                        id: `Q${i+1}`,
+                        type: '技术问题',
+                        text: techQuestions[i % techQuestions.length],
+                        expected: '关键词: GIL, 线程安全, 异步, 索引...'
+                    });
+                } else {
+                    questions.push({
+                        id: `Q${i+1}`,
+                        type: '行为问题',
+                        text: behaviorQuestions[i % behaviorQuestions.length],
+                        expected: '使用STAR方法回答'
+                    });
+                }
+            }
+            return questions;
+        }
+
+        function renderQuestionPreview(questions) {
+            const container = document.getElementById('question-preview');
+            container.innerHTML = questions.map(q => `
+                <div class="result-item">
+                    <strong>${q.id}. [${q.type}]</strong>
+                    <br>
+                    ${q.text}
+                    <br>
+                    <small style="color: #00ff88;">期望: ${q.expected}</small>
+                </div>
+            `).join('');
+        }
+
+        function viewInterviewReport() {
+            if (!state.currentInterview) {
+                log('⚠️ 请先发起面试', 'interview');
+                return;
+            }
+
+            const report = {
+                interview_id: state.currentInterview.id,
+                candidate: state.currentInterview.candidate,
+                status: 'completed',
+                overall_score: (3.5 + Math.random()).toFixed(1),
+                dimensions: {
+                    technical: (3 + Math.random() * 2).toFixed(1),
+                    problem_solving: (3 + Math.random() * 2).toFixed(1),
+                    communication: (3 + Math.random() * 2).toFixed(1),
+                    culture_fit: (3 + Math.random() * 2).toFixed(1)
+                },
+                recommendation: '推荐进入下一轮'
+            };
+
+            log('📊 生成面试报告...', 'interview');
+            showResults('interview', report, '面试报告');
+        }
+
+        // ==================== Full Workflow ====================
+        async function runFullWorkflow() {
+            log('🔄 ========== 开始完整招聘工作流 ==========', 'system');
+            showStatus('coordinator-status', 'running', '协调中');
+
+            const workflowStatus = document.getElementById('workflow-status');
+            workflowStatus.innerHTML = '<p>开始执行...</p>';
+
+            // Step 1: Recruiter creates requisition
+            await step('创建招聘需求', () => {
+                const req = {
+                    id: `REQ-${Date.now()}`,
+                    title: '高级Python工程师',
+                    department: '技术部',
+                    salary_range: '35-50K'
+                };
+                return req;
+            });
+
+            // Step 2: Search candidates
+            await step('搜索候选人', () => {
+                return [
+                    { name: '李明', match: '92%' },
+                    { name: '王芳', match: '85%' }
+                ];
+            });
+
+            // Step 3: Screen candidates
+            await step('筛选简历', () => {
+                return { recommended: 2, pending: 0 };
+            });
+
+            // Step 4: Interview
+            await step('AI面试', () => {
+                return { score: 4.2, recommendation: '强烈推荐' };
+            });
+
+            // Step 5: Offer
+            await step('发送Offer', () => {
+                return { status: 'pending_response' };
+            });
+
+            // Step 6: Negotiation
+            await step('薪资谈判', () => {
+                return { final_salary: '42K', accepted: true };
+            });
+
+            log('✅ ========== 招聘工作流完成 ==========', 'system');
+            showStatus('coordinator-status', 'success', '完成');
+
+            workflowStatus.innerHTML = `
+                <div class="result-item success">
+                    <strong>✅ 招聘工作流完成</strong>
+                    <br><br>
+                    候选人: 李明<br>
+                    职位: 高级Python工程师<br>
+                    最终薪资: 42K<br>
+                    状态: <span class="status success">已接受Offer</span>
+                </div>
+            `;
+        }
+
+        async function step(name, action) {
+            log(`📍 ${name}...`, 'system');
+            await new Promise(resolve => setTimeout(resolve, 800));
+            const result = action();
+            log(`   ✓ 完成`, 'system');
+            return result;
+        }
+
+        function resetWorkflow() {
+            state.requisitions = [];
+            state.candidates = [];
+            state.jobs = [];
+            state.applications = [];
+            state.currentInterview = null;
+
+            document.getElementById('workflow-status').innerHTML =
+                '<p style="color: rgba(255,255,255,0.5);">点击"运行完整工作流"开始演示...</p>';
+
+            updateRequisitionList();
+            updateCandidateStatus();
+            document.getElementById('question-preview').innerHTML =
+                '<p style="color: rgba(255,255,255,0.5);">点击"开始面试"生成问题</p>';
+
+            log('🔄 工作流已重置', 'system');
+            showToast('已重置');
+        }
+
+        // ==================== Utilities ====================
+        function showStatus(elementId, status, text) {
+            const el = document.getElementById(elementId);
+            el.className = `status ${status}`;
+            el.textContent = text;
+        }
+
+        function showResults(section, data, title) {
+            const container = document.getElementById(`${section}-results`);
+            const logEl = document.getElementById(`${section}-log`);
+
+            container.style.display = 'block';
+            logEl.innerHTML = `
+                <div class="result-item">
+                    <strong>${title}</strong>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        // ==================== Initialize ====================
+        log('TalentAI Pro Agent Ecosystem 已就绪', 'system');
+        log('3个Agent已注册: Recruiter, Candidate, Interview', 'system');
+    </script>
+</body>
+</html>
