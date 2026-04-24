@@ -3156,6 +3156,106 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
                 return messages[leverage].opening;
             },
 
+            // ============================================================
+            // 说服本方 — Agent内部建议（人类看不到但Agent执行）
+            // ============================================================
+
+            // 说服公司方（Recruiter/Hiring Manager）
+            generateRecruiterPersuasion() {
+                const { companyOffer, candidateExpectation, leverage, round } = this.state;
+                const salaryGap = candidateExpectation.salary - companyOffer.salary;
+                const candidate = state.recruiter.selectedCandidate;
+
+                // 候选人主导：公司需要让步
+                if (leverage === 'candidate') {
+                    const reasons = [
+                        `面试评估显示候选人技术得分${(Math.random() * 5 + 90).toFixed(0)}/100，属于top15%人才`,
+                        `同类岗位市场招聘周期约45天，快速到岗价值¥${(salaryGap * 3).toFixed(0)}`,
+                        `候选人当前有${Math.floor(Math.random() * 3 + 1)}个其他offer在流程中，时间窗口有限`,
+                        `强员入职后团队产出预计提升20-30%，边际价值远超薪资差额`
+                    ];
+
+                    return {
+                        headline: '建议公司适度让步',
+                        reasons: reasons,
+                        recommendation: `将月薪调整至¥${Math.round((companyOffer.salary + candidateExpectation.salary) / 2 / 1000) * 1000.toLocaleString()}，附加签字费补偿差距`,
+                        urgency: round === 0 ? 'normal' : 'high',
+                        internalNote: '本方Agent已评估：候选人稀缺性高，拖延将导致流失风险'
+                    };
+                }
+
+                // 公司主导：需要说服候选人接受
+                const candidateReasons = [
+                    '候选人期望高于市场同级别约18%，内部薪酬公平性会受影响',
+                    '公司已提供有竞争力的整体方案（RSU+年假+签字费）',
+                    '绩效导向薪资结构为高绩效者提供上行空间',
+                    '加入后通过实际贡献证明价值，调薪窗口在3-6个月后'
+                ];
+
+                return {
+                    headline: '建议候选人调整期望',
+                    reasons: candidateReasons,
+                    recommendation: '提供市场薪资报告 + 绩效奖金结构说明',
+                    urgency: 'normal',
+                    internalNote: '本方Agent已评估：公司薪酬在市场上已具备竞争力'
+                };
+            },
+
+            // 说服候选人方（Candidate Agent）
+            generateCandidatePersuasion() {
+                const { companyOffer, candidateExpectation, leverage, round } = this.state;
+                const salaryGap = candidateExpectation.salary - companyOffer.salary;
+
+                // 候选人主导：需要说服候选人接受已经不错的Offer
+                if (leverage === 'candidate') {
+                    const reasons = [
+                        `当前Offer总包¥${companyOffer.totalAnnual.toLocaleString()}，已是公司预算上限`,
+                        `公司提供了签字费¥${companyOffer.signingBonus.toLocaleString()}，相当于弥补了${Math.round(companyOffer.signingBonus / salaryGap)}个月差距`,
+                        `公司技术栈非常匹配，入职后能快速产出，3个月后可申请调薪评审`,
+                        `团队技术氛围好，有35%成员来自一线大厂，长期成长价值高`
+                    ];
+
+                    return {
+                        headline: '建议候选人认真考虑当前Offer',
+                        reasons: reasons,
+                        recommendation: '可以在签字费/年假/远程工作上争取，其他维度调整空间有限',
+                        urgency: 'high',
+                        internalNote: '本方Agent评估：候选人在市场上已处于优势地位，但公司Offer已具备竞争力'
+                    };
+                }
+
+                // 公司主导：说服候选人接受低于期望的Offer
+                return {
+                    headline: '建议候选人接受公司方案',
+                    reasons: [
+                        '当前经济环境下，能不降薪已是优质选择',
+                        '公司品牌背书、团队背景、技术挑战都是稀缺资源',
+                        '绩效表现优秀可在6个月内启动调薪流程',
+                        '接受后立刻开始积累经验，为下一份更高薪资的谈判积累资本'
+                    ],
+                    recommendation: '接受Offer，同时争取签字费和入职时间灵活度',
+                    urgency: 'normal',
+                    internalNote: '本方Agent评估：候选人应优先保证入职，再寻求内部晋升'
+                };
+            },
+
+            // 生成完整的三方视图（包含本方说服 + 对外话术 + 方案）
+            generateFullNegotiationView() {
+                const { leverage, round, proposals } = this.state;
+                const recruiterView = this.generateRecruiterPersuasion();
+                const candidateView = this.generateCandidatePersuasion();
+                const mediatorMsg = this.generateMediatorMessage();
+
+                return {
+                    recruiterPersuasion: recruiterView,
+                    candidatePersuasion: candidateView,
+                    mediatorMessage: mediatorMsg,
+                    proposals: proposals,
+                    currentRound: round,
+                    leverage: leverage
+                };
+            },
+
             // Process counter offer
             processCounter(counter) {
                 this.state.round++;
@@ -3202,7 +3302,8 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
             round: 0,
             proposals: [],
             selectedProposal: null,
-            counterOffers: []
+            counterOffers: [],
+            persuasionTab: 'recruiter'
         };
 
         // Start negotiation flow
@@ -3336,39 +3437,147 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
 
         function displayAgentProposals() {
             const proposals = negotiationState.proposals;
+            const fullView = NegotiationEngine.generateFullNegotiationView();
+            const recruiterP = fullView.recruiterPersuasion;
+            const candidateP = fullView.candidatePersuasion;
 
-            document.getElementById('agentProposals').innerHTML = `
-                <div class="agent-message">
-                    <div class="agent-message-header">
-                        <span>🎯</span> HR Agent 智能调解
+            // Persuasion tabs for internal views
+            const persuasionTabs = `
+                <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <button class="btn btn-sm ${negotiationState.persuasionTab !== 'recruiter' ? 'btn-secondary' : 'btn-primary'}"
+                            onclick="switchPersuasionTab('recruiter')">
+                        🏢 说服本方（公司）
+                    </button>
+                    <button class="btn btn-sm ${negotiationState.persuasionTab !== 'candidate' ? 'btn-secondary' : 'btn-primary'}"
+                            onclick="switchPersuasionTab('candidate')">
+                        👤 说服本方（候选人）
+                    </button>
+                    <button class="btn btn-sm ${negotiationState.persuasionTab !== 'mediator' ? 'btn-secondary' : 'btn-primary'}"
+                            onclick="switchPersuasionTab('mediator')">
+                        📡 对外话术
+                    </button>
+                </div>
+            `;
+
+            // Recruiter internal persuasion panel
+            const recruiterPanel = `
+                <div style="background: rgba(79, 142, 247, 0.08); border: 1px solid rgba(79, 142, 247, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="font-size: 16px;">🏢</span>
+                        <span style="font-weight: 600; color: var(--accent-blue);">Agent 说服公司管理层</span>
+                        ${recruiterP.urgency === 'high' ? '<span style="background: rgba(248, 113, 113, 0.2); color: var(--accent-red); padding: 2px 8px; border-radius: 4px; font-size: 11px;">⚡ 紧迫</span>' : ''}
                     </div>
-                    <div class="agent-message-body">
-                        ${NegotiationEngine.generateMediatorMessage()}
+                    <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">
+                        💡 ${recruiterP.headline}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+                        ${recruiterP.reasons.map((r, i) => `
+                            <div style="display: flex; gap: 8px; align-items: flex-start;">
+                                <span style="color: var(--accent-blue); font-weight: 700; flex-shrink: 0;">${i + 1}.</span>
+                                <span style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">${r}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="background: rgba(79, 142, 247, 0.1); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">🎯 Agent建议方案</div>
+                        <div style="font-size: 13px; color: var(--accent-blue); font-weight: 600;">${recruiterP.recommendation}</div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-secondary); font-style: italic; border-top: 1px solid rgba(79, 142, 247, 0.1); padding-top: 8px;">
+                        📋 Agent内部评估: ${recruiterP.internalNote}
                     </div>
                 </div>
+            `;
 
-                ${proposals.map((p, i) => `
-                    <div class="proposal-card ${i === 0 ? 'selected' : ''}" onclick="selectProposal(${i})">
-                        <div class="proposal-header">
-                            <div class="proposal-title">
-                                <span class="round-badge">${i + 1}</span>
-                                ${p.title}
-                                <span class="proposal-tag ${p.tag}">${p.tag === 'recommended' ? '推荐' : p.tag === 'alternative' ? '备选' : '创意'}</span>
+            // Candidate internal persuasion panel
+            const candidatePanel = `
+                <div style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="font-size: 16px;">👤</span>
+                        <span style="font-weight: 600; color: var(--accent-green);">Agent 说服候选人</span>
+                        ${candidateP.urgency === 'high' ? '<span style="background: rgba(248, 113, 113, 0.2); color: var(--accent-red); padding: 2px 8px; border-radius: 4px; font-size: 11px;">⚡ 紧迫</span>' : ''}
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">
+                        💡 ${candidateP.headline}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+                        ${candidateP.reasons.map((r, i) => `
+                            <div style="display: flex; gap: 8px; align-items: flex-start;">
+                                <span style="color: var(--accent-green); font-weight: 700; flex-shrink: 0;">${i + 1}.</span>
+                                <span style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">${r}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="background: rgba(52, 211, 153, 0.1); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;">🎯 Agent建议方案</div>
+                        <div style="font-size: 13px; color: var(--accent-green); font-weight: 600;">${candidateP.recommendation}</div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-secondary); font-style: italic; border-top: 1px solid rgba(52, 211, 153, 0.1); padding-top: 8px;">
+                        📋 Agent内部评估: ${candidateP.internalNote}
+                    </div>
+                </div>
+            `;
+
+            // Mediator external message panel
+            const mediatorPanel = `
+                <div style="background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="font-size: 16px;">📡</span>
+                        <span style="font-weight: 600; color: var(--accent-purple);">Agent 对外调解话术</span>
+                        <span style="font-size: 11px; color: var(--text-secondary);">（发送给对方的版本）</span>
+                    </div>
+                    <div style="font-size: 14px; line-height: 1.8; color: var(--text-primary);">
+                        ${fullView.mediatorMessage}
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(167, 139, 250, 0.1); font-size: 11px; color: var(--text-secondary); font-style: italic;">
+                        ⚠️ Agent不会将本方内部评估透露给对方，只传递经过策略性加工的调解信息
+                    </div>
+                </div>
+            `;
+
+            // Render active persuasion panel
+            let activePersuasionPanel = recruiterPanel;
+            if (!negotiationState.persuasionTab || negotiationState.persuasionTab === 'recruiter') {
+                activePersuasionPanel = recruiterPanel;
+            } else if (negotiationState.persuasionTab === 'candidate') {
+                activePersuasionPanel = candidatePanel;
+            } else if (negotiationState.persuasionTab === 'mediator') {
+                activePersuasionPanel = mediatorPanel;
+            }
+
+            document.getElementById('agentProposals').innerHTML = `
+                ${persuasionTabs}
+                ${activePersuasionPanel}
+
+                <div style="margin-top: 20px;">
+                    <div style="font-size: 13px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">💼 备选方案（由Agent根据双方诉求生成）</div>
+                    ${proposals.map((p, i) => `
+                        <div class="proposal-card ${i === 0 ? 'selected' : ''}" onclick="selectProposal(${i})">
+                            <div class="proposal-header">
+                                <div class="proposal-title">
+                                    <span class="round-badge">${i + 1}</span>
+                                    ${p.title}
+                                    <span class="proposal-tag ${p.tag}">${p.tag === 'recommended' ? '推荐' : p.tag === 'alternative' ? '备选' : '创意'}</span>
+                                </div>
+                            </div>
+                            <div class="proposal-summary">${p.summary}</div>
+                            <div class="proposal-changes">
+                                ${p.changes.map(c => `
+                                    <span class="change-tag ${c.type}">${c.label}: ${c.from} → ${c.to}</span>
+                                `).join('')}
+                            </div>
+                            <div style="margin-top: 12px; font-size: 11px; color: var(--text-secondary);">
+                                <div>🏢 对公司: ${p.forCompany}</div>
+                                <div>👤 对候选人: ${p.forCandidate}</div>
                             </div>
                         </div>
-                        <div class="proposal-summary">${p.summary}</div>
-                        <div class="proposal-changes">
-                            ${p.changes.map(c => `
-                                <span class="change-tag ${c.type}">${c.label}: ${c.from} → ${c.to}</span>
-                            `).join('')}
-                        </div>
-                        <div style="margin-top: 12px; font-size: 11px; color: var(--text-secondary);">
-                            <div>🏢 对公司: ${p.forCompany}</div>
-                            <div>👤 对候选人: ${p.forCandidate}</div>
-                        </div>
-                    </div>
-                `).join('')}
+                    `).join('')}
+                </div>
             `;
+        }
+
+        function switchPersuasionTab(tab) {
+            negotiationState.persuasionTab = tab;
+            displayAgentProposals();
         }
 
         function displayNegotiationLog() {
@@ -3410,7 +3619,13 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
                 return;
             }
 
-            addLog('HR Agent', 'success', `双方达成一致！采用${proposal.title}`);
+            // Show that the Agent has done both internal and external persuasion work
+            const fullView = NegotiationEngine.generateFullNegotiationView();
+
+            addLog('HR Agent', 'success', `Agent完成双向说服，双方达成一致！采用${proposal.title}`);
+            addLog('HR Agent', 'info', `本方说服：公司接受方案 "${proposal.title}" — ${fullView.recruiterPersuasion.headline}`);
+            addLog('HR Agent', 'info', `本方说服：候选人接受方案 "${proposal.title}" — ${fullView.candidatePersuasion.headline}`);
+            addTimeline('System', `薪资谈判完成 - 达成<strong>${proposal.title}</strong>`, 'success');
             addTimeline('System', `薪资谈判完成 - 达成<strong>${proposal.title}</strong>`, 'success');
 
             // Show victory message
