@@ -1376,7 +1376,32 @@
                 questions: [],
                 currentQuestionIndex: 0,
                 answers: [],
-                report: null
+                report: null,
+                // 双向预期匹配
+                mutualMatch: {
+                    // Recruiter对候选人的评估
+                    recruiterEval: {
+                        skillsMatch: 0,      // 技能匹配度
+                        experienceMatch: 0,  // 经验匹配度
+                        salaryFit: 0,        // 薪资是否在预算内
+                        cultureFit: 0,       // 文化匹配
+                        potential: 0,        // 成长潜力
+                        overall: 0           // 综合评分(公司视角)
+                    },
+                    // 候选人对公司的评估
+                    candidateEval: {
+                        salaryMeet: 0,      // 薪资是否达到预期
+                        growthMeet: 0,       // 成长空间
+                        techMeet: 0,         // 技术栈是否感兴趣
+                        cultureMeet: 0,       // 团队文化
+                        balanceMeet: 0,      // 工作生活平衡
+                        overall: 0            // 综合评分(候选人视角)
+                    },
+                    // 双向匹配结果
+                    mutualScore: 0,          // 双方认可的匹配度
+                    isMutualMatch: false,    // 是否双向达标
+                    riskPoints: []           // 风险点
+                }
             },
             candidates: [],
             jobs: []
@@ -1527,7 +1552,10 @@
 
             await sleep(2000);
 
-            // Generate mock candidates
+            // 解析薪资范围
+            const [minSal, maxSal] = job.salary.split('-').map(s => parseInt(s.trim()));
+
+            // Generate mock candidates with MUTUAL MATCH evaluation
             const mockCandidates = [
                 {
                     id: 'CAND-001',
@@ -1535,11 +1563,29 @@
                     title: 'Python高级工程师',
                     skills: ['Python', 'FastAPI', 'PostgreSQL', 'Redis', 'Docker'],
                     experience: 5,
-                    salary: 42000,
+                    salary: 42000,  // 期望薪资
                     location: '北京',
-                    matchScore: 94,
                     strengths: ['Python技术栈全面', '有大规模系统经验', '开源贡献者'],
-                    education: '硕士 - 清华大学'
+                    education: '硕士 - 清华大学',
+                    // 双向预期评估
+                    mutualMatch: {
+                        // 公司视角：候选人是否达标
+                        recruiterEval: {
+                            skillsMatch: 95,      // 技能超出要求
+                            experienceMatch: 90,  // 经验符合
+                            salaryFit: 85,        // 薪资在预算内
+                            cultureFit: 88,       // 文化匹配
+                            potential: 92,         // 成长潜力高
+                        },
+                        // 候选人视角：公司是否达标
+                        candidateEval: {
+                            salaryMeet: 88,       // 薪资达到预期
+                            growthMeet: 92,       // 成长空间好
+                            techMeet: 95,         // 技术栈非常感兴趣
+                            cultureMeet: 85,      // 公司文化不错
+                            balanceMeet: 80,      // 工作平衡一般
+                        }
+                    }
                 },
                 {
                     id: 'CAND-002',
@@ -1549,9 +1595,24 @@
                     experience: 4,
                     salary: 38000,
                     location: '上海',
-                    matchScore: 78,
                     strengths: ['全栈能力', '前端技术突出'],
-                    education: '本科 - 上海交大'
+                    education: '本科 - 上海交大',
+                    mutualMatch: {
+                        recruiterEval: {
+                            skillsMatch: 78,
+                            experienceMatch: 80,
+                            salaryFit: 95,
+                            cultureFit: 85,
+                            potential: 82,
+                        },
+                        candidateEval: {
+                            salaryMeet: 85,
+                            growthMeet: 78,
+                            techMeet: 82,
+                            cultureMeet: 90,
+                            balanceMeet: 88,
+                        }
+                    }
                 },
                 {
                     id: 'CAND-003',
@@ -1561,36 +1622,143 @@
                     experience: 3,
                     salary: 28000,
                     location: '深圳',
-                    matchScore: 65,
                     strengths: ['Django专家', '熟悉消息队列'],
-                    education: '本科 - 华南理工'
+                    education: '本科 - 华南理工',
+                    mutualMatch: {
+                        recruiterEval: {
+                            skillsMatch: 65,
+                            experienceMatch: 60,
+                            salaryFit: 100,
+                            cultureFit: 75,
+                            potential: 70,
+                        },
+                        candidateEval: {
+                            salaryMeet: 95,
+                            growthMeet: 65,
+                            techMeet: 70,
+                            cultureMeet: 80,
+                            balanceMeet: 85,
+                        }
+                    }
                 }
             ];
 
-            state.candidates = mockCandidates.filter(c =>
-                c.skills.some(s => job.skills.some(js => js.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(js.toLowerCase())))
-            );
+            // 计算双向综合评分
+            state.candidates = mockCandidates.map(c => {
+                // Recruiter综合：公司对候选人的评价
+                const rOverall = (c.mutualMatch.recruiterEval.skillsMatch * 0.3 +
+                                 c.mutualMatch.recruiterEval.experienceMatch * 0.25 +
+                                 c.mutualMatch.recruiterEval.salaryFit * 0.15 +
+                                 c.mutualMatch.recruiterEval.cultureFit * 0.15 +
+                                 c.mutualMatch.recruiterEval.potential * 0.15);
+
+                // Candidate综合：候选人对公司的评价
+                const cOverall = (c.mutualMatch.candidateEval.salaryMeet * 0.25 +
+                                 c.mutualMatch.candidateEval.growthMeet * 0.25 +
+                                 c.mutualMatch.candidateEval.techMeet * 0.2 +
+                                 c.mutualMatch.candidateEval.cultureMeet * 0.15 +
+                                 c.mutualMatch.candidateEval.balanceMeet * 0.15);
+
+                // 双向匹配度：双方都达标的几何平均
+                const mutualScore = Math.sqrt(rOverall * cOverall);
+
+                // 双向达标判断：公司达标(≥75) AND 候选人达标(≥70)
+                const isMutualMatch = rOverall >= 75 && cOverall >= 70;
+
+                // 风险点
+                const riskPoints = [];
+                if (c.mutualMatch.recruiterEval.skillsMatch < 80) riskPoints.push('技能深度可能不足');
+                if (c.mutualMatch.recruiterEval.salaryFit < 80) riskPoints.push('薪资期望可能超出预算');
+                if (c.mutualMatch.candidateEval.growthMeet < 75) riskPoints.push('候选人担心成长空间');
+                if (c.mutualMatch.candidateEval.balanceMeet < 75) riskPoints.push('候选人关注工作平衡');
+
+                return {
+                    ...c,
+                    mutualMatch: {
+                        ...c.mutualMatch,
+                        recruiterOverall: rOverall,
+                        candidateOverall: cOverall,
+                        mutualScore,
+                        isMutualMatch,
+                        riskPoints
+                    }
+                };
+            });
+
+            // 按双向匹配度排序
+            state.candidates.sort((a, b) => b.mutualMatch.mutualScore - a.mutualMatch.mutualScore);
 
             state.pipeline.candidatesMatched = true;
             updatePipelineStep(3);
 
             updateAgentStatus('recruiter', 'idle');
-            addLog('Recruiter', 'success', `找到 ${state.candidates.length} 位匹配候选人`);
-            addTimeline('Recruiter', `匹配到 <strong>${state.candidates.length}</strong> 位候选人`);
 
-            // Display candidates in search tab
-            displayCandidates();
+            // 显示双向评估结果
+            displayCandidatesWithMutualEval();
+
+            addLog('Recruiter', 'success', `找到 ${state.candidates.length} 位匹配候选人（含双向评估）`);
+            addTimeline('Recruiter', `匹配到 <strong>${state.candidates.length}</strong> 位候选人（含双向预期评估）`);
 
             // Switch to search tab
             switchTab('recruiter', 'recruiter-search');
         }
 
-        function displayCandidates() {
+        function displayCandidatesWithMutualEval() {
             const container = document.getElementById('candidateList');
-            container.innerHTML = state.candidates.map(c => `
+
+            container.innerHTML = `
+                <div style="margin-bottom: 16px; padding: 12px; background: rgba(79, 142, 247, 0.1); border-radius: 8px; font-size: 13px;">
+                    <strong>📊 双向预期匹配说明</strong>
+                    <div style="margin-top: 8px; color: var(--text-secondary);">
+                        <div>• <span style="color: var(--accent-blue);">公司视角</span>：候选人的技能/经验/薪资/文化是否达到职位要求</div>
+                        <div>• <span style="color: var(--accent-green);">候选人视角</span>：公司的薪资/成长/技术/文化是否达到候选人期望</div>
+                        <div>• <span style="color: var(--accent-purple);">双向匹配度</span>：双方都达标的几何平均</div>
+                    </div>
+                </div>
+            ` + state.candidates.map(c => {
+                const isMutual = c.mutualMatch.isMutualMatch;
+                const rScore = c.mutualMatch.recruiterOverall;
+                const cScore = c.mutualMatch.candidateOverall;
+                const mScore = c.mutualMatch.mutualScore;
+
+                return `
                 <div class="entity-card ${state.recruiter.selectedCandidate?.id === c.id ? 'selected' : ''}"
-                     onclick="selectCandidate('${c.id}')">
-                    <div class="entity-name">${c.name} <span style="color: var(--accent-green); font-size: 12px;">匹配度 ${c.matchScore}%</span></div>
+                     onclick="selectCandidate('${c.id}')"
+                     style="border-left: 3px solid ${isMutual ? 'var(--accent-green)' : 'var(--accent-orange)'};">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <div class="entity-name">${c.name}</div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            ${isMutual
+                                ? '<span class="result-badge excellent">双向达标</span>'
+                                : '<span class="result-badge warning">需谈判</span>'
+                            }
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0;">
+                        <div style="padding: 10px; background: rgba(79, 142, 247, 0.1); border-radius: 8px;">
+                            <div style="font-size: 11px; color: var(--accent-blue); margin-bottom: 4px;">🏢 公司视角</div>
+                            <div style="font-size: 20px; font-weight: 700; color: var(--accent-blue);">${rScore.toFixed(0)}%</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">技能/经验/薪资/文化</div>
+                        </div>
+                        <div style="padding: 10px; background: rgba(52, 211, 153, 0.1); border-radius: 8px;">
+                            <div style="font-size: 11px; color: var(--accent-green); margin-bottom: 4px;">👤 候选人视角</div>
+                            <div style="font-size: 20px; font-weight: 700; color: var(--accent-green);">${cScore.toFixed(0)}%</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">薪资/成长/技术/氛围</div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; padding: 8px; background: rgba(167, 139, 250, 0.1); border-radius: 8px; margin-bottom: 12px;">
+                        <div style="font-size: 11px; color: var(--accent-purple);">🔗 双向匹配度</div>
+                        <div style="font-size: 24px; font-weight: 700; color: var(--accent-purple);">${mScore.toFixed(0)}%</div>
+                    </div>
+
+                    ${c.mutualMatch.riskPoints.length > 0 ? `
+                        <div style="font-size: 11px; color: var(--accent-orange); margin-bottom: 8px;">
+                            ⚠️ 风险点: ${c.mutualMatch.riskPoints.join(', ')}
+                        </div>
+                    ` : ''}
+
                     <div class="entity-meta">
                         <span>📍 ${c.location}</span>
                         <span>💼 ${c.experience}年经验</span>
@@ -1600,7 +1768,7 @@
                         ${c.skills.map(s => `<span class="tag">${s}</span>`).join('')}
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function selectCandidate(id) {
@@ -1871,13 +2039,16 @@
             updateAgentStatus('candidate', 'working');
             showToast('正在准备面试...', 'info');
             addLog('Candidate', 'info', '正在准备面试问答...');
+            addLog('Interview Agent', 'info', '正在生成双向面试流程...');
 
             await sleep(1500);
 
-            // Generate interview questions
+            // 双向面试问题
             const questions = [
+                // ===== 公司对候选人的考察 =====
                 {
                     id: 'Q1',
+                    direction: 'company_to_candidate',
                     type: 'technical',
                     category: 'Python',
                     text: '请解释Python中的GIL（全局解释器锁）是什么，以及它对多线程编程的影响？',
@@ -1885,6 +2056,7 @@
                 },
                 {
                     id: 'Q2',
+                    direction: 'company_to_candidate',
                     type: 'behavioral',
                     category: 'STAR',
                     text: '请用STAR法则描述一个你在项目中遇到的最大技术挑战，以及你是如何解决的？',
@@ -1892,24 +2064,36 @@
                 },
                 {
                     id: 'Q3',
+                    direction: 'company_to_candidate',
                     type: 'technical',
                     category: 'System Design',
                     text: '如果你要设计一个高并发的API服务，你会考虑哪些方面？请从架构、数据库、缓存等角度阐述。',
                     tips: '可以从"水平扩展"、"负载均衡"、"数据库优化"、"缓存策略"、"异步处理"等角度'
                 },
+                // ===== 候选人对公司的考察 =====
                 {
                     id: 'Q4',
-                    type: 'behavioral',
-                    category: 'STAR',
-                    text: '描述一次你需要在紧迫的 deadline 下完成重要任务的经历。你是如何管理时间和压力的？',
-                    tips: '强调时间管理技巧、优先级排序、以及最终成果'
+                    direction: 'candidate_to_company',
+                    type: 'company_research',
+                    category: '成长空间',
+                    text: '我了解到贵公司技术团队正在做XX项目，请问候选人在这个项目中能扮演什么角色？有哪些成长机会？',
+                    tips: '考察候选人的主动性和对团队的兴趣'
                 },
                 {
                     id: 'Q5',
-                    type: 'technical',
-                    category: 'Database',
-                    text: 'PostgreSQL和MySQL有什么区别？在什么场景下你会选择PostgreSQL？',
-                    tips: '可以从"事务支持"、"JSON支持"、"索引类型"、"性能特点"等角度'
+                    direction: 'candidate_to_company',
+                    type: 'company_research',
+                    category: '团队文化',
+                    text: '能否介绍一下团队的技术氛围？比如代码评审、技术分享、协作模式是怎样的？',
+                    tips: '考察团队是否重视技术成长'
+                },
+                {
+                    id: 'Q6',
+                    direction: 'candidate_to_company',
+                    type: 'company_research',
+                    category: '工作生活平衡',
+                    text: '请问这个岗位的工作节奏如何？加班频率和原因大概是什么情况？',
+                    tips: '考察工作生活平衡的真实情况'
                 }
             ];
 
@@ -1922,9 +2106,10 @@
 
             displayQuestions();
 
-            addLog('Candidate', 'success', '面试准备完成，共5个问题');
-            addTimeline('System', '面试环节已开启');
-            showToast('面试开始！请依次回答问题', 'success');
+            addLog('Candidate', 'success', '面试准备完成，共6个问题（3道技术题 + 3道反问公司）');
+            addLog('Interview Agent', 'info', '双向面试：前3题公司考察候选人，后3题候选人考察公司');
+            addTimeline('System', '面试环节已开启 <strong>（双向面试）</strong>');
+            showToast('面试开始！前3题考察候选人，后3题候选人反问公司', 'success');
 
             updateAgentStatus('candidate', 'idle');
         }
@@ -1935,17 +2120,30 @@
 
             if (!q) return;
 
+            const isCompanyQuestion = q.direction === 'company_to_candidate';
+            const directionLabel = isCompanyQuestion
+                ? '<span style="background: rgba(79, 142, 247, 0.2); color: var(--accent-blue); padding: 4px 10px; border-radius: 4px; font-size: 11px; margin-right: 8px;">🏢 公司考察</span>'
+                : '<span style="background: rgba(52, 211, 153, 0.2); color: var(--accent-green); padding: 4px 10px; border-radius: 4px; font-size: 11px; margin-right: 8px;">👤 候选人反问</span>';
+
             container.innerHTML = `
-                <div style="margin-bottom: 16px; color: var(--text-secondary); font-size: 13px;">
-                    问题 ${state.interview.currentQuestionIndex + 1} / ${state.interview.questions.length}
+                <div style="margin-bottom: 16px; color: var(--text-secondary); font-size: 13px; display: flex; align-items: center; gap: 8px;">
+                    <span>问题 ${state.interview.currentQuestionIndex + 1} / ${state.interview.questions.length}</span>
+                    ${directionLabel}
+                    ${q.direction === 'candidate_to_company' ? '<span style="color: var(--accent-green);">(候选人的问题)</span>' : ''}
                 </div>
-                <div class="question-card">
-                    <span class="question-type ${q.type}">${q.type === 'technical' ? '🔧 技术问题' : '💬 行为问题'}</span>
+                <div class="question-card" style="border-left: 3px solid ${isCompanyQuestion ? 'var(--accent-blue)' : 'var(--accent-green)'};">
+                    <span class="question-type ${q.type === 'technical' ? 'technical' : 'behavioral'}">
+                        ${q.type === 'technical' ? '🔧 技术' : q.type === 'behavioral' ? '💬 行为' : '🏢 公司调研'}
+                    </span>
+                    <span style="font-size: 11px; color: var(--accent-purple); margin-left: 8px;">#${q.category}</span>
                     <div class="question-text">${q.text}</div>
                     <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
                         💡 提示: ${q.tips}
                     </div>
-                    <textarea class="answer-input" id="answerInput" placeholder="请在此输入你的回答..."></textarea>
+                    <textarea class="answer-input" id="answerInput"
+                        placeholder="${isCompanyQuestion ? '请在此输入你的回答...' : '请在此输入公司方的回答...（由系统模拟）'}"
+                        ${isCompanyQuestion ? '' : 'readonly style="background: rgba(52, 211, 153, 0.1);"'}
+                    ></textarea>
                 </div>
             `;
 
@@ -1953,52 +2151,99 @@
         }
 
         async function submitAnswer() {
-            const answer = document.getElementById('answerInput').value.trim();
-            if (!answer) {
-                showToast('请输入回答', 'error');
-                return;
+            const currentQ = state.interview.questions[state.interview.currentQuestionIndex];
+            const isCompanyQuestion = currentQ.direction === 'company_to_candidate';
+
+            let answer;
+            if (isCompanyQuestion) {
+                answer = document.getElementById('answerInput').value.trim();
+                if (!answer) {
+                    showToast('请输入你的回答', 'error');
+                    return;
+                }
+            } else {
+                // 候选人反问公司 - 系统模拟回答
+                answer = await simulateCompanyResponse(currentQ.category);
             }
 
-            const currentQ = state.interview.questions[state.interview.currentQuestionIndex];
-
-            addLog('Candidate', 'info', `提交回答 Q${currentQ.id}: ${answer.substring(0, 50)}...`);
+            addLog(isCompanyQuestion ? 'Candidate' : 'Recruiter',
+                   'info',
+                   `${isCompanyQuestion ? '候选人回答' : '公司回答'} Q${currentQ.id}: ${answer.substring(0, 50)}...`);
 
             // Simulate evaluation
             await sleep(1000);
 
-            const score = Math.floor(Math.random() * 10) + 85; // 85-95
+            // 评分逻辑
+            let score;
+            let evalDimension;
+            if (isCompanyQuestion) {
+                score = Math.floor(Math.random() * 15) + 85; // 85-100
+                evalDimension = currentQ.category; // Python, STAR, System Design
+            } else {
+                // 候选人对公司的评估 - 模拟公司回答的质量
+                score = Math.floor(Math.random() * 20) + 75; // 75-95
+                evalDimension = 'candidate_' + currentQ.category; // 成长空间, 团队文化, 工作平衡
+            }
 
             state.interview.answers.push({
                 questionId: currentQ.id,
+                direction: currentQ.direction,
+                category: currentQ.category,
                 answer,
                 score,
-                feedback: score >= 90 ? '回答非常完整' : score >= 85 ? '回答良好' : '需要改进'
+                evalDimension,
+                feedback: score >= 92 ? '非常优秀' : score >= 85 ? '良好' : '一般'
             });
 
-            addLog('System', 'success', `Q${currentQ.id} 评估得分: ${score}/100`);
+            // 更新双向评估
+            if (!isCompanyQuestion) {
+                // 记录候选人对公司的评价分数
+                const catEval = state.interview.mutualMatch.candidateEval;
+                if (currentQ.category === '成长空间') catEval.growthMeet = score;
+                if (currentQ.category === '团队文化') catEval.cultureMeet = score;
+                if (currentQ.category === '工作生活平衡') catEval.balanceMeet = score;
+            }
+
+            addLog('Interview Agent', 'success', `Q${currentQ.id} [${currentQ.direction === 'company_to_candidate' ? '公司考察' : '候选人反问'}] 得分: ${score}/100`);
 
             if (state.interview.currentQuestionIndex < state.interview.questions.length - 1) {
                 state.interview.currentQuestionIndex++;
                 displayQuestions();
-                showToast('回答已提交，下一题', 'success');
+                showToast(`${isCompanyQuestion ? '回答已提交，下一题' : '公司已回答，下一题'}`, 'success');
             } else {
                 showToast('所有问题已回答完毕', 'info');
                 document.getElementById('interviewActions').innerHTML = `
                     <button class="btn btn-success btn-block" onclick="completeInterview()">
-                        <span>✅</span> 查看面试报告
+                        <span>✅</span> 查看双向评估报告
                     </button>
                 `;
             }
         }
 
+        async function simulateCompanyResponse(category) {
+            // 模拟公司对候选人反问的回答
+            const responses = {
+                '成长空间': '我们公司有完善的技术晋升通道，从T1到T9，年度评审。目前团队中70%的技术骨干是校招生培养的。公司还提供外出培训补贴和内部技术导师制。',
+                '团队文化': '我们是典型的工程师文化，鼓励技术分享（每周技术Talk）、代码评审（PR必须review）、结对编程（复杂项目）。技术债务管理很重视，每两周有一天重构时间。',
+                '工作生活平衡': '项目紧的时候会加班，但不是常态。我们有弹性工作制，核心时间10-16点。周末加班可以调休，节假日加班按法规执行。之前有员工调研显示满意度在行业前20%。'
+            };
+            await sleep(500);
+            return responses[category] || '这个问题我们会安排HR详细沟通。';
+        }
+
         async function completeInterview() {
-            showToast('正在生成面试报告...', 'info');
-            addLog('System', 'info', '正在生成综合评估报告...');
+            showToast('正在生成双向评估报告...', 'info');
+            addLog('Interview Agent', 'info', '正在生成双向评估报告...');
 
             await sleep(2000);
 
-            // Generate report
-            const avgScore = state.interview.answers.reduce((sum, a) => sum + a.score, 0) / state.interview.answers.length;
+            const companyAnswers = state.interview.answers.filter(a => a.direction === 'company_to_candidate');
+            const candidateAnswers = state.interview.answers.filter(a => a.direction === 'candidate_to_company');
+
+            const companyAvgScore = companyAnswers.reduce((sum, a) => sum + a.score, 0) / companyAnswers.length;
+            const candidateAvgScore = candidateAnswers.reduce((sum, a) => sum + a.score, 0) / candidateAnswers.length;
+            const mutualScore = Math.sqrt(companyAvgScore * candidateAvgScore);
+            const isMutualMatch = companyAvgScore >= 75 && candidateAvgScore >= 70;
 
             const report = `# 面试评估报告
 
@@ -2055,46 +2300,64 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
             state.pipeline.interviewCompleted = true;
 
             document.getElementById('reportContent').textContent = report;
-            displayEvaluationResult(avgScore);
+            displayDualEvaluationResult(companyAvgScore, candidateAvgScore, mutualScore, isMutualMatch);
 
-            switchTab('interview', 'interview-evaluation');
+            switchTab('interview', 'interview-report');
             updatePipelineStep(6);
 
-            addLog('System', 'success', '面试报告已生成');
-            addTimeline('System', '面试完成，等待发放Offer');
-            showToast('面试报告已生成！', 'success');
-
-            // Show offer after delay
-            setTimeout(() => sendOffer(), 2000);
+            addLog('Interview Agent', 'success', `双向评估完成 - 公司:${companyAvgScore.toFixed(0)}% 候选人:${candidateAvgScore.toFixed(0)}% 双向匹配:${mutualScore.toFixed(0)}%`);
+            addTimeline('System', `面试完成 - 双向匹配度 <strong>${mutualScore.toFixed(0)}%</strong>`);
+            if (isMutualMatch) {
+                showToast('双向达标！正在发放Offer...', 'success');
+                setTimeout(() => sendOffer(), 2000);
+            } else {
+                showToast('部分达标，需要进一步谈判', 'warning');
+                setTimeout(() => showNegotiationNeeded(), 2000);
+            }
         }
 
-        function displayEvaluationResult(avgScore) {
+        function displayDualEvaluationResult(companyScore, candidateScore, mutualScore, isMutualMatch) {
             const container = document.getElementById('evaluationResult');
-            const scores = [
-                { label: '技术深度', value: 4.5, color: 'var(--accent-blue)' },
-                { label: '问题解决', value: 4.2, color: 'var(--accent-green)' },
-                { label: '沟通表达', value: 4.0, color: 'var(--accent-purple)' },
-                { label: '文化匹配', value: 4.3, color: 'var(--accent-orange)' },
-                { label: '成长潜力', value: 4.5, color: 'var(--accent-red)' }
-            ];
 
             container.innerHTML = `
-                <div class="eval-scores">
-                    ${scores.map(s => `
-                        <div class="eval-score-item">
-                            <div class="eval-score-value" style="color: ${s.color}">${s.value}</div>
-                            <div class="eval-score-label">${s.label}</div>
-                        </div>
-                    `).join('')}
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                    <div style="text-align: center; padding: 20px; background: rgba(79, 142, 247, 0.1); border-radius: 12px;">
+                        <div style="font-size: 12px; color: var(--accent-blue); margin-bottom: 8px;">🏢 公司视角</div>
+                        <div style="font-size: 36px; font-weight: 700; color: var(--accent-blue);">${companyScore.toFixed(0)}%</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: rgba(167, 139, 250, 0.1); border-radius: 12px;">
+                        <div style="font-size: 12px; color: var(--accent-purple); margin-bottom: 8px;">🔗 双向匹配</div>
+                        <div style="font-size: 36px; font-weight: 700; color: var(--accent-purple);">${mutualScore.toFixed(0)}%</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: rgba(52, 211, 153, 0.1); border-radius: 12px;">
+                        <div style="font-size: 12px; color: var(--accent-green); margin-bottom: 8px;">👤 候选人视角</div>
+                        <div style="font-size: 36px; font-weight: 700; color: var(--accent-green);">${candidateScore.toFixed(0)}%</div>
+                    </div>
                 </div>
-                <div class="match-score">
-                    <div class="score-circle ${avgScore >= 90 ? 'high' : 'medium'}">${avgScore.toFixed(0)}</div>
-                    <div>
-                        <div class="score-label">综合得分</div>
-                        <div style="font-size: 14px; font-weight: 600;">${avgScore >= 90 ? '强烈推荐' : '推荐'}</div>
+                <div style="padding: 20px; background: ${isMutualMatch ? 'rgba(52, 211, 153, 0.1)' : 'rgba(245, 158, 11, 0.1)'}; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 18px; font-weight: 700; color: ${isMutualMatch ? 'var(--accent-green)' : 'var(--accent-orange)'};">
+                        ${isMutualMatch ? '✅ 双向达标 - 可以发放Offer' : '⚠️ 部分达标 - 需要谈判'}
                     </div>
                 </div>
             `;
+        }
+
+        function showNegotiationNeeded() {
+            document.getElementById('offerSection').style.display = 'block';
+            document.getElementById('offerDetails').innerHTML = `
+                <div style="padding: 20px; background: rgba(245, 158, 11, 0.1); border-radius: 12px; text-align: center;">
+                    <div style="font-size: 16px; font-weight: 600; color: var(--accent-orange); margin-bottom: 8px;">⚠️ 双向匹配未完全达标</div>
+                    <div style="font-size: 13px; color: var(--text-secondary);">建议先解决候选人关切的问题</div>
+                </div>
+                <div class="action-bar" style="margin-top: 16px;">
+                    <button class="btn btn-primary" onclick="arrangeFollowUp()"><span>📞</span> 安排跟进沟通</button>
+                </div>
+            `;
+        }
+
+        function arrangeFollowUp() {
+            addLog('Recruiter', 'info', '正在协调跟进沟通时间...');
+            showToast('已安排跟进沟通', 'success');
         }
 
         async function sendOffer() {
