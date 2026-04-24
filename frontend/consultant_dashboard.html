@@ -57,8 +57,8 @@
         <p>猎头顾问工作台 - 候选人管理与匹配</p>
         <div class="header-actions">
             <span id="userDisplay" style="margin-right: 15px; font-size: 14px;"></span>
-            <button class="btn btn-sm btn-warning" onclick="showToast('搜索候选人')">🔍 搜索</button>
-            <button class="btn btn-sm btn-secondary" onclick="showToast('刷新数据')">🔄 刷新</button>
+            <button class="btn btn-sm btn-warning" onclick="searchCandidates()">🔍 搜索</button>
+            <button class="btn btn-sm btn-secondary" onclick="refreshData()">🔄 刷新</button>
             <button class="btn btn-sm btn-danger" onclick="logout()">🚪 退出</button>
         </div>
     </div>
@@ -117,7 +117,7 @@
 
         <!-- 候选人列表 -->
         <div class="card">
-            <h2>👥 候选人管理<div><button class="btn btn-sm btn-primary" onclick="showToast('新建候选人')">+ 新建</button><button class="btn btn-sm btn-secondary" onclick="showToast('批量导入')">📥 导入</button><button class="btn btn-sm btn-secondary" onclick="showToast('导出列表')">📤 导出</button></div></h2>
+            <h2>👥 候选人管理<div><button class="btn btn-sm btn-primary" onclick="openAddCandidate()">+ 新建</button><button class="btn btn-sm btn-secondary" onclick="openImport()">📥 导入</button><button class="btn btn-sm btn-secondary" onclick="exportCandidates()">📤 导出</button></div></h2>
             <div style="margin-bottom: 15px;">
                 <button class="btn btn-sm btn-primary" onclick="showToast('筛选')">🔍 筛选</button>
                 <button class="btn btn-sm btn-secondary" onclick="showToast('排序')">↕️ 排序</button>
@@ -128,11 +128,11 @@
                 <tbody>
                     <tr>
                         <td>李明</td><td>字节跳动 · AI算法工程师</td><td><span class="match-badge">92%</span></td><td><span class="stage-badge stage-interview">面试中</span></td><td>猎聘</td>
-                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-primary" onclick="showToast('生成邮件')">📧 邮件</button><button class="btn btn-sm btn-warning" onclick="showToast('安排面试')">📅 面试</button><button class="btn btn-sm btn-danger" onclick="showToast('标记无效')">✕</button></td>
+                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="viewCandidate(${c.id})">查看</button><button class="btn btn-sm btn-primary" onclick="openSendEmail('${c.email}')">📧</button><button class="btn btn-sm btn-warning" onclick="currentCandidateId=${c.id};openSchedule()">📅</button><button class="btn btn-sm btn-danger" onclick="markInvalid(${c.id})">✕</button></td>
                     </tr>
                     <tr>
                         <td>王芳</td><td>阿里巴巴 · LLM研究员</td><td><span class="match-badge">88%</span></td><td><span class="stage-badge stage-qualified">已筛选</span></td><td>LinkedIn</td>
-                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="showToast('查看详情')">查看</button><button class="btn btn-sm btn-primary" onclick="showToast('生成邮件')">📧 邮件</button><button class="btn btn-sm btn-success" onclick="showToast('推送客户')">➡️ 推送</button><button class="btn btn-sm btn-danger" onclick="showToast('标记无效')">✕</button></td>
+                        <td class="action-row"><button class="btn btn-sm btn-secondary" onclick="viewCandidate(${c.id})">查看</button><button class="btn btn-sm btn-primary" onclick="openSendEmail('${c.email}')">📧</button><button class="btn btn-sm btn-success" onclick="pushToClient(${c.id})">➡️</button><button class="btn btn-sm btn-danger" onclick="markInvalid(${c.id})">✕</button></td>
                     </tr>
                     <tr>
                         <td>张强</td><td>腾讯 · AI架构师</td><td><span class="match-badge">85%</span></td><td><span class="stage-badge stage-offer">Offer</span></td><td>内推</td>
@@ -202,34 +202,339 @@
         </div>
     </div>
 
+    <!-- Toast -->
     <div class="toast" id="toast"></div>
-    <script>
-        function showToast(action) { const toast = document.getElementById('toast'); toast.textContent = '✅ ' + action + ' - 操作成功'; toast.className = 'toast show'; setTimeout(() => { toast.className = 'toast'; }, 2500); }
 
-        // 显示当前用户
-        function displayCurrentUser() {
-            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
-            if (session.name) {
-                document.getElementById('userDisplay').textContent = '👤 ' + session.name + ' (consultant)';
-            }
+    <!-- 新建候选人模态框 -->
+    <div class="modal-overlay" id="modal-add-candidate" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;">
+        <div style="background:white;border-radius:12px;padding:25px;width:500px;max-height:85vh;overflow-y:auto;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #eee;">
+                <h3 style="margin:0;">➕ 新建候选人</h3>
+                <span onclick="closeModal('modal-add-candidate')" style="cursor:pointer;font-size:24px;color:#999;">×</span>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">姓名 *</label>
+                <input type="text" id="ncName" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">邮箱</label>
+                <input type="email" id="ncEmail" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">电话</label>
+                <input type="tel" id="ncPhone" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">当前公司</label>
+                <input type="text" id="ncCompany" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">职位</label>
+                <input type="text" id="ncPosition" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">技能（逗号分隔）</label>
+                <input type="text" id="ncSkills" placeholder="Python, AI, NLP" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="text-align:center;margin-top:20px;">
+                <button class="btn btn-primary" onclick="createCandidate()">✓ 创建候选人</button>
+                <button class="btn btn-secondary" onclick="closeModal('modal-add-candidate')">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 候选人详情模态框 -->
+    <div class="modal-overlay" id="modal-candidate-detail" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;">
+        <div style="background:white;border-radius:12px;padding:25px;width:600px;max-height:85vh;overflow-y:auto;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #eee;">
+                <h3 style="margin:0;" id="cdTitle">候选人详情</h3>
+                <span onclick="closeModal('modal-candidate-detail')" style="cursor:pointer;font-size:24px;color:#999;">×</span>
+            </div>
+            <div id="cdContent"></div>
+        </div>
+    </div>
+
+    <!-- 发送邮件模态框 -->
+    <div class="modal-overlay" id="modal-send-email" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;">
+        <div style="background:white;border-radius:12px;padding:25px;width:550px;max-height:85vh;overflow-y:auto;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #eee;">
+                <h3 style="margin:0;">📧 发送邮件</h3>
+                <span onclick="closeModal('modal-send-email')" style="cursor:pointer;font-size:24px;color:#999;">×</span>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">收件人</label>
+                <input type="email" id="emailTo" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">主题</label>
+                <input type="text" id="emailSubject" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">内容</label>
+                <textarea id="emailBody" rows="6" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:vertical;"></textarea>
+            </div>
+            <div style="text-align:center;margin-top:20px;">
+                <button class="btn btn-primary" onclick="sendEmail()">📤 发送</button>
+                <button class="btn btn-secondary" onclick="closeModal('modal-send-email')">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 安排面试模态框 -->
+    <div class="modal-overlay" id="modal-schedule" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;">
+        <div style="background:white;border-radius:12px;padding:25px;width:500px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #eee;">
+                <h3 style="margin:0;">📅 安排面试</h3>
+                <span onclick="closeModal('modal-schedule')" style="cursor:pointer;font-size:24px;color:#999;">×</span>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">面试类型</label>
+                <select id="interviewType" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+                    <option>电话面试</option>
+                    <option>视频面试</option>
+                    <option>现场面试</option>
+                </select>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">日期时间</label>
+                <input type="datetime-local" id="interviewTime" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block;color:#666;margin-bottom:5px;font-size:14px;">面试官</label>
+                <input type="text" id="interviewer" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+            </div>
+            <div style="text-align:center;margin-top:20px;">
+                <button class="btn btn-primary" onclick="scheduleInterview()">✓ 确认安排</button>
+                <button class="btn btn-secondary" onclick="closeModal('modal-schedule')">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导入候选人模态框 -->
+    <div class="modal-overlay" id="modal-import" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:200;justify-content:center;align-items:center;">
+        <div style="background:white;border-radius:12px;padding:25px;width:500px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #eee;">
+                <h3 style="margin:0;">📥 批量导入</h3>
+                <span onclick="closeModal('modal-import')" style="cursor:pointer;font-size:24px;color:#999;">×</span>
+            </div>
+            <div style="border:2px dashed #38ef7d;border-radius:12px;padding:40px;text-align:center;cursor:pointer;" onclick="document.getElementById('importFile').click()">
+                <div style="font-size:48px;margin-bottom:15px;">📁</div>
+                <div style="color:#333;font-size:16px;margin-bottom:10px;">点击选择文件或拖拽到此处</div>
+                <div style="color:#888;font-size:13px;">支持 CSV、Excel 格式</div>
+                <input type="file" id="importFile" style="display:none;" accept=".csv,.xlsx" onchange="handleImportFile(event)">
+            </div>
+            <div style="margin-top:15px;padding:15px;background:#f8f9fa;border-radius:8px;font-size:13px;color:#666;">
+                <strong>导入格式说明：</strong><br>
+                姓名, 邮箱, 电话, 公司, 职位, 技能<br>
+                <span style="color:#999;">（第一行为表头，数据从第二行开始）</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 候选人数据 ==========
+        let candidatesData = [
+            { id: 1, name: '张明', email: 'zhangming@example.com', phone: '138-0000-1234', company: '字节跳动', position: 'AI算法工程师', skills: 'Python,TensorFlow,NLP', stage: 'interview', match: 92 },
+            { id: 2, name: '李华', email: 'lihua@example.com', phone: '139-0000-5678', company: '阿里巴巴', position: 'LLM研究员', skills: 'PyTorch,Transformer,LLM', stage: 'qualified', match: 87 },
+            { id: 3, name: '王芳', email: 'wangfang@example.com', phone: '137-0000-9012', company: '腾讯', position: 'AI架构师', skills: '架构设计,MLOps,K8s', stage: 'offer', match: 95 },
+            { id: 4, name: '刘强', email: 'liuqiang@example.com', phone: '136-0000-3456', company: '美团', position: '推荐算法工程师', skills: '推荐系统,深度学习', stage: 'sourced', match: 78 },
+            { id: 5, name: '陈静', email: 'chenjing@example.com', phone: '135-0000-7890', company: '百度', position: 'NLP工程师', skills: 'NLP,知识图谱,BERT', stage: 'interview', match: 89 }
+        ];
+        let currentCandidateId = null;
+
+        // ========== Toast ==========
+        function showToast(action, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = (type === 'success' ? '✅ ' : '⚠️ ') + action;
+            toast.className = 'toast show';
+            setTimeout(() => { toast.className = 'toast'; }, 2500);
         }
 
-        // 退出登录
+        // ========== 模态框 ==========
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // ========== 候选人CRUD ==========
+        function openAddCandidate() { openModal('modal-add-candidate'); }
+        function createCandidate() {
+            const name = document.getElementById('ncName').value.trim();
+            if (!name) { showToast('请填写姓名', 'error'); return; }
+            const newCandidate = {
+                id: Date.now(),
+                name: name,
+                email: document.getElementById('ncEmail').value || name.toLowerCase().replace(' ', '') + '@example.com',
+                phone: document.getElementById('ncPhone').value || '未填写',
+                company: document.getElementById('ncCompany').value || '待定',
+                position: document.getElementById('ncPosition').value || '待定',
+                skills: document.getElementById('ncSkills').value || '待定',
+                stage: 'sourced',
+                match: Math.floor(Math.random() * 20 + 70)
+            };
+            candidatesData.unshift(newCandidate);
+            renderCandidates();
+            closeModal('modal-add-candidate');
+            clearCandidateForm();
+            showToast('候选人创建成功！');
+        }
+        function clearCandidateForm() { ['ncName','ncEmail','ncPhone','ncCompany','ncPosition','ncSkills'].forEach(id => document.getElementById(id).value = ''); }
+
+        function viewCandidate(id) {
+            const c = candidatesData.find(x => x.id === id);
+            if (!c) return;
+            currentCandidateId = id;
+            const stageLabels = { sourced: '已寻访', qualified: '已筛选', interview: '面试中', offer: 'Offer', closed: '已关闭' };
+            document.getElementById('cdTitle').textContent = c.name + ' - 详情';
+            document.getElementById('cdContent').innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:20px;">
+                    <div><div style="color:#888;font-size:13px;">邮箱</div><div style="font-weight:500;">${c.email}</div></div>
+                    <div><div style="color:#888;font-size:13px;">电话</div><div style="font-weight:500;">${c.phone}</div></div>
+                    <div><div style="color:#888;font-size:13px;">公司</div><div style="font-weight:500;">${c.company}</div></div>
+                    <div><div style="color:#888;font-size:13px;">职位</div><div style="font-weight:500;">${c.position}</div></div>
+                </div>
+                <div style="margin-bottom:20px;">
+                    <div style="color:#888;font-size:13px;margin-bottom:8px;">技能标签</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        ${c.skills.split(',').map(s => `<span style="background:#e8ffea;color:#38ef7d;padding:4px 12px;border-radius:12px;font-size:13px;">${s.trim()}</span>`).join('')}
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:15px;background:#f8f9fa;border-radius:8px;margin-bottom:20px;">
+                    <div><span style="color:#888;font-size:13px;">当前阶段</span><div style="font-weight:600;margin-top:3px;">${stageLabels[c.stage] || c.stage}</div></div>
+                    <div><span style="color:#888;font-size:13px;">匹配度</span><div style="font-weight:600;color:#38ef7d;margin-top:3px;">${c.match}%</div></div>
+                </div>
+                <div style="text-align:center;">
+                    <button class="btn btn-primary btn-sm" onclick="openSendEmail('${c.email}')">📧 发送邮件</button>
+                    <button class="btn btn-success btn-sm" onclick="openSchedule()">📅 安排面试</button>
+                    <button class="btn btn-secondary btn-sm" onclick="pushToClient(${c.id})">➡️ 推送客户</button>
+                    <button class="btn btn-danger btn-sm" onclick="markInvalid(${c.id})">✕ 标记无效</button>
+                </div>`;
+            openModal('modal-candidate-detail');
+        }
+
+        // ========== 邮件功能 ==========
+        function openSendEmail(email) {
+            closeModal('modal-candidate-detail');
+            document.getElementById('emailTo').value = email;
+            document.getElementById('emailSubject').value = '关于职位机会的沟通';
+            document.getElementById('emailBody').value = '您好，\n\n我注意到您的背景非常出色，我们有一个可能适合您的职位机会，方便的话可以沟通一下。\n\nBest regards';
+            openModal('modal-send-email');
+        }
+        function sendEmail() {
+            const to = document.getElementById('emailTo').value;
+            const subject = document.getElementById('emailSubject').value;
+            if (!to || !subject) { showToast('请填写收件人和主题', 'error'); return; }
+            closeModal('modal-send-email');
+            showToast('邮件已发送至 ' + to);
+        }
+
+        // ========== 面试安排 ==========
+        function openSchedule() {
+            closeModal('modal-candidate-detail');
+            document.getElementById('interviewTime').value = '';
+            document.getElementById('interviewer').value = '';
+            openModal('modal-schedule');
+        }
+        function scheduleInterview() {
+            const time = document.getElementById('interviewTime').value;
+            const type = document.getElementById('interviewType').value;
+            const interviewer = document.getElementById('interviewer').value;
+            if (!time) { showToast('请选择面试时间', 'error'); return; }
+            const c = candidatesData.find(x => x.id === currentCandidateId);
+            if (c) c.stage = 'interview';
+            renderCandidates();
+            closeModal('modal-schedule');
+            showToast(`已安排${type}，时间：${time}`);
+        }
+
+        // ========== 导入功能 ==========
+        function openImport() { openModal('modal-import'); }
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            showToast(`已选择文件: ${file.name}，开始导入...`);
+            setTimeout(() => {
+                const newCandidates = [
+                    { id: Date.now(), name: '导入用户A', email: 'import_a@example.com', phone: '150-0001-0001', company: '新公司A', position: '工程师', skills: 'Python,AI', stage: 'sourced', match: 82 },
+                    { id: Date.now() + 1, name: '导入用户B', email: 'import_b@example.com', phone: '150-0001-0002', company: '新公司B', position: '研究员', skills: 'NLP,深度学习', stage: 'sourced', match: 85 }
+                ];
+                candidatesData = [...newCandidates, ...candidatesData];
+                renderCandidates();
+                closeModal('modal-import');
+                showToast('成功导入 ' + newCandidates.length + ' 条候选人记录！');
+            }, 1500);
+        }
+
+        // ========== 其他操作 ==========
+        function pushToClient(id) {
+            const c = candidatesData.find(x => x.id === id);
+            if (c) { c.stage = 'offer'; renderCandidates(); }
+            closeModal('modal-candidate-detail');
+            showToast('已推送至客户！');
+        }
+        function markInvalid(id) {
+            candidatesData = candidatesData.filter(x => x.id !== id);
+            renderCandidates();
+            closeModal('modal-candidate-detail');
+            showToast('已标记为无效');
+        }
+        function refreshData() { renderCandidates(); showToast('数据已刷新'); }
+        function exportCandidates() {
+            const headers = ['姓名', '邮箱', '电话', '公司', '职位', '技能', '阶段', '匹配度'];
+            const rows = candidatesData.map(c => [c.name, c.email, c.phone, c.company, c.position, c.skills, c.stage, c.match + '%']);
+            let csv = '\uFEFF' + headers.join(',') + '\n';
+            rows.forEach(r => csv += r.join(',') + '\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '候选人列表_' + new Date().toISOString().split('T')[0] + '.csv';
+            link.click();
+            showToast('候选人列表已导出！');
+        }
+
+        // ========== 渲染候选人列表 ==========
+        function renderCandidates() {
+            const tbody = document.getElementById('candidatesTable');
+            if (!tbody) return;
+            const stageLabels = { sourced: '已寻访', qualified: '已筛选', interview: '面试中', offer: 'Offer', closed: '已关闭' };
+            tbody.innerHTML = candidatesData.map(c => `
+                <tr>
+                    <td style="padding:12px;border-bottom:1px solid #e0e0e0;"><strong>${c.name}</strong></td>
+                    <td style="padding:12px;border-bottom:1px solid #e0e0e0;">${c.company}</td>
+                    <td style="padding:12px;border-bottom:1px solid #e0e0e0;">${c.position}</td>
+                    <td style="padding:12px;border-bottom:1px solid #e0e0e0;">${c.skills.split(',').slice(0,2).map(s => `<span style="background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:12px;margin-right:3px;">${s.trim()}</span>`).join('')}</td>
+                    <td style="padding:12px;border-bottom:1px solid #e0e0e0;"><span class="match-badge">${c.match}%</span></td>
+                    <td style="padding:12px;border-bottom:1px solid #e0e0e0;"><span class="stage-badge stage-${c.stage}">${stageLabels[c.stage] || c.stage}</span></td>
+                    <td class="action-row" style="padding:12px;border-bottom:1px solid #e0e0e0;">
+                        <button class="btn btn-sm btn-secondary" onclick="viewCandidate(${c.id})">查看</button>
+                        <button class="btn btn-sm btn-primary" onclick="openSendEmail('${c.email}')">📧</button>
+                        <button class="btn btn-sm btn-warning" onclick="currentCandidateId=${c.id};openSchedule()">📅</button>
+                        <button class="btn btn-sm btn-danger" onclick="markInvalid(${c.id})">✕</button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        // ========== 显示当前用户 ==========
+        function displayCurrentUser() {
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            if (session.name) document.getElementById('userDisplay').textContent = '👤 ' + session.name + ' (consultant)';
+        }
+
+        // ========== 退出登录 ==========
         function logout() {
             localStorage.removeItem('talentAI_session');
-            alert('已退出登录');
             window.location.href = 'login.html';
         }
 
-        // 检查登录状态
+        // ========== 搜索功能 ==========
+        function searchCandidates() {
+            showToast('搜索候选人...');
+        }
+
+        // ========== 初始化 ==========
         (function checkAuth() {
             const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
-            if (!session.isLoggedIn) {
-                alert('请先登录');
-                window.location.href = 'login.html';
-                return;
-            }
+            if (!session.isLoggedIn) { window.location.href = 'login.html'; return; }
             displayCurrentUser();
+            renderCandidates();
         })();
     </script>
 </body>
