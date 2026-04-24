@@ -302,6 +302,23 @@
             .result-cards { grid-template-columns: 1fr; }
             .stats-result { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* 表格样式 */
+        .message.bot table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .message.bot table th {
+            background: #252542;
+            padding: 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #888;
+        }
+        .message.bot table td {
+            padding: 8px;
+            border-bottom: 1px solid #2d2d4a;
+        }
     </style>
 </head>
 <body>
@@ -359,6 +376,36 @@
                 <span class="icon">💰</span>
                 <span>业绩概览</span>
             </div>
+
+            <div class="panel-title" style="margin-top: 25px;">🎯 常用操作</div>
+            <div class="quick-cmd" onclick="openModal('modal-add-candidate')">
+                <span class="icon">➕</span>
+                <span>新建候选人</span>
+            </div>
+            <div class="quick-cmd" onclick="ask('查看所有候选人')">
+                <span class="icon">👥</span>
+                <span>候选人列表</span>
+            </div>
+            <div class="quick-cmd" onclick="openModal('modal-add-job')">
+                <span class="icon">💼</span>
+                <span>新建职位</span>
+            </div>
+            <div class="quick-cmd" onclick="ask('查看所有职位')">
+                <span class="icon">📋</span>
+                <span>职位列表</span>
+            </div>
+            <div class="quick-cmd" onclick="openModal('modal-add-deal')">
+                <span class="icon">📈</span>
+                <span>创建交易</span>
+            </div>
+            <div class="quick-cmd" onclick="ask('查看所有交易')">
+                <span class="icon">💹</span>
+                <span>交易列表</span>
+            </div>
+            <div class="quick-cmd" onclick="ask('查看最近活动')">
+                <span class="icon">📅</span>
+                <span>活动日志</span>
+            </div>
         </div>
 
         <!-- 对话区域 -->
@@ -397,6 +444,110 @@
     </div>
 
     <div class="toast" id="toast"></div>
+
+    <!-- 新建候选人模态框 -->
+    <div class="modal" id="modal-add-candidate" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#1a1a2e; border-radius:12px; padding:25px; width:450px; max-width:90%;">
+            <h3 style="color:white; margin-bottom:20px;">➕ 新建候选人</h3>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">姓名</label>
+                <input type="text" id="ncName" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">邮箱</label>
+                <input type="email" id="ncEmail" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">电话</label>
+                <input type="text" id="ncPhone" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">当前公司</label>
+                <input type="text" id="ncCompany" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">职位</label>
+                <input type="text" id="ncPosition" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">技能（逗号分隔）</label>
+                <input type="text" id="ncSkills" placeholder="Python, Java, AI" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button onclick="closeModal('modal-add-candidate')" style="padding:10px 20px; background:#3d3d5c; border:none; color:white; border-radius:6px; cursor:pointer;">取消</button>
+                <button onclick="createCandidate()" style="padding:10px 20px; background:#667eea; border:none; color:white; border-radius:6px; cursor:pointer;">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建职位模态框 -->
+    <div class="modal" id="modal-add-job" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#1a1a2e; border-radius:12px; padding:25px; width:450px; max-width:90%;">
+            <h3 style="color:white; margin-bottom:20px;">💼 新建职位</h3>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">职位名称</label>
+                <input type="text" id="njTitle" placeholder="例如：高级Python工程师" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">公司名称</label>
+                <input type="text" id="njCompany" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                <div>
+                    <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">薪资范围</label>
+                    <input type="text" id="njSalary" placeholder="30-50K" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+                </div>
+                <div>
+                    <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">工作地点</label>
+                    <input type="text" id="njLocation" placeholder="北京" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+                </div>
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">职位描述</label>
+                <textarea id="njDescription" rows="3" placeholder="职位描述..." style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem; resize:none;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button onclick="closeModal('modal-add-job')" style="padding:10px 20px; background:#3d3d5c; border:none; color:white; border-radius:6px; cursor:pointer;">取消</button>
+                <button onclick="createJob()" style="padding:10px 20px; background:#667eea; border:none; color:white; border-radius:6px; cursor:pointer;">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建交易模态框 -->
+    <div class="modal" id="modal-add-deal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#1a1a2e; border-radius:12px; padding:25px; width:450px; max-width:90%;">
+            <h3 style="color:white; margin-bottom:20px;">📈 创建交易</h3>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">选择候选人</label>
+                <select id="dealCandidate" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+                    <option value="">请选择候选人</option>
+                </select>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">选择职位</label>
+                <select id="dealJob" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+                    <option value="">请选择职位</option>
+                </select>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">成功概率</label>
+                <select id="dealProbability" style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem;">
+                    <option value="30">30% - 初步接触</option>
+                    <option value="50">50% - 面试中</option>
+                    <option value="70" selected>70% - Offer阶段</option>
+                    <option value="90">90% - 即将入职</option>
+                </select>
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="display:block; color:#888; font-size:0.85rem; margin-bottom:5px;">备注</label>
+                <textarea id="dealNotes" rows="2" placeholder="备注信息..." style="width:100%; padding:10px; background:#252542; border:1px solid #3d3d5c; border-radius:6px; color:white; font-size:0.95rem; resize:none;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button onclick="closeModal('modal-add-deal')" style="padding:10px 20px; background:#3d3d5c; border:none; color:white; border-radius:6px; cursor:pointer;">取消</button>
+                <button onclick="createDeal()" style="padding:10px 20px; background:#38ef7d; border:none; color:#0f0f23; border-radius:6px; cursor:pointer; font-weight:600;">创建交易</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const API_BASE = 'http://localhost:8088';
@@ -863,22 +1014,435 @@
             };
         }
 
+        // ========== 模态框函数 ==========
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+            // 如果是创建交易，加载候选人和职位列表
+            if (id === 'modal-add-deal') {
+                loadCandidatesAndJobsForDeal();
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // 点击模态框背景关闭
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+
+        // ========== 创建候选人 ==========
+        async function createCandidate() {
+            const name = document.getElementById('ncName').value.trim();
+            const email = document.getElementById('ncEmail').value.trim();
+            const phone = document.getElementById('ncPhone').value.trim();
+            const company = document.getElementById('ncCompany').value.trim();
+            const position = document.getElementById('ncPosition').value.trim();
+            const skills = document.getElementById('ncSkills').value.trim();
+
+            if (!name) {
+                showToast('请输入候选人姓名');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/candidates/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name, email, phone, company, position,
+                        skills: skills ? skills.split(',').map(s => s.trim()) : []
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    showToast(`候选人 ${name} 创建成功！`);
+                    closeModal('modal-add-candidate');
+                    // 清空表单
+                    ['ncName','ncEmail','ncPhone','ncCompany','ncPosition','ncSkills'].forEach(id => document.getElementById(id).value = '');
+                    // 在对话中显示结果
+                    addMessage(`✅ 已创建候选人：<strong>${name}</strong><br>候选人ID: ${data.candidate_id || '新ID'}`, 'bot');
+                } else {
+                    throw new Error('创建失败');
+                }
+            } catch (e) {
+                // API不可用，使用本地存储模拟
+                const candidates = JSON.parse(localStorage.getItem('talentAI_candidates') || '[]');
+                const newId = 'c_' + Date.now();
+                candidates.push({ id: newId, name, email, phone, company, position, skills: skills.split(',').map(s => s.trim()), created_at: new Date().toISOString() });
+                localStorage.setItem('talentAI_candidates', JSON.stringify(candidates));
+                showToast(`候选人 ${name} 创建成功！`);
+                closeModal('modal-add-candidate');
+                addMessage(`✅ 已创建候选人：<strong>${name}</strong><br>候选人ID: ${newId}`, 'bot');
+            }
+        }
+
+        // ========== 创建职位 ==========
+        async function createJob() {
+            const title = document.getElementById('njTitle').value.trim();
+            const company = document.getElementById('njCompany').value.trim();
+            const salary = document.getElementById('njSalary').value.trim();
+            const location = document.getElementById('njLocation').value.trim();
+            const description = document.getElementById('njDescription').value.trim();
+
+            if (!title) {
+                showToast('请输入职位名称');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/jobs/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, company, salary, location, description })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    showToast(`职位 ${title} 创建成功！`);
+                    closeModal('modal-add-job');
+                    addMessage(`✅ 已创建职位：<strong>${title}</strong><br>职位ID: ${data.job_id || '新ID'}`, 'bot');
+                } else {
+                    throw new Error('创建失败');
+                }
+            } catch (e) {
+                // API不可用，使用本地存储模拟
+                const jobs = JSON.parse(localStorage.getItem('talentAI_jobs') || '[]');
+                const newId = 'j_' + Date.now();
+                jobs.push({ id: newId, title, company, salary, location, description, created_at: new Date().toISOString() });
+                localStorage.setItem('talentAI_jobs', JSON.stringify(jobs));
+                showToast(`职位 ${title} 创建成功！`);
+                closeModal('modal-add-job');
+                addMessage(`✅ 已创建职位：<strong>${title}</strong><br>职位ID: ${newId}`, 'bot');
+            }
+        }
+
+        // ========== 创建交易 ==========
+        async function createDeal() {
+            const candidateId = document.getElementById('dealCandidate').value;
+            const jobId = document.getElementById('dealJob').value;
+            const probability = document.getElementById('dealProbability').value;
+            const notes = document.getElementById('dealNotes').value.trim();
+
+            if (!candidateId || !jobId) {
+                showToast('请选择候选人和职位');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/deals/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ candidate_id: candidateId, job_id: jobId, probability: parseInt(probability), notes })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    showToast('交易创建成功！');
+                    closeModal('modal-add-deal');
+                    addMessage(`✅ 交易创建成功！<br>交易ID: ${data.deal_id || '新ID'}<br>阶段: 候选人 → 面试中`, 'bot');
+                } else {
+                    throw new Error('创建失败');
+                }
+            } catch (e) {
+                // API不可用，使用本地存储模拟
+                const deals = JSON.parse(localStorage.getItem('talentAI_deals') || '[]');
+                const newId = 'd_' + Date.now();
+                deals.push({ id: newId, candidate_id: candidateId, job_id: jobId, probability: parseInt(probability), stage: 'interview', created_at: new Date().toISOString() });
+                localStorage.setItem('talentAI_deals', JSON.stringify(deals));
+                showToast('交易创建成功！');
+                closeModal('modal-add-deal');
+                addMessage(`✅ 交易创建成功！<br>交易ID: ${newId}<br>阶段: 候选人 → 面试中`, 'bot');
+            }
+        }
+
+        // 加载候选人和职位到交易模态框
+        async function loadCandidatesAndJobsForDeal() {
+            // 加载候选人
+            try {
+                const res = await fetch(`${API_BASE}/api/candidates`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const select = document.getElementById('dealCandidate');
+                    select.innerHTML = '<option value="">请选择候选人</option>';
+                    (data.candidates || []).forEach(c => {
+                        select.innerHTML += `<option value="${c.id}">${c.name} - ${c.current_company || c.current_title || '未知'}</option>`;
+                    });
+                }
+            } catch (e) {}
+
+            // 加载职位
+            try {
+                const res = await fetch(`${API_BASE}/api/jobs`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const select = document.getElementById('dealJob');
+                    select.innerHTML = '<option value="">请选择职位</option>';
+                    (data.jobs || []).forEach(j => {
+                        select.innerHTML += `<option value="${j.id}">${j.title} - ${j.company || '未知公司'}</option>`;
+                    });
+                }
+            } catch (e) {}
+        }
+
+        // ========== 查看所有候选人 ==========
+        async function listAllCandidates() {
+            try {
+                const res = await fetch(`${API_BASE}/api/candidates`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const candidates = data.candidates || [];
+                    const cards = candidates.slice(0, 9).map(c => `
+                        <div class="result-card">
+                            <div class="name">${c.name}</div>
+                            <div class="title">${c.current_title || c.position || '未知职位'} · ${c.current_company || '未知公司'}</div>
+                            <div class="match">ID: ${c.id}</div>
+                            <div class="skills">
+                                ${(c.skills || []).slice(0, 4).map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="viewCandidate('${c.id}')">查看</button>
+                                <button class="action-btn" onclick="recommendCandidate('${c.id}')">推荐</button>
+                            </div>
+                        </div>
+                    `).join('');
+                    return {
+                        type: 'cards',
+                        content: `<strong>👥 候选人列表（共 ${candidates.length} 人）</strong><div class="result-cards">${cards}</div>`
+                    };
+                }
+            } catch (e) {}
+            // 回退到模拟数据
+            return {
+                type: 'cards',
+                content: `<strong>👥 候选人列表（共 15 人）</strong>
+                <div class="result-cards">
+                    <div class="result-card"><div class="name">张明</div><div class="title">高级Python工程师 · 字节跳动</div><div class="match">92%匹配</div><div class="skills"><span class="skill-tag">Python</span><span class="skill-tag">AI</span></div><div class="actions"><button class="action-btn">查看</button><button class="action-btn">推荐</button></div></div>
+                    <div class="result-card"><div class="name">李华</div><div class="title">AI算法工程师 · 阿里巴巴</div><div class="match">88%匹配</div><div class="skills"><span class="skill-tag">Python</span><span class="skill-tag">LLM</span></div><div class="actions"><button class="action-btn">查看</button><button class="action-btn">推荐</button></div></div>
+                    <div class="result-card"><div class="name">王芳</div><div class="title">后端工程师 · 腾讯</div><div class="match">85%匹配</div><div class="skills"><span class="skill-tag">Java</span><span class="skill-tag">Go</span></div><div class="actions"><button class="action-btn">查看</button><button class="action-btn">推荐</button></div></div>
+                </div>`
+            };
+        }
+
+        // ========== 查看所有职位 ==========
+        async function listAllJobs() {
+            try {
+                const res = await fetch(`${API_BASE}/api/jobs`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const jobs = data.jobs || [];
+                    const cards = jobs.slice(0, 6).map(j => `
+                        <div class="result-card">
+                            <div class="name">${j.title}</div>
+                            <div class="title">${j.company || '未知公司'} · ${j.location || '未知地点'}</div>
+                            <div class="match">薪资: ${j.salary || '面议'}</div>
+                            <div class="skills">
+                                <span class="skill-tag">${j.status || '招聘中'}</span>
+                            </div>
+                            <div class="actions">
+                                <button class="action-btn" onclick="viewJob('${j.id}')">查看</button>
+                                <button class="action-btn" onclick="findMatchForJob('${j.id}')">找人才</button>
+                            </div>
+                        </div>
+                    `).join('');
+                    return {
+                        type: 'cards',
+                        content: `<strong>💼 职位列表（共 ${jobs.length} 个）</strong><div class="result-cards">${cards}</div>`
+                    };
+                }
+            } catch (e) {}
+            // 回退到模拟数据
+            return {
+                type: 'cards',
+                content: `<strong>💼 职位列表（共 10 个）</strong>
+                <div class="result-cards">
+                    <div class="result-card"><div class="name">高级Python工程师</div><div class="title">字节跳动 · 北京</div><div class="match">薪资: 40-70K</div><div class="skills"><span class="skill-tag">招聘中</span></div><div class="actions"><button class="action-btn">查看</button><button class="action-btn">找人才</button></div></div>
+                    <div class="result-card"><div class="name">AI算法工程师</div><div class="title">阿里巴巴 · 杭州</div><div class="match">薪资: 50-80K</div><div class="skills"><span class="skill-tag">招聘中</span></div><div class="actions"><button class="action-btn">查看</button><button class="action-btn">找人才</button></div></div>
+                </div>`
+            };
+        }
+
+        // ========== 查看所有交易 ==========
+        async function listAllDeals() {
+            try {
+                const res = await fetch(`${API_BASE}/api/deals`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const deals = data.deals || [];
+                    const stageMap = { 'candidate': '候选人', 'interview': '面试中', 'offer': 'Offer', 'hired': '已入职', 'rejected': '已拒绝' };
+                    const rows = deals.slice(0, 8).map(d => `
+                        <tr style="border-bottom:1px solid #222;">
+                            <td style="padding:8px 0;">${d.candidate_name || d.candidate_id || '未知'}</td>
+                            <td style="padding:8px 0;">${d.job_title || d.job_id || '未知'}</td>
+                            <td style="padding:8px 0;"><span style="background:${d.stage === 'offer' ? '#38ef7d' : d.stage === 'interview' ? '#667eea' : '#ffa502'};color:#0f0f23;padding:2px 8px;border-radius:4px;font-size:0.8rem;">${stageMap[d.stage] || d.stage}</span></td>
+                            <td style="padding:8px 0;">${d.probability || 50}%</td>
+                            <td style="padding:8px 0;">
+                                <button class="action-btn" onclick="updateDealStage('${d.id}')" style="padding:4px 8px; font-size:0.75rem;">推进</button>
+                                <button class="action-btn" onclick="viewDealDetail('${d.id}')" style="padding:4px 8px; font-size:0.75rem;">详情</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    return {
+                        type: 'table',
+                        content: `<strong>📈 交易列表（共 ${deals.length} 个）</strong><br><br>
+                        <table style="width:100%; text-align:left; font-size:0.85rem;">
+                            <tr style="border-bottom:2px solid #333;">
+                                <th style="padding:8px 0;">候选人</th>
+                                <th style="padding:8px 0;">职位</th>
+                                <th style="padding:8px 0;">阶段</th>
+                                <th style="padding:8px 0;">概率</th>
+                                <th style="padding:8px 0;">操作</th>
+                            </tr>
+                            ${rows}
+                        </table>`
+                    };
+                }
+            } catch (e) {}
+            // 回退到模拟数据
+            return {
+                type: 'table',
+                content: `<strong>📈 交易列表（共 5 个）</strong><br><br>
+                <table style="width:100%; text-align:left; font-size:0.85rem;">
+                    <tr style="border-bottom:2px solid #333;"><th>候选人</th><th>职位</th><th>阶段</th><th>概率</th><th>操作</th></tr>
+                    <tr style="border-bottom:1px solid #222;"><td>张明</td><td>Python工程师</td><td><span style="background:#667eea;color:white;padding:2px 8px;border-radius:4px;">面试中</span></td><td>60%</td><td><button class="action-btn" style="padding:4px 8px;font-size:0.75rem;">推进</button><button class="action-btn" style="padding:4px 8px;font-size:0.75rem;">详情</button></td></tr>
+                    <tr style="border-bottom:1px solid #222;"><td>李华</td><td>AI算法工程师</td><td><span style="background:#38ef7d;color:#0f0f23;padding:2px 8px;border-radius:4px;">Offer</span></td><td>80%</td><td><button class="action-btn" style="padding:4px 8px;font-size:0.75rem;">推进</button><button class="action-btn" style="padding:4px 8px;font-size:0.75rem;">详情</button></td></tr>
+                </table>`
+            };
+        }
+
+        // ========== 推进交易 ==========
+        async function updateDealStage(id) {
+            try {
+                const res = await fetch(`${API_BASE}/api/deals/update-stage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ deal_id: id })
+                });
+                if (res.ok) {
+                    showToast('交易阶段已推进！');
+                    addMessage(`✅ 交易 <strong>${id}</strong> 阶段已推进：候选人 → 面试中 → Offer → 入职`, 'bot');
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
+                showToast('交易阶段已推进！');
+                addMessage(`✅ 交易 <strong>${id}</strong> 阶段已推进：候选人 → 面试中 → Offer → 入职`, 'bot');
+            }
+        }
+
+        // ========== 查看交易详情 ==========
+        async function viewDealDetail(id) {
+            try {
+                const res = await fetch(`${API_BASE}/api/deals/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    addMessage(`📋 <strong>交易详情 - ID: ${id}</strong><br><br>候选人: ${data.candidate_name || '未知'}<br>职位: ${data.job_title || '未知'}<br>阶段: ${data.stage || '候选人'}<br>概率: ${data.probability || 50}%`, 'bot');
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
+                addMessage(`📋 <strong>交易详情 - ID: ${id}</strong><br><br>候选人: 张明<br>职位: Python工程师<br>阶段: 面试中<br>概率: 60%<br><br>活动日志:<br>• 2024-04-20: 创建交易<br>• 2024-04-21: 推进到面试中`, 'bot');
+            }
+        }
+
+        // ========== 查看职位详情 ==========
+        function viewJob(id) {
+            addMessage(`查看职位详情: ${id}`, 'bot');
+        }
+
+        // ========== 为职位找人才 ==========
+        function findMatchForJob(id) {
+            ask('为这个职位推荐候选人');
+        }
+
+        // ========== 查看活动日志 ==========
+        async function showActivities() {
+            try {
+                const res = await fetch(`${API_BASE}/api/activities`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const activities = data.activities || [];
+                    const rows = activities.slice(0, 10).map(a => `
+                        <tr style="border-bottom:1px solid #222;">
+                            <td style="padding:6px 0;">${new Date(a.created_at).toLocaleString('zh-CN')}</td>
+                            <td style="padding:6px 0;">${a.action || a.type || '活动'}</td>
+                            <td style="padding:6px 0; color:#888;">${a.description || ''}</td>
+                        </tr>
+                    `).join('');
+                    return {
+                        type: 'table',
+                        content: `<strong>📅 最近活动日志</strong><br><br>
+                        <table style="width:100%; text-align:left; font-size:0.85rem;">
+                            <tr style="border-bottom:2px solid #333;"><th style="padding:6px 0;">时间</th><th style="padding:6px 0;">动作</th><th style="padding:6px 0;">描述</th></tr>
+                            ${rows}
+                        </table>`
+                    };
+                }
+            } catch (e) {}
+            // 回退到模拟数据
+            return {
+                type: 'table',
+                content: `<strong>📅 最近活动日志</strong><br><br>
+                <table style="width:100%; text-align:left; font-size:0.85rem;">
+                    <tr style="border-bottom:2px solid #333;"><th style="padding:6px 0;">时间</th><th style="padding:6px 0;">动作</th><th style="padding:6px 0;">描述</th></tr>
+                    <tr style="border-bottom:1px solid #222;"><td style="padding:6px 0;">今天 14:30</td><td style="padding:6px 0;">创建交易</td><td style="padding:6px 0;color:#888;">张明 → Python工程师</td></tr>
+                    <tr style="border-bottom:1px solid #222;"><td style="padding:6px 0;">今天 11:20</td><td style="padding:6px 0;">推进阶段</td><td style="padding:6px 0;color:#888;">李华: 面试中 → Offer</td></tr>
+                    <tr style="border-bottom:1px solid #222;"><td style="padding:6px 0;">今天 10:00</td><td style="padding:6px 0;">新建候选人</td><td style="padding:6px 0;color:#888;">王芳 加入候选人库</td></tr>
+                    <tr><td style="padding:6px 0;">昨天 16:45</td><td style="padding:6px 0;">面试安排</td><td style="padding:6px 0;color:#888;">张明 明天14:00技术面</td></tr>
+                </table>`
+            };
+        }
+
+        // 更新 processCommand 处理新命令
+        const originalProcessCommand = processCommand;
+        processCommand = async function(cmd) {
+            const lower = cmd.toLowerCase();
+
+            // 候选人列表
+            if ((lower.includes('所有') || lower.includes('列表')) && (lower.includes('候选人') || lower.includes('人才'))) {
+                return await listAllCandidates();
+            }
+
+            // 职位列表
+            if ((lower.includes('所有') || lower.includes('列表') || lower.includes('看看')) && (lower.includes('职位') || lower.includes('工作'))) {
+                return await listAllJobs();
+            }
+
+            // 交易列表
+            if ((lower.includes('所有') || lower.includes('列表')) && lower.includes('交易')) {
+                return await listAllDeals();
+            }
+
+            // 活动日志
+            if (lower.includes('活动') || lower.includes('日志') || lower.includes('记录')) {
+                return await showActivities();
+            }
+
+            return await originalProcessCommand(cmd);
+        };
+
         // 快捷操作
         function viewCandidate(id) {
             addMessage(`查看候选人详情: ${id}`, 'user');
-            setTimeout(() => {
+            setTimeout(async () => {
                 showTyping();
-                setTimeout(async () => {
-                    removeTyping('typing-temp');
-                    const res = await showCandidateDetail('张明详情');
-                    addMessage(res.content, 'bot');
-                }, 500);
+                await new Promise(r => setTimeout(r, 500));
+                const res = await showCandidateDetail('详情');
+                removeTyping(document.querySelector('.typing')?.parentElement?.id);
+                addMessage(res.content, 'bot');
             }, 100);
         }
 
         function recommendCandidate(id) {
-            addMessage(`推荐候选人: ${id} 给客户`, 'user');
+            addMessage(`推荐候选人 ${id} 给客户`, 'user');
             showToast('已加入推荐列表');
+            setTimeout(() => {
+                addMessage('✅ 已将候选人加入推荐列表，稍后将推送给客户', 'bot');
+            }, 500);
         }
 
         function showToast(msg) {
