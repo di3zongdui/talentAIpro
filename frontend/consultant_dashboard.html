@@ -56,8 +56,10 @@
         <h1>👔 顾问端</h1>
         <p>猎头顾问工作台 - 候选人管理与匹配</p>
         <div class="header-actions">
+            <span id="userDisplay" style="margin-right: 15px; font-size: 14px;"></span>
             <button class="btn btn-sm btn-warning" onclick="showToast('搜索候选人')">🔍 搜索</button>
             <button class="btn btn-sm btn-secondary" onclick="showToast('刷新数据')">🔄 刷新</button>
+            <button class="btn btn-sm btn-danger" onclick="logout()">🚪 退出</button>
         </div>
     </div>
 
@@ -203,6 +205,32 @@
     <div class="toast" id="toast"></div>
     <script>
         function showToast(action) { const toast = document.getElementById('toast'); toast.textContent = '✅ ' + action + ' - 操作成功'; toast.className = 'toast show'; setTimeout(() => { toast.className = 'toast'; }, 2500); }
+
+        // 显示当前用户
+        function displayCurrentUser() {
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            if (session.name) {
+                document.getElementById('userDisplay').textContent = '👤 ' + session.name + ' (consultant)';
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('talentAI_session');
+            alert('已退出登录');
+            window.location.href = 'login.html';
+        }
+
+        // 检查登录状态
+        (function checkAuth() {
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            if (!session.isLoggedIn) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+            displayCurrentUser();
+        })();
     </script>
 </body>
 </html>

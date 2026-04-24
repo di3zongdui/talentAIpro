@@ -120,8 +120,8 @@
             <span class="badge">🟢 API正常</span>
             <span class="badge">Plan: Pro</span>
             <div class="user-info">
-                <span>👨‍💻 API开发者</span>
-                <button class="btn btn-secondary btn-sm" onclick="showToast('已退出开发者模式', 'info')">退出</button>
+                <span id="userDisplay">👨‍💻 API开发者</span>
+                <button class="btn btn-secondary btn-sm" onclick="logout()">退出</button>
             </div>
         </div>
     </div>
@@ -771,6 +771,32 @@ client.set_debug(<span class="boolean">True</span>)</div>
                 showToast('Webhook测试成功! 收到200响应', 'success');
             }, 1000);
         }
+
+        // 显示当前用户
+        function displayCurrentUser() {
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            if (session.name) {
+                document.getElementById('userDisplay').textContent = '👤 ' + session.name + ' (developer)';
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('talentAI_session');
+            alert('已退出登录');
+            window.location.href = 'login.html';
+        }
+
+        // 检查登录状态
+        (function checkAuth() {
+            const session = JSON.parse(localStorage.getItem('talentAI_session') || '{}');
+            if (!session.isLoggedIn) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+            displayCurrentUser();
+        })();
     </script>
 </body>
 </html>

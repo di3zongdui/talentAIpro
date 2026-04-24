@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - TalentAI Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 420px;
+            padding: 50px 40px;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .remember-me input {
+            margin-right: 6px;
+            cursor: pointer;
+        }
+
+        .forgot-password {
+            color: #667eea;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: #999;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e8e8e8;
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        .demo-section {
+            text-align: center;
+        }
+
+        .demo-section p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .demo-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .demo-btn {
+            padding: 12px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .demo-btn:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .demo-btn.candidate { color: #52c41a; }
+        .demo-btn.consultant { color: #1890ff; }
+        .demo-btn.admin { color: #722ed1; }
+        .demo-btn.developer { color: #fa8c16; }
+
+        .error-message {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Toast 通知 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.success {
+            border-left: 4px solid #52c41a;
+        }
+
+        .toast.error {
+            border-left: 4px solid #ff4d4f;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* 加载状态 */
+        .loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>TalentAI Pro</h1>
+            <p>智能招聘 Matching 系统</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <form id="loginForm" onsubmit="return handleLogin(event)">
+            <div class="form-group">
+                <label>用户名 / 邮箱</label>
+                <input type="text" id="username" placeholder="请输入用户名或邮箱" required>
+            </div>
+
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="password" placeholder="请输入密码" required>
+            </div>
+
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" id="rememberMe">
+                    记住我
+                </label>
+                <a class="forgot-password" onclick="showToast('请联系管理员重置密码', 'info')">忘记密码？</a>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">登 录</button>
+        </form>
+
+        <div class="divider">
+            <span>或快速体验</span>
+        </div>
+
+        <div class="demo-section">
+            <p>Demo模式 · 免注册 · 模拟数据</p>
+            <div class="demo-buttons">
+                <button class="demo-btn candidate" onclick="demoLogin('candidate')">
+                    👤 候选人
+                </button>
+                <button class="demo-btn consultant" onclick="demoLogin('consultant')">
+                    👔 猎头顾问
+                </button>
+                <button class="demo-btn admin" onclick="demoLogin('admin')">
+                    ⚙️ 管理员
+                </button>
+                <button class="demo-btn developer" onclick="demoLogin('developer')">
+                    🔐 API开发者
+                </button>
+            </div>
+        </div>
+
+        <div class="footer">
+            © 2024 TalentAI Pro · 智能招聘 Matching 系统
+        </div>
+    </div>
+
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // Demo账号配置
+        const DEMO_USERS = {
+            candidate: {
+                username: 'candidate',
+                password: 'candidate123',
+                role: 'candidate',
+                name: '张三',
+                redirect: 'candidate_dashboard.html'
+            },
+            consultant: {
+                username: 'consultant',
+                password: 'consultant123',
+                role: 'consultant',
+                name: '李顾问',
+                redirect: 'consultant_dashboard.html'
+            },
+            admin: {
+                username: 'admin',
+                password: 'admin123',
+                role: 'admin',
+                name: '系统管理员',
+                redirect: 'admin_dashboard.html'
+            },
+            developer: {
+                username: 'developer',
+                password: 'developer123',
+                role: 'developer',
+                name: 'API开发者',
+                redirect: 'developer_dashboard.html'
+            }
+        };
+
+        // 登录处理
+        function handleLogin(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+
+            // 显示加载状态
+            loginBtn.classList.add('loading');
+            loginBtn.textContent = '';
+
+            // 模拟登录验证
+            setTimeout(() => {
+                loginBtn.classList.remove('loading');
+                loginBtn.textContent = '登 录';
+
+                // 验证账号
+                const user = Object.values(DEMO_USERS).find(
+                    u => u.username === username && u.password === password
+                );
+
+                if (user) {
+                    // 保存登录状态
+                    saveLoginSession(user);
+                    showToast('登录成功！正在跳转...', 'success');
+
+                    // 跳转到对应页面
+                    setTimeout(() => {
+                        window.location.href = user.redirect;
+                    }, 1000);
+                } else {
+                    showError('用户名或密码错误');
+                }
+            }, 1000);
+
+            return false;
+        }
+
+        // Demo快速登录
+        function demoLogin(role) {
+            const user = DEMO_USERS[role];
+            if (user) {
+                saveLoginSession(user);
+                showToast(`Demo模式：以 ${user.name} 身份登录`, 'success');
+
+                setTimeout(() => {
+                    window.location.href = user.redirect;
+                }, 1000);
+            }
+        }
+
+        // 保存登录会话
+        function saveLoginSession(user) {
+            const session = {
+                isLoggedIn: true,
+                username: user.username,
+                name: user.name,
+                role: user.role,
+                loginTime: new Date().toISOString()
+            };
+            localStorage.setItem('talentAI_session', JSON.stringify(session));
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 3000);
+        }
+
+        // 显示Toast通知
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+
+            toast.className = 'toast ' + type;
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 检查是否已登录
+        function checkLoginStatus() {
+            const session = localStorage.getItem('talentAI_session');
+            if (session) {
+                const user = JSON.parse(session);
+                if (user.isLoggedIn) {
+                    // 已登录，跳转到对应页面
+                    window.location.href = user.redirect || 'consultant_dashboard.html';
+                }
+            }
+        }
+
+        // 页面加载时检查登录状态
+        window.onload = checkLoginStatus;
+    </script>
+</body>
+</html>
