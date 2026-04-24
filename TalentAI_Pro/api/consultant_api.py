@@ -6,10 +6,13 @@ TalentAI Pro 顾问端 API 服务
 import sqlite3
 import json
 import os
+import base64
+import io
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import hashlib
+import re
 
 # 数据库路径
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'db', 'talentai.db')
@@ -83,6 +86,8 @@ class APIHandler(BaseHTTPRequestHandler):
             self.handle_create_deal()
         elif path == '/api/deals/update-stage':
             self.handle_update_deal_stage()
+        elif path == '/api/parse-resume':
+            self.handle_parse_resume()
         else:
             self.send_json({'error': 'Not found'}, 404)
 
@@ -680,6 +685,142 @@ class APIHandler(BaseHTTPRequestHandler):
         activities = [row_to_dict(r) for r in c.fetchall()]
         conn.close()
         self.send_json({'items': activities})
+
+    def handle_parse_resume(self):
+        """解析简历文件"""
+        body = self.parse_body()
+
+        file_content = body.get('content', '')
+        file_type = body.get('type', 'txt').lower()  # txt, docx, pdf
+
+        try:
+            text = ''
+
+            if file_type == 'txt':
+                # TXT文件直接解码
+                text = base64.b64decode(file_content).decode('utf-8', errors='ignore')
+
+            elif file_type == 'docx':
+                # DOCX文件是ZIP格式，提取word/document.xml
+                try:
+                    import zipfile
+                    docx_bytes = base64.b64decode(file_content)
+                    with zipfile.ZipFile(io.BytesIO(docx_bytes), 'r') as z:
+                        if 'word/document.xml' in z.namelist():
+                            xml_content = z.read('word/document.xml').decode('utf-8')
+                            # 简单XML标签移除，提取文本
+                            text = re.sub(r'<[^>]+>', ' ', xml_content)
+                            text = re.sub(r'\s+', ' ', text).strip()
+                except Exception as e:
+                    print(f"DOCX解析错误: {e}")
+                    text = ''
+
+            elif file_type == 'pdf':
+                # PDF文件尝试使用PyPDF2
+                try:
+                    import PyPDF2
+                    pdf_bytes = base64.b64decode(file_content)
+                    with io.BytesIO(pdf_bytes) as f:
+                        reader = PyPDF2.PdfReader(f)
+                        for page in reader.pages:
+                            text += page.extract_text() + '\n'
+                except ImportError:
+                    # PyPDF2未安装，使用简单方法
+                    text = '[PDF解析需要安装PyPDF2，当前仅支持TXT和DOCX格式]'
+                except Exception as e:
+                    print(f"PDF解析错误: {e}")
+                    text = ''
+
+            # 使用正则表达式提取关键信息
+            result = self._extract_resume_info(text)
+
+            self.send_json({
+                'success': True,
+                'text': text[:5000],  # 保留前5000字符
+                'name': result['name'],
+                'email': result['email'],
+                'phone': result['phone'],
+                'skills': result['skills'],
+                'experience': result['experience'],
+                'education': result['education']
+            })
+
+        except Exception as e:
+            self.send_json({'error': f'解析失败: {str(e)}'}, 500)
+
+    def _extract_resume_info(self, text):
+        """从简历文本中提取关键信息"""
+        result = {
+            'name': '',
+            'email': '',
+            'phone': '',
+            'skills': [],
+            'experience': '',
+            'education': ''
+        }
+
+        if not text:
+            return result
+
+        # 提取邮箱
+        email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', text)
+        if email_match:
+            result['email'] = email_match.group()
+
+        # 提取手机号（中国手机号格式）
+        phone_match = re.search(r'1[3-9]\d{9}', text)
+        if phone_match:
+            result['phone'] = phone_match.group()
+
+        # 提取姓名（假设在文本开头，前20个字符内的第一个汉字词）
+        name_match = re.search(r'^[\u4e00-\u9fa5]{2,4}', text.strip())
+        if name_match:
+            result['name'] = name_match.group()
+
+        # 常见技能关键词
+        skill_keywords = [
+            'Python', 'Java', 'JavaScript', 'C++', 'C#', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin',
+            'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn', 'Pandas', 'NumPy',
+            'React', 'Vue', 'Angular', 'Node.js', 'Django', 'Flask', 'Spring',
+            'SQL', 'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'Elasticsearch',
+            'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Jenkins', 'Git',
+            'NLP', 'LLM', 'RAG', 'Agent', 'LangChain', '向量数据库',
+            'Machine Learning', 'Deep Learning', 'AI', 'Algorithm',
+            'Linux', 'Shell', 'Bash', 'GitHub', 'GitLab'
+        ]
+
+        found_skills = []
+        text_upper = text.upper()
+        for skill in skill_keywords:
+            if skill.upper() in text_upper:
+                found_skills.append(skill)
+
+        result['skills'] = found_skills[:15]  # 最多保留15个技能
+
+        # 提取工作经历（查找包含"工作"或"经验"的段落）
+        exp_patterns = [
+            r'(?:工作经历|工作经验|工作职责)[:：]?\s*(.{100,500})',
+            r'(?:任职|职位)[:：]?\s*(.{100,500})'
+        ]
+        for pattern in exp_patterns:
+            match = re.search(pattern, text)
+            if match:
+                result['experience'] = match.group(1)[:300]
+                break
+
+        # 提取教育背景
+        edu_patterns = [
+            r'(?:教育背景|学历)[:：]?\s*(.{50,200})',
+            r'(?:毕业于?|学历)[:：]?\s*([\u4e00-\u9fa5]+\s*(?:大学|学院|学校))',
+            r'(?:博士|硕士|本科|学士|研究生)'
+        ]
+        for pattern in edu_patterns:
+            match = re.search(pattern, text)
+            if match:
+                result['education'] = match.group(0)[:100]
+                break
+
+        return result
 
 def run_server():
     """启动API服务器"""
