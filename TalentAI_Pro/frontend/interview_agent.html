@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Agent - AI 面试系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #00d9ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Setup Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 20px rgba(0,217,255,0.2);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d9ff, #00b4d8);
+            color: #1a1a2e;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,217,255,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* Interview Flow */
+        #interview-section {
+            display: none;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* Question Card */
+        .question-card {
+            background: rgba(0,217,255,0.1);
+            border: 1px solid rgba(0,217,255,0.3);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .question-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .question-type {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .question-type.technical {
+            background: rgba(0,217,255,0.2);
+            color: #00d9ff;
+        }
+
+        .question-type.behavioral {
+            background: rgba(255,107,157,0.2);
+            color: #ff6b9d;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .answer-input {
+            width: 100%;
+            min-height: 150px;
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 16px;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #00d9ff;
+        }
+
+        /* Evaluation */
+        .evaluation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .eval-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .eval-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 8px;
+        }
+
+        .eval-score {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        .eval-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .eval-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            border-radius: 3px;
+        }
+
+        /* Report */
+        .report-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 30px;
+        }
+
+        .report-section h3 {
+            color: #00d9ff;
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+        }
+
+        .recommendation {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .recommendation.strong {
+            background: linear-gradient(90deg, #00ff88, #00d9ff);
+            color: #1a1a2e;
+        }
+
+        .recommendation.pass {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+        }
+
+        .recommendation.consider {
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+        }
+
+        .recommendation.caution {
+            background: rgba(255,107,157,0.2);
+            color: #ff6b9d;
+        }
+
+        .recommendation.reject {
+            background: rgba(255,107,157,0.4);
+            color: #ff6b9d;
+        }
+
+        .report-content {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #00d9ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Question List */
+        .question-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .question-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border-left: 3px solid #00d9ff;
+        }
+
+        .question-item.completed {
+            border-left-color: #00ff88;
+            opacity: 0.7;
+        }
+
+        .question-item.current {
+            border-left-color: #ff6b9d;
+            background: rgba(255,107,157,0.1);
+        }
+
+        .q-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .question-item.completed .q-number {
+            background: #00ff88;
+            color: #1a1a2e;
+        }
+
+        .question-item.current .q-number {
+            background: #ff6b9d;
+            color: #fff;
+        }
+
+        .q-text {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        .q-type {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00d9ff;
+        }
+
+        .status-badge.in-progress::before {
+            background: #ff6b9d;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-badge.completed::before {
+            background: #00ff88;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            background: rgba(0,255,136,0.9);
+            color: #1a1a2e;
+            border-radius: 8px;
+            font-weight: 600;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: rgba(255,107,157,0.9);
+            color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .evaluation-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 Interview Agent</h1>
+            <p>AI 驱动的结构化面试系统</p>
+        </div>
+
+        <!-- Setup Section -->
+        <div id="setup-section">
+            <div class="card">
+                <h2>📋 面试配置</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>候选人姓名</label>
+                        <input type="text" id="candidate-name" placeholder="张三" value="李明">
+                    </div>
+                    <div class="form-group">
+                        <label>应聘职位</label>
+                        <input type="text" id="job-title" placeholder="高级后端工程师" value="高级Python工程师">
+                    </div>
+                    <div class="form-group">
+                        <label>职位级别</label>
+                        <select id="job-level">
+                            <option value="junior">初级 (1-2年)</option>
+                            <option value="mid" selected>中级 (3-5年)</option>
+                            <option value="senior">高级 (5-8年)</option>
+                            <option value="lead">技术专家 (8年+)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>面试时长</label>
+                        <select id="interview-duration">
+                            <option value="30">30 分钟</option>
+                            <option value="45" selected>45 分钟</option>
+                            <option value="60">60 分钟</option>
+                            <option value="90">90 分钟</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>候选人技能（逗号分隔）</label>
+                        <input type="text" id="candidate-skills" placeholder="Python, Django, PostgreSQL, Redis" value="Python, FastAPI, PostgreSQL, Redis, Docker">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>岗位描述（JD）</label>
+                        <textarea id="job-description" placeholder="粘贴岗位描述...">要求：
+- 5年以上Python开发经验
+- 精通FastAPI/Django/Flask
+- 熟悉PostgreSQL/MySQL数据库
+- 有Redis缓存经验
+- 熟悉Docker容器化部署
+- 具备良好的代码风格和文档能力
+- 有团队管理经验优先</textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>候选人简历摘要</label>
+                        <textarea id="candidate-resume" placeholder="候选人简历要点...">7年Python开发经验
+曾在某电商公司担任后端负责人
+主导过微服务架构改造
+熟悉FastAPI、Celery、Redis
+有PostgreSQL优化经验
+带过5人团队</textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="startInterview()">
+                        🚀 开始面试
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadDemo()">
+                        📝 加载示例
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interview Section -->
+        <div id="interview-section">
+            <!-- Progress -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">🎯 面试进行中</h2>
+                    <div id="session-status" class="status-badge in-progress">进行中</div>
+                </div>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                </div>
+
+                <!-- Question Navigation -->
+                <div id="question-nav" class="question-list"></div>
+
+                <!-- Current Question -->
+                <div id="current-question" class="question-card">
+                    <div class="question-meta">
+                        <span class="question-type" id="question-type">技术问题</span>
+                        <span id="question-index" style="color: rgba(255,255,255,0.5);">1/5</span>
+                    </div>
+                    <p class="question-text" id="question-text">加载中...</p>
+                    <textarea class="answer-input" id="answer-input" placeholder="请输入您的回答..."></textarea>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="submitAnswer()">
+                            ✨ 提交回答
+                        </button>
+                        <button class="btn btn-secondary" onclick="skipQuestion()">
+                            ⏭️ 跳过
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluation Panel (shown after completion) -->
+            <div id="evaluation-panel" class="card" style="display: none;">
+                <h2>📊 评估结果</h2>
+                <div id="recommendation-badge" class="recommendation strong">强烈推荐</div>
+
+                <div class="evaluation-grid">
+                    <div class="eval-item">
+                        <div class="eval-label">技术深度</div>
+                        <div class="eval-score" id="score-technical">4.2</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-technical" style="width: 84%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">问题解决</div>
+                        <div class="eval-score" id="score-problem">3.8</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-problem" style="width: 76%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">沟通表达</div>
+                        <div class="eval-score" id="score-communication">4.0</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-communication" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">文化匹配</div>
+                        <div class="eval-score" id="score-culture">3.5</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-culture" style="width: 70%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">成长潜力</div>
+                        <div class="eval-score" id="score-potential">4.0</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-potential" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">综合评分</div>
+                        <div class="eval-score" id="score-overall" style="color: #00d9ff;">4.0</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-overall" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <h3>📄 详细报告</h3>
+                    <div id="report-content" class="report-content"></div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="copyReport()">
+                            📋 复制报告
+                        </button>
+                        <button class="btn btn-primary" onclick="newInterview()">
+                            ➕ 新面试
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // State
+        let session = null;
+        let questions = [];
+        let currentIndex = 0;
+        let answers = [];
+
+        // Demo questions data
+        const demoQuestions = [
+            {
+                id: 'q1',
+                type: 'technical',
+                category: 'Python',
+                text: '请解释Python中的GIL（全局解释器锁）是什么，它如何影响多线程编程？',
+                expected_keywords: ['GIL', '全局解释器锁', '线程安全', 'CPU密集型', 'IO密集型', '并行'],
+                difficulty: 3
+            },
+            {
+                id: 'q2',
+                type: 'behavioral',
+                category: 'STAR',
+                text: '请描述一个你在项目中遇到的重大技术挑战，以及你是如何解决的？',
+                expected_keywords: ['问题', '解决', '方案', '结果', '团队'],
+                difficulty: 3
+            },
+            {
+                id: 'q3',
+                type: 'technical',
+                category: 'FastAPI',
+                text: 'FastAPI相比Django和Flask有哪些优势？在什么场景下你会选择FastAPI？',
+                expected_keywords: ['异步', '类型提示', '自动文档', '性能', 'Pydantic', '依赖注入'],
+                difficulty: 3
+            },
+            {
+                id: 'q4',
+                type: 'technical',
+                category: 'Database',
+                text: '如何优化PostgreSQL查询性能？请举例说明你实际使用过的优化方法。',
+                expected_keywords: ['索引', 'EXPLAIN', '慢查询', '分区', '缓存', '连接池'],
+                difficulty: 4
+            },
+            {
+                id: 'q5',
+                type: 'behavioral',
+                category: 'STAR',
+                text: '描述一次你需要同时管理多个紧急任务的经历，你是如何处理的？',
+                expected_keywords: ['优先级', '时间管理', '团队协作', '结果'],
+                difficulty: 3
+            }
+        ];
+
+        // Load demo
+        function loadDemo() {
+            document.getElementById('candidate-name').value = '李明';
+            document.getElementById('job-title').value = '高级Python工程师';
+            document.getElementById('job-level').value = 'mid';
+            document.getElementById('interview-duration').value = '45';
+            document.getElementById('candidate-skills').value = 'Python, FastAPI, PostgreSQL, Redis, Docker';
+            document.getElementById('job-description').value = `要求：
+- 5年以上Python开发经验
+- 精通FastAPI/Django/Flask
+- 熟悉PostgreSQL/MySQL数据库
+- 有Redis缓存经验
+- 熟悉Docker容器化部署
+- 具备良好的代码风格和文档能力
+- 有团队管理经验优先`;
+
+            document.getElementById('candidate-resume').value = `7年Python开发经验
+曾在某电商公司担任后端负责人
+主导过微服务架构改造
+熟悉FastAPI、Celery、Redis
+有PostgreSQL优化经验
+带过5人团队`;
+
+            showToast('示例数据已加载');
+        }
+
+        // Start interview
+        async function startInterview() {
+            const candidateName = document.getElementById('candidate-name').value.trim();
+            const jobTitle = document.getElementById('job-title').value.trim();
+
+            if (!candidateName || !jobTitle) {
+                showToast('请填写候选人和职位信息', 'error');
+                return;
+            }
+
+            // Show loading
+            const btn = event.target;
+            btn.innerHTML = '⏳ 生成中...';
+            btn.disabled = true;
+
+            // Simulate API call to generate questions
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Use demo questions
+            questions = [...demoQuestions];
+            answers = new Array(questions.length).fill(null);
+            currentIndex = 0;
+
+            // Create session
+            session = {
+                id: 'session_' + Date.now(),
+                candidate_name: candidateName,
+                job_title: jobTitle,
+                status: 'in_progress',
+                started_at: new Date().toISOString()
+            };
+
+            // Switch to interview section
+            document.getElementById('setup-section').style.display = 'none';
+            document.getElementById('interview-section').style.display = 'block';
+
+            // Render question nav
+            renderQuestionNav();
+
+            // Show first question
+            showQuestion(0);
+
+            btn.innerHTML = '🚀 开始面试';
+            btn.disabled = false;
+
+            showToast('面试已开始');
+        }
+
+        // Render question navigation
+        function renderQuestionNav() {
+            const nav = document.getElementById('question-nav');
+            nav.innerHTML = questions.map((q, i) => `
+                <div class="question-item ${i === 0 ? 'current' : ''}" id="nav-item-${i}">
+                    <div class="q-number">${i + 1}</div>
+                    <div class="q-text">${q.type === 'technical' ? '🔧' : '💬'} ${q.category}</div>
+                    <div class="q-type">${q.type === 'technical' ? '技术' : '行为'}</div>
+                </div>
+            `).join('');
+        }
+
+        // Show question
+        function showQuestion(index) {
+            currentIndex = index;
+            const q = questions[index];
+
+            document.getElementById('question-type').textContent = q.type === 'technical' ? '技术问题' : '行为问题';
+            document.getElementById('question-type').className = 'question-type ' + q.type;
+            document.getElementById('question-index').textContent = `${index + 1}/${questions.length}`;
+            document.getElementById('question-text').textContent = q.text;
+            document.getElementById('answer-input').value = answers[index] || '';
+
+            // Update nav
+            document.querySelectorAll('.question-item').forEach((item, i) => {
+                item.classList.remove('current');
+                if (i < index || answers[i]) {
+                    item.classList.add('completed');
+                }
+                if (i === index) {
+                    item.classList.add('current');
+                }
+            });
+
+            // Update progress
+            const progress = (index / questions.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+
+            // Scroll to question
+            document.getElementById('current-question').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Submit answer
+        function submitAnswer() {
+            const answer = document.getElementById('answer-input').value.trim();
+            if (!answer) {
+                showToast('请输入回答', 'error');
+                return;
+            }
+
+            answers[currentIndex] = answer;
+
+            // Evaluate the answer
+            const q = questions[currentIndex];
+            const evaluation = evaluateAnswer(q, answer);
+
+            showToast('回答已提交 ✓');
+
+            // Move to next or complete
+            if (currentIndex < questions.length - 1) {
+                showQuestion(currentIndex + 1);
+            } else {
+                completeInterview();
+            }
+        }
+
+        // Skip question
+        function skipQuestion() {
+            if (currentIndex < questions.length - 1) {
+                showQuestion(currentIndex + 1);
+            } else {
+                completeInterview();
+            }
+        }
+
+        // Evaluate answer (simplified local evaluation)
+        function evaluateAnswer(question, answer) {
+            const lowerAnswer = answer.toLowerCase();
+            const keywords = question.expected_keywords;
+
+            // Count keyword matches
+            let matchedKeywords = 0;
+            keywords.forEach(kw => {
+                if (lowerAnswer.includes(kw.toLowerCase())) {
+                    matchedKeywords++;
+                }
+            });
+
+            // Calculate score based on keywords and length
+            const keywordScore = (matchedKeywords / keywords.length) * 0.6;
+            const lengthScore = Math.min(answer.length / 200, 1) * 0.2;
+            const structureScore = lowerAnswer.includes('.') || lowerAnswer.includes('，') ? 0.2 : 0.1;
+
+            return Math.min(5, Math.max(1, (keywordScore + lengthScore + structureScore) * 5));
+        }
+
+        // Complete interview
+        async function completeInterview() {
+            document.getElementById('session-status').textContent = '已完成';
+            document.getElementById('session-status').classList.remove('in-progress');
+            document.getElementById('session-status').classList.add('completed');
+            document.getElementById('progress-fill').style.width = '100%';
+            document.getElementById('current-question').style.display = 'none';
+
+            // Show loading
+            document.getElementById('evaluation-panel').style.display = 'block';
+            document.getElementById('evaluation-panel').innerHTML = `
+                <h2>📊 评估结果</h2>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>AI 正在分析面试表现...</p>
+                </div>
+            `;
+
+            // Simulate processing
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Generate mock evaluation
+            const evaluation = generateMockEvaluation();
+
+            // Render evaluation
+            renderEvaluation(evaluation);
+
+            showToast('面试完成！');
+        }
+
+        // Generate mock evaluation
+        function generateMockEvaluation() {
+            const technicalScore = 3.5 + Math.random() * 1.5;
+            const problemScore = 3.0 + Math.random() * 1.5;
+            const communicationScore = 3.5 + Math.random() * 1.0;
+            const cultureScore = 3.0 + Math.random() * 1.2;
+            const potentialScore = 3.5 + Math.random() * 1.0;
+
+            const overall = (technicalScore * 0.3 + problemScore * 0.25 + communicationScore * 0.2 + cultureScore * 0.15 + potentialScore * 0.1);
+
+            return {
+                technical: technicalScore.toFixed(1),
+                problem: problemScore.toFixed(1),
+                communication: communicationScore.toFixed(1),
+                culture: cultureScore.toFixed(1),
+                potential: potentialScore.toFixed(1),
+                overall: overall.toFixed(1),
+                recommendation: overall >= 4.0 ? '强烈推荐' : overall >= 3.5 ? '推荐' : overall >= 3.0 ? '可以考虑' : '谨慎考虑',
+                report: generateReport(technicalScore, problemScore, communicationScore, cultureScore, potentialScore)
+            };
+        }
+
+        // Generate report
+        function generateReport(tech, problem, comm, culture, potential) {
+            const candidate = document.getElementById('candidate-name').value;
+            const job = document.getElementById('job-title').value;
+
+            return `# 面试评估报告
+
+**候选人**: ${candidate}
+**应聘职位**: ${job}
+**面试时间**: ${new Date().toLocaleString('zh-CN')}
+**面试官**: Interview Agent (AI)
+
+---
+
+## 综合评价
+
+**推荐等级**: ${overall >= 4.0 ? '✅ 强烈推荐' : overall >= 3.5 ? '👍 推荐' : '⚠️ 需要进一步评估'}
+
+该候选人展现出了扎实的Python技术功底和良好的问题解决能力。在FastAPI和数据库优化方面有深入理解，能够清晰表达技术方案。在团队协作和项目管理方面也有一定经验。
+
+---
+
+## 各维度评估
+
+| 维度 | 评分 | 评价 |
+|------|------|------|
+| 技术深度 | ${tech.toFixed(1)}/5 | ${tech >= 4 ? '优秀' : tech >= 3 ? '良好' : '一般'}，对Python核心概念理解深入 |
+| 问题解决 | ${problem.toFixed(1)}/5 | ${problem >= 4 ? '优秀' : problem >= 3 ? '良好' : '一般'}，能给出合理的解决方案 |
+| 沟通表达 | ${comm.toFixed(1)}/5 | ${comm >= 4 ? '优秀' : comm >= 3 ? '良好' : '一般'}，表达清晰有逻辑 |
+| 文化匹配 | ${culture.toFixed(1)}/5 | ${culture >= 4 ? '优秀' : culture >= 3 ? '良好' : '一般'}，与团队风格契合 |
+| 成长潜力 | ${potential.toFixed(1)}/5 | ${potential >= 4 ? '优秀' : potential >= 3 ? '良好' : '一般'}，有继续发展的空间 |
+
+---
+
+## 技术问答分析
+
+**Q1 - Python GIL**: ${tech >= 4 ? '准确解释了GIL的概念和影响，提到CPU密集型与IO密集型的区别' : '基本理解GIL概念，但深度有限'}
+
+**Q2 - 项目挑战 (STAR)**: ${problem >= 4 ? 'STAR描述完整，能清晰说明问题、行动和结果' : 'STAR结构基本完整，但细节略显不足'}
+
+**Q3 - FastAPI**: ${tech >= 4 ? '对FastAPI优势理解深刻，包括异步、性能、类型提示等方面' : '了解FastAPI基本特性，但深度有限'}
+
+**Q4 - 数据库优化**: ${problem >= 4 ? '列举了多种优化手段：索引、EXPLAIN分析、缓存等' : '提到一些优化方法，但系统性不足'}
+
+**Q5 - 多任务管理**: ${comm >= 4 ? '展现了良好的时间管理和优先级判断能力' : '处理方式合理，但不够突出'}
+
+---
+
+## 结论
+
+${overall >= 4.0 ? '**强烈推荐进入下一轮面试**。候选人技术实力扎实，沟通能力良好，有团队管理经验，适合担任高级工程师或技术负责人角色。' : overall >= 3.5 ? '**推荐进入下一轮面试**。候选人基本素质良好，建议进一步评估实际编码能力。' : '**建议进一步评估**。部分维度表现一般，建议安排技术笔试或与团队成员交流后再做决定。'}
+
+---
+
+*本报告由 Interview Agent AI 系统自动生成*`;
+        }
+
+        // Render evaluation
+        function renderEvaluation(evaluation) {
+            const panel = document.getElementById('evaluation-panel');
+            panel.innerHTML = `
+                <h2>📊 评估结果</h2>
+                <div id="recommendation-badge" class="recommendation ${evaluation.overall >= 4.0 ? 'strong' : evaluation.overall >= 3.5 ? 'pass' : 'consider'}">${evaluation.recommendation}</div>
+
+                <div class="evaluation-grid">
+                    <div class="eval-item">
+                        <div class="eval-label">技术深度</div>
+                        <div class="eval-score" id="score-technical">${evaluation.technical}</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-technical" style="width: ${evaluation.technical * 20}%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">问题解决</div>
+                        <div class="eval-score" id="score-problem">${evaluation.problem}</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-problem" style="width: ${evaluation.problem * 20}%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">沟通表达</div>
+                        <div class="eval-score" id="score-communication">${evaluation.communication}</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-communication" style="width: ${evaluation.communication * 20}%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">文化匹配</div>
+                        <div class="eval-score" id="score-culture">${evaluation.culture}</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-culture" style="width: ${evaluation.culture * 20}%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">成长潜力</div>
+                        <div class="eval-score" id="score-potential">${evaluation.potential}</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-potential" style="width: ${evaluation.potential * 20}%"></div>
+                        </div>
+                    </div>
+                    <div class="eval-item">
+                        <div class="eval-label">综合评分</div>
+                        <div class="eval-score" id="score-overall" style="color: #00d9ff;">${evaluation.overall}</div>
+                        <div class="eval-bar">
+                            <div class="eval-bar-fill" id="bar-overall" style="width: ${evaluation.overall * 20}%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <h3>📄 详细报告</h3>
+                    <div id="report-content" class="report-content">${evaluation.report}</div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="copyReport()">
+                            📋 复制报告
+                        </button>
+                        <button class="btn btn-primary" onclick="newInterview()">
+                            ➕ 新面试
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Store report for copying
+            window.currentReport = evaluation.report;
+        }
+
+        // Copy report
+        function copyReport() {
+            navigator.clipboard.writeText(window.currentReport).then(() => {
+                showToast('报告已复制到剪贴板');
+            }).catch(() => {
+                showToast('复制失败，请手动选择复制', 'error');
+            });
+        }
+
+        // New interview
+        function newInterview() {
+            // Reset state
+            session = null;
+            questions = [];
+            currentIndex = 0;
+            answers = [];
+
+            // Reset UI
+            document.getElementById('setup-section').style.display = 'block';
+            document.getElementById('interview-section').style.display = 'none';
+            document.getElementById('evaluation-panel').style.display = 'none';
+            document.getElementById('session-status').textContent = '进行中';
+            document.getElementById('session-status').classList.add('in-progress');
+            document.getElementById('session-status').classList.remove('completed');
+        }
+
+        // Show toast
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
