@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插件管理中心 - TalentAI Pro</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-600: #4B5563;
+            --gray-800: #1F2937;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-800);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 20px 32px;
+        }
+
+        .header h1 { font-size: 24px; margin-bottom: 4px; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .stat-card .label { color: var(--gray-600); font-size: 14px; }
+        .stat-card .value { font-size: 28px; font-weight: 600; color: var(--primary); }
+
+        .section { background: white; border-radius: 12px; border: 1px solid var(--gray-200); margin-bottom: 24px; }
+
+        .section-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 { font-size: 18px; }
+
+        .section-body { padding: 24px; }
+
+        .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .tab:hover:not(.active) { background: var(--gray-100); }
+
+        .plugin-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .plugin-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .plugin-item:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1); }
+
+        .plugin-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 16px;
+        }
+
+        .plugin-info { flex: 1; }
+        .plugin-info h3 { font-size: 16px; margin-bottom: 4px; }
+        .plugin-info p { font-size: 14px; color: var(--gray-600); }
+
+        .plugin-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 16px;
+        }
+
+        .status-running { background: #D1FAE5; color: #065F46; }
+        .status-stopped { background: #FEE2E2; color: #991B1B; }
+        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-failed { background: #FEE2E2; color: #991B1B; }
+
+        .plugin-actions { display: flex; gap: 8px; }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { background: var(--gray-100); }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { background: #4338CA; }
+        .btn-success { background: var(--success); color: white; border-color: var(--success); }
+        .btn-danger { background: var(--danger); color: white; border-color: var(--danger); }
+
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        .data-summary {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .data-card {
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .data-card .count { font-size: 24px; font-weight: 600; }
+        .data-card .type { font-size: 12px; color: var(--gray-600); text-transform: uppercase; }
+
+        .notification-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--gray-200);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+
+        .log-list { max-height: 400px; overflow-y: auto; }
+        .log-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 13px;
+            display: flex;
+            gap: 12px;
+        }
+        .log-time { color: var(--gray-600); min-width: 160px; }
+        .log-plugin { font-weight: 500; min-width: 120px; }
+        .log-message { flex: 1; }
+
+        .log-success { color: var(--success); }
+        .log-error { color: var(--danger); }
+        .log-info { color: var(--primary); }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        .toast-success { background: var(--success); }
+        .toast-error { background: var(--danger); }
+        .toast-info { background: var(--primary); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .hidden { display: none; }
+
+        .mock-badge {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔌 插件管理中心</h1>
+        <p style="color: var(--gray-600); font-size: 14px;">管理和监控所有数据源和分析插件</p>
+    </div>
+
+    <div class="container">
+        <!-- 统计卡片 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="label">总插件数</div>
+                <div class="value" id="total-plugins">6</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">运行中</div>
+                <div class="value" id="running-plugins" style="color: var(--success);">6</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">总数据条目</div>
+                <div class="value" id="total-data">28</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">最后心跳</div>
+                <div class="value" id="last-heartbeat" style="font-size: 18px;">--</div>
+            </div>
+        </div>
+
+        <!-- 插件管理 -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📦 已安装插件</h2>
+                <button class="btn btn-primary" onclick="runAllHeartbeats()">⚡ 全部心跳</button>
+            </div>
+            <div class="section-body">
+                <div class="tabs">
+                    <button class="tab active" onclick="filterPlugins('all')">全部</button>
+                    <button class="tab" onclick="filterPlugins('data_source')">数据源</button>
+                    <button class="tab" onclick="filterPlugins('notification')">通知</button>
+                    <button class="tab" onclick="filterPlugins('analytics')">分析</button>
+                </div>
+                <div class="plugin-list" id="plugin-list"></div>
+            </div>
+        </div>
+
+        <!-- 数据汇总 -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📊 数据汇总</h2>
+                <button class="btn btn-success" onclick="refreshData()">🔄 刷新</button>
+            </div>
+            <div class="section-body">
+                <div class="data-summary" id="data-summary"></div>
+            </div>
+        </div>
+
+        <!-- 发送通知 -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📨 发送通知</h2>
+            </div>
+            <div class="section-body">
+                <div class="notification-form">
+                    <div class="form-group">
+                        <label>通知标题</label>
+                        <input type="text" id="notif-title" placeholder="输入通知标题">
+                    </div>
+                    <div class="form-group">
+                        <label>通知渠道</label>
+                        <select id="notif-channel">
+                            <option value="feishu">飞书</option>
+                            <option value="email">邮件</option>
+                            <option value="dingtalk">钉钉</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>通知内容</label>
+                    <textarea id="notif-content" placeholder="输入通知内容..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>接收人</label>
+                    <input type="text" id="notif-recipients" placeholder="用逗号分隔多个接收人">
+                </div>
+                <button class="btn btn-primary" onclick="sendNotification()">📤 发送通知</button>
+            </div>
+        </div>
+
+        <!-- 操作日志 -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📝 操作日志</h2>
+                <button class="btn btn-sm" onclick="clearLogs()">清空</button>
+            </div>
+            <div class="section-body">
+                <div class="log-list" id="log-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock数据
+        const plugins = [
+            {
+                name: 'local_folder',
+                type: 'data_source',
+                type_name: '数据源',
+                icon: '📁',
+                status: 'running',
+                description: '本地文件夹简历/JD扫描',
+                stats: { candidates: 3, jobs: 2 },
+                mock: true
+            },
+            {
+                name: 'liepin_oauth',
+                type: 'data_source',
+                type_name: '数据源',
+                icon: '🦁',
+                status: 'running',
+                description: '猎聘OAuth简历/对话/行为数据',
+                stats: { candidates: 3, jobs: 2, conversations: 2, behaviors: 2 },
+                mock: true
+            },
+            {
+                name: 'feishu_sync',
+                type: 'data_source',
+                type_name: '数据源',
+                icon: '🔗',
+                status: 'running',
+                description: '飞书日历/文档/Bitable同步',
+                stats: { events: 3, documents: 2, records: 2 },
+                mock: true
+            },
+            {
+                name: 'feishu_notifier',
+                type: 'notification',
+                type_name: '通知',
+                icon: '💬',
+                status: 'running',
+                description: '飞书消息推送',
+                stats: { queued: 0, sent: 12 },
+                mock: true
+            },
+            {
+                name: 'email_notifier',
+                type: 'notification',
+                type_name: '通知',
+                icon: '📧',
+                status: 'running',
+                description: '邮件通知发送',
+                stats: { queued: 0, sent: 8 },
+                mock: true
+            },
+            {
+                name: 'dingtalk_notifier',
+                type: 'notification',
+                type_name: '通知',
+                icon: '🔔',
+                status: 'running',
+                description: '钉钉通知推送',
+                stats: { queued: 0, sent: 5 },
+                mock: true
+            }
+        ];
+
+        const dataSummary = {
+            candidate: 6,
+            job: 4,
+            conversation: 2,
+            behavior: 2,
+            calendar_event: 3,
+            document: 2,
+            bitable_record: 2
+        };
+
+        let logs = [];
+        let currentFilter = 'all';
+
+        function renderPlugins() {
+            const list = document.getElementById('plugin-list');
+            const filtered = currentFilter === 'all'
+                ? plugins
+                : plugins.filter(p => p.type === currentFilter);
+
+            list.innerHTML = filtered.map(p => `
+                <div class="plugin-item">
+                    <div class="plugin-icon" style="background: ${getTypeColor(p.type)}20;">
+                        ${p.icon}
+                    </div>
+                    <div class="plugin-info">
+                        <h3>${p.name}${p.mock ? '<span class="mock-badge">MOCK</span>' : ''}</h3>
+                        <p>${p.description} · ${p.type_name}</p>
+                        <div style="font-size: 12px; color: var(--gray-600); margin-top: 4px;">
+                            ${formatStats(p.stats)}
+                        </div>
+                    </div>
+                    <span class="plugin-status status-${p.status}">${getStatusText(p.status)}</span>
+                    <div class="plugin-actions">
+                        <button class="btn btn-sm btn-primary" onclick="runHeartbeat('${p.name}')">⚡ 心跳</button>
+                        <button class="btn btn-sm" onclick="configurePlugin('${p.name}')">⚙️ 配置</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderDataSummary() {
+            const summary = document.getElementById('data-summary');
+            const typeNames = {
+                candidate: '候选人',
+                job: '职位',
+                conversation: '对话',
+                behavior: '行为',
+                calendar_event: '日历',
+                document: '文档',
+                bitable_record: 'Bitable'
+            };
+            const typeColors = {
+                candidate: '#4F46E5',
+                job: '#10B981',
+                conversation: '#F59E0B',
+                behavior: '#EF4444',
+                calendar_event: '#8B5CF6',
+                document: '#06B6D4',
+                bitable_record: '#84CC16'
+            };
+
+            summary.innerHTML = Object.entries(dataSummary).map(([type, count]) => `
+                <div class="data-card">
+                    <div class="count" style="color: ${typeColors[type]};">${count}</div>
+                    <div class="type">${typeNames[type]}</div>
+                </div>
+            `).join('');
+        }
+
+        function filterPlugins(type) {
+            currentFilter = type;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderPlugins();
+        }
+
+        function getTypeColor(type) {
+            const colors = {
+                data_source: '#4F46E5',
+                notification: '#10B981',
+                analytics: '#F59E0B'
+            };
+            return colors[type] || '#6B7280';
+        }
+
+        function getStatusText(status) {
+            const texts = {
+                running: '运行中',
+                stopped: '已停止',
+                pending: '待启动',
+                failed: '失败'
+            };
+            return texts[status] || status;
+        }
+
+        function formatStats(stats) {
+            return Object.entries(stats)
+                .map(([k, v]) => `${k}: ${v}`)
+                .join(' · ');
+        }
+
+        async function runHeartbeat(pluginName) {
+            addLog(pluginName, `Running heartbeat...`, 'info');
+            await new Promise(r => setTimeout(r, 500));
+            addLog(pluginName, `Heartbeat completed. Found 2 new items.`, 'success');
+            updateLastHeartbeat();
+            showToast('心跳完成', 'success');
+        }
+
+        async function runAllHeartbeats() {
+            addLog('System', 'Running heartbeat for all plugins...', 'info');
+            await new Promise(r => setTimeout(r, 1000));
+            plugins.forEach(p => {
+                addLog(p.name, `Heartbeat OK`, 'success');
+            });
+            updateLastHeartbeat();
+            showToast('全部心跳完成', 'success');
+        }
+
+        function configurePlugin(pluginName) {
+            showToast(`打开 ${pluginName} 配置面板`, 'info');
+        }
+
+        function refreshData() {
+            renderDataSummary();
+            showToast('数据已刷新', 'success');
+        }
+
+        function sendNotification() {
+            const title = document.getElementById('notif-title').value;
+            const content = document.getElementById('notif-content').value;
+            const channel = document.getElementById('notif-channel').value;
+            const recipients = document.getElementById('notif-recipients').value;
+
+            if (!title || !content) {
+                showToast('请填写标题和内容', 'error');
+                return;
+            }
+
+            addLog(channel, `Notification queued: ${title}`, 'info');
+            showToast('通知已加入队列', 'success');
+
+            // 清空表单
+            document.getElementById('notif-title').value = '';
+            document.getElementById('notif-content').value = '';
+        }
+
+        function addLog(plugin, message, type) {
+            const now = new Date();
+            const time = now.toLocaleString('zh-CN');
+            logs.unshift({ time, plugin, message, type });
+            if (logs.length > 50) logs.pop();
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const list = document.getElementById('log-list');
+            list.innerHTML = logs.map(l => `
+                <div class="log-item">
+                    <span class="log-time">${l.time}</span>
+                    <span class="log-plugin">${l.plugin}</span>
+                    <span class="log-message log-${l.type}">${l.message}</span>
+                </div>
+            `).join('');
+        }
+
+        function clearLogs() {
+            logs = [];
+            renderLogs();
+        }
+
+        function updateLastHeartbeat() {
+            const now = new Date();
+            document.getElementById('last-heartbeat').textContent =
+                now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // 初始化
+        renderPlugins();
+        renderDataSummary();
+        addLog('System', 'Plugin Manager initialized', 'info');
+    </script>
+</body>
+</html>
