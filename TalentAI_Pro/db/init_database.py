@@ -260,8 +260,8 @@ def seed_jobs(conn, company_ids, consultant_id=2):
     for job in jobs:
         c.execute('''
             INSERT OR IGNORE INTO jobs
-            (title, company_id, department, location, salary_min, salary_max, description, requirements, skills, headcount, priority, consultant_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (title, company_id, department, location, salary_min, salary_max, description, requirements, skills, headcount, priority)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', job)
         c.execute('SELECT id FROM jobs WHERE title = ? AND company_id = ?', (job[0], job[1]))
         result = c.fetchone()
@@ -280,53 +280,53 @@ def seed_candidates(conn, consultant_id=2):
         # 程序员/工程师
         ('张伟', 'zhangwei@email.com', '13600001111', '男', 30, '北京',
          '阿里巴巴', '高级前端工程师', '40K*15', '45K*15', '本科', 8,
-         'React,Vue,Node.js,TypeScript', '猎聘', 'active', 1.0),
+         'React,Vue,Node.js,TypeScript', '猎聘', 'active'),
         ('李娜', 'lina@email.com', '13600002222', '女', 28, '北京',
          '腾讯', '前端开发', '35K*14', '40K*15', '硕士', 5,
-         'React,Vue,JavaScript,Webpack', 'Boss直聘', 'active', 0.9),
+         'React,Vue,JavaScript,Webpack', 'Boss直聘', 'active'),
         ('王芳', 'wangfang@email.com', '13600003333', '女', 32, '上海',
          '网易', '资深后端工程师', '50K*15', '55K*15', '本科', 9,
-         'Go,Python,Kubernetes,Mysql', '猎聘', 'active', 0.85),
+         'Go,Python,Kubernetes,Mysql', '猎聘', 'active'),
         ('刘强', 'liuqiang@email.com', '13600004444', '男', 29, '北京',
          '京东', 'Java开发工程师', '32K*13', '38K*14', '本科', 6,
-         'Java,SpringCloud,Mysql,Redis', 'Boss直聘', 'active', 0.8),
+         'Java,SpringCloud,Mysql,Redis', 'Boss直聘', 'active'),
         ('陈静', 'chenjing@email.com', '13600005555', '女', 27, '深圳',
          '华为', '算法工程师', '38K*15', '45K*15', '硕士', 4,
-         'Python,深度学习,NLP, TensorFlow', '猎聘', 'active', 0.95),
+         'Python,深度学习,NLP,TensorFlow', '猎聘', 'active'),
         ('赵磊', 'zhaolei@email.com', '13600006666', '男', 31, '杭州',
          '蚂蚁集团', '技术专家', '60K*16', '70K*16', '硕士', 8,
-         'Java,架构设计,分布式系统', '猎聘', 'passive', 0.75),
+         'Java,架构设计,分布式系统', '猎聘', 'passive'),
         ('孙燕', 'sunyan@email.com', '13600007777', '女', 26, '北京',
          '快手', '前端工程师', '28K*14', '32K*14', '本科', 3,
-         'Vue,React,小程序开发', 'Boss直聘', 'active', 0.88),
+         'Vue,React,小程序开发', 'Boss直聘', 'active'),
         ('周杰', 'zhoujie@email.com', '13600008888', '男', 34, '上海',
          '携程', '技术经理', '55K*15', '65K*15', '本科', 10,
-         '管理,后端架构,微服务', '猎聘', 'passive', 0.7),
+         '管理,后端架构,微服务', '猎聘', 'passive'),
         # 产品经理
         ('吴婷', 'wuting@email.com', '13600009999', '女', 29, '北京',
          '字节跳动', '产品经理', '40K*15', '45K*15', '本科', 6,
-         '产品设计,数据分析,用户研究', '猎聘', 'active', 0.92),
+         '产品设计,数据分析,用户研究', '猎聘', 'active'),
         ('郑鑫', 'zhengxin@email.com', '13600001010', '男', 28, '上海',
          '拼多多', '高级产品经理', '45K*15', '50K*15', '硕士', 5,
-         '电商产品,交易系统,增长', 'Boss直聘', 'active', 0.85),
+         '电商产品,交易系统,增长', 'Boss直聘', 'active'),
         # 数据/运营
         ('黄丽', 'huangli@email.com', '13600001111', '女', 25, '北京',
          '滴滴', '数据分析师', '25K*14', '30K*14', '本科', 2,
-         'SQL,Python,R,Tableau', 'Boss直聘', 'active', 0.9),
+         'SQL,Python,R,Tableau', 'Boss直聘', 'active'),
         ('林超', 'linchao@email.com', '13600002222', '男', 30, '上海',
          '饿了么', '数据工程师', '35K*14', '42K*14', '本科', 6,
-         'Python,Hadoop,Spark,SQL', '猎聘', 'active', 0.82),
+         'Python,Hadoop,Spark,SQL', '猎聘', 'active'),
         # 游戏
         ('马媛', 'mayuan@email.com', '13600003333', '女', 27, '上海',
          '网易游戏', 'Unity开发', '30K*16', '38K*16', '本科', 4,
-         'Unity3D,C#,Shader,游戏开发', '猎聘', 'active', 0.88),
+         'Unity3D,C#,Shader,游戏开发', '猎聘', 'active'),
         # 职能
         ('赵敏', 'zhaomin@email.com', '13600004444', '女', 33, '北京',
          '百度', 'HRBP', '35K*14', '40K*14', '本科', 8,
-         '招聘,员工关系,OD', '猎聘', 'passive', 0.78),
+         '招聘,员工关系,OD', '猎聘', 'passive'),
         ('钱伟', 'qianwei@email.com', '13600005555', '男', 29, '深圳',
          '腾讯云', '解决方案专家', '40K*14', '50K*14', '硕士', 5,
-         '云计算,解决方案,售前', '猎聘', 'active', 0.85),
+         '云计算,解决方案,售前', '猎聘', 'active'),
     ]
 
     candidate_ids = []
