@@ -1,43 +1,31 @@
 """
-Agents Package
+TalentAI Pro Agents Package
+AI Agents for recruitment ecosystem
 
-招聘生态中的 AI Agent 集合
+Modules:
+- interview: Interview Agent (面试Agent)
+- recruiter: Recruiter Agent (招聘Agent)
+- candidate: Candidate Agent (候选人Agent)
 """
 
-from .interview import (
-    InterviewAgent,
-    InterviewState,
-    QuestionGenerator,
-    EvaluationEngine,
-    ReportGenerator,
-    InterviewSession,
-    InterviewSessionManager,
-    generate_interview_questions,
-    evaluate_answer,
-    generate_report,
-    EVALUATION_DIMENSIONS,
-    RECOMMENDATION_LEVELS
-)
+from .base import Agent, AgentCapability, AgentType, AgentStatus
+from .registry import AgentRegistry
 
 __all__ = [
-    "InterviewAgent",
-    "InterviewState",
-    "QuestionGenerator",
-    "EvaluationEngine",
-    "ReportGenerator",
-    "InterviewSession",
-    "InterviewSessionManager",
-    "generate_interview_questions",
-    "evaluate_answer",
-    "generate_report",
-    "EVALUATION_DIMENSIONS",
-    "RECOMMENDATION_LEVELS",
+    'Agent',
+    'AgentCapability',
+    'AgentType',
+    'AgentStatus',
+    'AgentRegistry',
 ]
 
-# Agent 类型枚举
-class AgentType:
-    """Agent 类型"""
-    INTERVIEW = "interview"
-    RECRUITER = "recruiter"
-    CANDIDATE = "candidate"
-    COORDINATOR = "coordinator"
+# Agent Registry Singleton
+_registry = AgentRegistry()
+
+def get_agent(agent_type: str) -> Agent:
+    """Get an agent instance by type"""
+    return _registry.get(agent_type)
+
+def register_agent(agent: Agent):
+    """Register an agent"""
+    _registry.register(agent)
