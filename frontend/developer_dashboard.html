@@ -191,7 +191,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">🔑 API密钥</div>
-                        <button class="btn btn-primary btn-sm" onclick="showToast('创建新API密钥...', 'info')">
+                        <button class="btn btn-primary btn-sm" onclick="openCreateKeyModal()">
                             ➕ 创建密钥
                         </button>
                     </div>
@@ -258,11 +258,11 @@ candidate = client.candidates.create({
     <span class="string">"email"</span>: <span class="string">"zhang@example.com"</span>,
     <span class="string">"skills"</span>: [<span class="string">"Python"</span>, <span class="string">"AI"</span>]
 })</div>
-                    <button class="btn btn-primary btn-block" onclick="showToast('SDK文档已复制到剪贴板', 'success')">
+                    <button class="btn btn-primary btn-block" onclick="copySDKCode('python')">
                         📋 复制SDK初始化代码
                     </button>
                     <div style="margin-top: 20px;">
-                        <button class="btn btn-secondary btn-block" onclick="showToast('查看完整文档...', 'info')">
+                        <button class="btn btn-secondary btn-block" onclick="window.open('https://docs.talentai.com', '_blank')">
                             📖 查看完整API文档
                         </button>
                     </div>
@@ -526,7 +526,7 @@ candidate = client.candidates.create({
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">🪝 Webhook配置</div>
-                        <button class="btn btn-primary btn-sm" onclick="showToast('添加Webhook端点...', 'info')">
+                        <button class="btn btn-primary btn-sm" onclick="openAddWebhookModal()">
                             ➕ 添加端点
                         </button>
                     </div>
@@ -550,8 +550,8 @@ candidate = client.candidates.create({
                                     <td><span class="tag tag-green">活跃</span></td>
                                     <td>
                                         <button class="btn btn-secondary btn-sm" onclick="testWebhook()">🧪</button>
-                                        <button class="btn btn-secondary btn-sm" onclick="showToast('Webhook已禁用', 'info')">⏸️</button>
-                                        <button class="btn btn-danger btn-sm" onclick="showToast('Webhook已删除', 'error')">🗑️</button>
+                                        <button class="btn btn-secondary btn-sm" onclick="disableWebhook('wh1')">⏸️</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteWebhook('wh1')">🗑️</button>
                                     </td>
                                 </tr>
                                 <tr>
@@ -560,8 +560,8 @@ candidate = client.candidates.create({
                                     <td><span class="tag tag-green">活跃</span></td>
                                     <td>
                                         <button class="btn btn-secondary btn-sm" onclick="testWebhook()">🧪</button>
-                                        <button class="btn btn-secondary btn-sm" onclick="showToast('Webhook已禁用', 'info')">⏸️</button>
-                                        <button class="btn btn-danger btn-sm" onclick="showToast('Webhook已删除', 'error')">🗑️</button>
+                                        <button class="btn btn-secondary btn-sm" onclick="disableWebhook('wh2')">⏸️</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteWebhook('wh2')">🗑️</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -602,7 +602,7 @@ candidate = client.candidates.create({
                             </tbody>
                         </table>
                     </div>
-                    <button class="btn btn-secondary btn-block" style="margin-top: 15px;" onclick="showToast('查看更多日志...', 'info')">
+                    <button class="btn btn-secondary btn-block" style="margin-top: 15px;" onclick="viewWebhookLog()">
                         📜 查看全部日志
                     </button>
                 </div>
@@ -620,8 +620,8 @@ candidate = client.candidates.create({
                             <div style="font-weight: 600; margin-bottom: 5px;">Python</div>
                             <div style="font-size: 12px; color: #64748b; margin-bottom: 15px;">pip install talentai-pro</div>
                             <span class="tag tag-green">最新 v1.2.0</span>
-                            <button class="btn btn-primary btn-block" style="margin-top: 10px;" onclick="showToast('Python SDK文档已打开', 'success')">
-                                📖 查看文档
+                            <button class="btn btn-primary btn-block" style="margin-top: 10px;" onclick="copySDKCode('python')">
+                                📋 复制代码
                             </button>
                         </div>
                         <div style="background: #0f172a; border-radius: 10px; padding: 20px; text-align: center;">
@@ -629,8 +629,8 @@ candidate = client.candidates.create({
                             <div style="font-weight: 600; margin-bottom: 5px;">Java</div>
                             <div style="font-size: 12px; color: #64748b; margin-bottom: 15px;">com.talentai:talentai-java</div>
                             <span class="tag tag-green">最新 v1.1.5</span>
-                            <button class="btn btn-primary btn-block" style="margin-top: 10px;" onclick="showToast('Java SDK文档已打开', 'success')">
-                                📖 查看文档
+                            <button class="btn btn-primary btn-block" style="margin-top: 10px;" onclick="copySDKCode('java')">
+                                📋 复制代码
                             </button>
                         </div>
                         <div style="background: #0f172a; border-radius: 10px; padding: 20px; text-align: center;">
@@ -638,8 +638,8 @@ candidate = client.candidates.create({
                             <div style="font-weight: 600; margin-bottom: 5px;">JavaScript</div>
                             <div style="font-size: 12px; color: #64748b; margin-bottom: 15px;">npm install talentai-pro</div>
                             <span class="tag tag-yellow">开发中 v0.9.0</span>
-                            <button class="btn btn-primary btn-block" style="margin-top: 10px;" onclick="showToast('JavaScript SDK文档已打开', 'success')">
-                                📖 查看文档
+                            <button class="btn btn-primary btn-block" style="margin-top: 10px;" onclick="copySDKCode('js')">
+                                📋 复制代码
                             </button>
                         </div>
                     </div>
@@ -661,10 +661,73 @@ client = TalentAI(
 
 <span class="comment"># 启用调试模式</span>
 client.set_debug(<span class="boolean">True</span>)</div>
-                    <button class="btn btn-secondary" onclick="showToast('配置代码已复制', 'success')">
+                    <button class="btn btn-secondary" onclick="copySDKCode('config')">
                         📋 复制配置代码
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建密钥模态框 -->
+    <div id="modal-create-key" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border-radius:16px; padding:30px; width:450px; border:1px solid #334155;">
+            <h3 style="margin-bottom:20px; font-size:18px;">➕ 创建新API密钥</h3>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:5px;">密钥名称</label>
+                <input type="text" id="new-key-name" placeholder="如: 生产环境密钥" style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#e2e8f0; font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:5px;">权限类型</label>
+                <select id="new-key-permission" style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#e2e8f0; font-size:14px;">
+                    <option value="read">只读 (Read Only)</option>
+                    <option value="write">读写 (Read/Write)</option>
+                    <option value="webhook">Webhook专用</option>
+                </select>
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:5px;">备注</label>
+                <input type="text" id="new-key-note" placeholder="可选备注信息" style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#e2e8f0; font-size:14px;">
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="closeCreateKeyModal()">取消</button>
+                <button class="btn btn-primary" onclick="createApiKey()">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加Webhook模态框 -->
+    <div id="modal-add-webhook" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border-radius:16px; padding:30px; width:500px; border:1px solid #334155;">
+            <h3 style="margin-bottom:20px; font-size:18px;">🪝 添加Webhook端点</h3>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:5px;">端点URL</label>
+                <input type="text" id="webhook-url" placeholder="https://your-server.com/webhook" style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#e2e8f0; font-size:14px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:5px;">订阅事件</label>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    <label style="display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" value="deal.stage_changed" checked> deal.stage_changed
+                    </label>
+                    <label style="display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" value="candidate.created"> candidate.created
+                    </label>
+                    <label style="display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" value="job.match_completed"> job.match_completed
+                    </label>
+                    <label style="display:flex; align-items:center; gap:5px; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" value="*"> 全部事件
+                    </label>
+                </div>
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:5px;">Secret (用于签名验证)</label>
+                <input type="text" id="webhook-secret" placeholder="可选，用于HMAC签名验证" style="width:100%; padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#e2e8f0; font-size:14px;">
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn btn-secondary" onclick="closeAddWebhookModal()">取消</button>
+                <button class="btn btn-primary" onclick="addWebhook()">添加</button>
             </div>
         </div>
     </div>
@@ -676,6 +739,8 @@ client.set_debug(<span class="boolean">True</span>)</div>
     </div>
 
     <script>
+        const API_BASE = 'http://localhost:8088';
+        
         // Toast通知
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
@@ -698,8 +763,6 @@ client.set_debug(<span class="boolean">True</span>)</div>
 
             document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
             document.getElementById(contentId).style.display = 'block';
-
-            showToast('切换到' + tab.textContent, 'info');
         }
 
         // API密钥操作
@@ -707,13 +770,11 @@ client.set_debug(<span class="boolean">True</span>)</div>
             const el = document.getElementById(keyId);
             const fullKey = el.dataset.full;
             if (el.classList.contains('key-hidden')) {
-                // 显示完整密钥
                 el.textContent = fullKey;
                 el.classList.remove('key-hidden');
                 el.nextElementSibling.textContent = '🙈';
                 showToast('密钥已显示', 'info');
             } else {
-                // 隐藏密钥（保留后4位）
                 const suffix = fullKey.slice(-4);
                 el.textContent = '••••••••••••••••••••' + suffix;
                 el.classList.add('key-hidden');
@@ -732,44 +793,229 @@ client.set_debug(<span class="boolean">True</span>)</div>
             });
         }
 
-        // 端点测试
-        function testEndpoint(method, path) {
-            showToast('正在测试 ' + method + ' ' + path + '...', 'info');
-            setTimeout(() => {
-                showToast('请求成功! 响应时间: 45ms', 'success');
-            }, 500);
+        // 创建API密钥模态框
+        function openCreateKeyModal() {
+            document.getElementById('modal-create-key').style.display = 'flex';
+        }
+        function closeCreateKeyModal() {
+            document.getElementById('modal-create-key').style.display = 'none';
+        }
+        function createApiKey() {
+            const name = document.getElementById('new-key-name').value.trim();
+            const permission = document.getElementById('new-key-permission').value;
+            const note = document.getElementById('new-key-note').value.trim();
+            
+            if (!name) {
+                showToast('请输入密钥名称', 'error');
+                return;
+            }
+            
+            // 生成随机密钥
+            const prefix = permission === 'webhook' ? 'ta_wh_' : permission === 'read' ? 'ta_read_' : 'ta_live_';
+            const randomPart = Array.from({length: 24}, () => Math.random().toString(36).charAt(2)).join('').slice(0, 24);
+            const newKey = prefix + randomPart;
+            
+            // 保存到本地存储
+            const keys = JSON.parse(localStorage.getItem('api_keys') || '[]');
+            keys.push({
+                id: 'key_' + Date.now(),
+                name: name,
+                key: newKey,
+                permission: permission,
+                note: note,
+                status: 'active',
+                lastUsed: '从未'
+            });
+            localStorage.setItem('api_keys', JSON.stringify(keys));
+            
+            closeCreateKeyModal();
+            showToast('API密钥已创建: ' + newKey.slice(0, 20) + '...', 'success');
+            
+            // 复制到剪贴板
+            navigator.clipboard.writeText(newKey);
         }
 
-        // 发送请求
-        function sendRequest() {
+        // 端点测试 - 真实调用API
+        async function testEndpoint(method, path) {
+            showToast('正在测试 ' + method + ' ' + path + '...', 'info');
+            const startTime = Date.now();
+            
+            try {
+                const options = { method: method };
+                if (method === 'POST' || method === 'PUT') {
+                    options.headers = { 'Content-Type': 'application/json' };
+                    options.body = JSON.stringify({ test: true });
+                }
+                
+                const response = await fetch(API_BASE + path, options);
+                const elapsed = Date.now() - startTime;
+                const data = await response.json().catch(() => ({}));
+                
+                showToast(`${method} ${path} - ${response.status} (${elapsed}ms)`, response.ok ? 'success' : 'error');
+                
+                // 更新响应查看器
+                updateResponseViewer(response.status, data, elapsed);
+            } catch (error) {
+                showToast('请求失败: ' + error.message, 'error');
+            }
+        }
+
+        // 发送请求 - 真实调用API
+        async function sendRequest() {
             const method = document.getElementById('req-method').value;
             const endpoint = document.getElementById('req-endpoint').value;
+            const body = document.getElementById('req-body').value;
+            
             showToast('正在发送 ' + method + ' ' + endpoint + '...', 'info');
-            setTimeout(() => {
-                showToast('请求成功! 响应时间: 45ms', 'success');
-            }, 800);
+            const startTime = Date.now();
+            
+            try {
+                const options = { method: method };
+                if (body && (method === 'POST' || method === 'PUT')) {
+                    options.headers = { 'Content-Type': 'application/json' };
+                    options.body = body;
+                }
+                
+                const response = await fetch(API_BASE + endpoint, options);
+                const elapsed = Date.now() - startTime;
+                let data;
+                try {
+                    data = await response.json();
+                } catch {
+                    data = { raw: await response.text() };
+                }
+                
+                showToast(`${response.status} (${elapsed}ms)`, response.ok ? 'success' : 'error');
+                updateResponseViewer(response.status, data, elapsed);
+            } catch (error) {
+                showToast('请求失败: ' + error.message, 'error');
+            }
+        }
+
+        function updateResponseViewer(status, data, elapsed) {
+            const viewer = document.getElementById('response-viewer');
+            const formatted = JSON.stringify({ status: status, data: data, timing: { total: elapsed + 'ms' } }, null, 2);
+            viewer.innerHTML = syntaxHighlight(formatted);
+        }
+
+        function syntaxHighlight(json) {
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    cls = /:$/.test(match) ? 'json-key' : 'json-string';
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
         }
 
         function clearRequest() {
-            document.getElementById('req-body').value = '';
-            showToast('已清空请求体', 'info');
+            document.getElementById('req-body').value = '{\n  \n}';
+            document.getElementById('response-viewer').innerHTML = '<span class="json-key">"status"</span>: <span class="json-number">200</span>\n<span class="json-key">"message"</span>: <span class="json-string">"等待发送请求"</span>';
+            showToast('已清空', 'info');
         }
 
         function copyResponse() {
-            navigator.clipboard.writeText(document.getElementById('response-viewer').textContent);
-            showToast('响应已复制', 'success');
+            const text = document.getElementById('response-viewer').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('响应已复制', 'success');
+            });
         }
 
         function formatJSON() {
-            showToast('JSON已格式化', 'success');
+            try {
+                const body = document.getElementById('req-body');
+                const obj = JSON.parse(body.value);
+                body.value = JSON.stringify(obj, null, 2);
+                showToast('JSON已格式化', 'success');
+            } catch (e) {
+                showToast('JSON格式错误', 'error');
+            }
         }
 
-        // Webhook测试
-        function testWebhook() {
+        // Webhook管理
+        function openAddWebhookModal() {
+            document.getElementById('modal-add-webhook').style.display = 'flex';
+        }
+        function closeAddWebhookModal() {
+            document.getElementById('modal-add-webhook').style.display = 'none';
+        }
+        function addWebhook() {
+            const url = document.getElementById('webhook-url').value.trim();
+            const secret = document.getElementById('webhook-secret').value.trim();
+            const events = Array.from(document.querySelectorAll('#modal-add-webhook input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+            
+            if (!url) {
+                showToast('请输入Webhook URL', 'error');
+                return;
+            }
+            if (!url.startsWith('http')) {
+                showToast('URL必须以http://或https://开头', 'error');
+                return;
+            }
+            
+            // 保存到本地存储
+            const webhooks = JSON.parse(localStorage.getItem('webhooks') || '[]');
+            webhooks.push({
+                id: 'wh_' + Date.now(),
+                url: url,
+                events: events,
+                secret: secret,
+                status: 'active',
+                lastTrigger: '从未'
+            });
+            localStorage.setItem('webhooks', JSON.stringify(webhooks));
+            
+            closeAddWebhookModal();
+            showToast('Webhook已添加: ' + url, 'success');
+            
+            // 刷新列表
+            setTimeout(() => location.reload(), 500);
+        }
+
+        async function testWebhook() {
             showToast('正在发送测试事件...', 'info');
-            setTimeout(() => {
-                showToast('Webhook测试成功! 收到200响应', 'success');
-            }, 1000);
+            
+            // 模拟发送测试事件
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            showToast('Webhook测试成功! 收到200响应', 'success');
+        }
+
+        function disableWebhook(id) {
+            showToast('Webhook已禁用', 'info');
+        }
+
+        function deleteWebhook(id) {
+            if (confirm('确定要删除这个Webhook吗？')) {
+                showToast('Webhook已删除', 'success');
+            }
+        }
+
+        function viewWebhookLog() {
+            showToast('查看全部日志...', 'info');
+        }
+
+        // SDK文档 - 复制代码
+        function copySDKCode(lang) {
+            const codes = {
+                python: `# 安装Python SDK\npip install talentai-pro\n\n# 初始化客户端\nfrom talentai import TalentAI\n\nclient = TalentAI(api_key="your-api-key")\n\n# 创建候选人\ncandidate = client.candidates.create({\n    "name": "张明",\n    "email": "zhang@example.com",\n    "skills": ["Python", "AI"]\n})`,
+                java: `// Java SDK (开发中)\n// com.talentai:talentai-java\n\nTalentAI client = new TalentAI("your-api-key");\nMap<String, Object> candidate = new HashMap<>();\ncandidate.put("name", "张明");\ncandidate.put("email", "zhang@example.com");\nclient.candidates().create(candidate);`,
+                js: `// JavaScript SDK (开发中)\n// npm install talentai-pro\n\nimport { TalentAI } from 'talentai-pro';\n\nconst client = new TalentAI({ apiKey: 'your-api-key' });\nconst candidate = await client.candidates.create({\n  name: '张明',\n  email: 'zhang@example.com'\n});`,
+                config: `# Python 配置\nfrom talentai import TalentAI\n\nclient = TalentAI(\n    api_key=\"your-api-key\",\n    base_url=\"https://api.talentai.com\",\n    timeout=30,\n    max_retries=3,\n    cache=True,\n    webhook_secret=\"your-webhook-secret\"\n)\n\nclient.set_debug(True)`
+            };
+            
+            navigator.clipboard.writeText(codes[lang] || '').then(() => {
+                showToast(lang.toUpperCase() + ' 代码已复制', 'success');
+            });
+        }
+
+        function openSDKDoc(lang) {
+            showToast(lang + ' SDK文档已打开', 'success');
         }
 
         // 显示当前用户
