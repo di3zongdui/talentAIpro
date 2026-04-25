@@ -8,22 +8,23 @@ LLM API Routes - LLM配置和控制API
 import os
 import json
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 # 导入LLM模块
 import sys
+from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from TalentAI_Pro.llm import (
+from llm import (
     LLMGateway,
-    Message,
     SiliconFlowProvider,
     ProviderType,
 )
-from TalentAI_Pro.llm.models import ModelRegistry, ProviderConfig, ModelConfig
-from TalentAI_Pro.llm.semantic_matching import LLMSemanticMatching
+from llm.provider import Message
+from llm.models import ModelRegistry, ProviderConfig, ModelConfig
+from llm.semantic_matching import LLMSemanticMatching
 
 
 router = APIRouter(prefix="/api/llm", tags=["LLM"])
