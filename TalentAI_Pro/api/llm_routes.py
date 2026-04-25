@@ -23,6 +23,7 @@ from TalentAI_Pro.llm import (
     ProviderType,
 )
 from TalentAI_Pro.llm.models import ModelRegistry, ProviderConfig, ModelConfig
+from TalentAI_Pro.llm.semantic_matching import LLMSemanticMatching
 
 
 router = APIRouter(prefix="/api/llm", tags=["LLM"])
@@ -330,3 +331,97 @@ async def set_default_model(provider_id: str, model_id: str):
     gateway.config.default_provider = provider_id
     gateway.config.default_model = model_id
     return {"status": "success", "message": f"Default model set to {provider_id}/{model_id}"}
+
+
+# ========== Semantic Matching Endpoints ==========
+
+class SemanticMatchRequest(BaseModel):
+    job_info: Dict[str, Any]
+    candidate_info: Dict[str, Any]
+
+
+class BatchMatchRequest(BaseModel):
+    job_info: Dict[str, Any]
+    candidates: List[Dict[str, Any]]
+
+
+@router.post("/semantic-match")
+async def semantic_match(request: SemanticMatchRequest):
+    """语义匹配评估"""
+    gateway = get_gateway()
+
+    # 确保Provider已配置
+    if not gateway._providers:
+        registry = get_registry()
+        for p_id, p_config in registry.providers.items():
+            if p_config.api_key:
+                gateway.configure_provider(p_id, p_config.api_key, p_config.base_url)
+
+    if not gateway._providers:
+        raise HTTPException(status_code=400, detail="No provider configured")
+
+    try:
+        matcher = LLMSemanticMatching(gateway)
+        result = await matcher.overall_match(
+            job_info=request.job_info,
+            candidate_info=request.candidate_info,
+        )
+
+        return {"status": "success", "data": result.to_dict()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/semantic-match/batch")
+async def batch_semantic_match(request: BatchMatchRequest):
+    """批量语义匹配"""
+    gateway = get_gateway()
+
+    if not gateway._providers:
+        registry = get_registry()
+        for p_id, p_config in registry.providers.items():
+            if p_config.api_key:
+                gateway.configure_provider(p_id, p_config.api_key, p_config.base_url)
+
+    if not gateway._providers:
+        raise HTTPException(status_code=400, detail="No provider configured")
+
+    try:
+        matcher = LLMSemanticMatching(gateway)
+        results = await matcher.batch_match(
+            job_info=request.job_info,
+            candidates=request.candidates,
+        )
+
+        return {
+            "status": "success",
+            "data": [r.to_dict() for r in results]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/semantic-match/interview-focus")
+async def get_interview_focus(request: SemanticMatchRequest):
+    """获取面试重点考察方向"""
+    gateway = get_gateway()
+
+    if not gateway._providers:
+        registry = get_registry()
+        for p_id, p_config in registry.providers.items():
+            if p_config.api_key:
+                gateway.configure_provider(p_id, p_config.api_key, p_config.base_url)
+
+    if not gateway._providers:
+        raise HTTPException(status_code=400, detail="No provider configured")
+
+    try:
+        matcher = LLMSemanticMatching(gateway)
+        focus_areas = await matcher.suggest_interview_focus(
+            job_info=request.job_info,
+            candidate_info=request.candidate_info,
+        )
+
+        return {"status": "success", "data": focus_areas}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

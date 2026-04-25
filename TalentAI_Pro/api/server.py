@@ -76,8 +76,14 @@ from api.v2 import (
     router as events_router,
 )
 
+# LLM路由
+from api.llm_routes import router as llm_router
+
 # 注册v2路由
 app.include_router(v2_router)
+
+# 注册LLM路由
+app.include_router(llm_router)
 
 
 # ========== 根路径 ==========

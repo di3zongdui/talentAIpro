@@ -22,6 +22,7 @@ from .siliconflow import SiliconFlowProvider
 from .gateway import LLMGateway
 from .models import ModelConfig, ProviderConfig, ModelRegistry
 from .integrations import LLMInterviewIntegration, LLMNegotiationIntegration
+from .semantic_matching import LLMSemanticMatching, SemanticMatchResult
 
 __all__ = [
     "BaseProvider",
@@ -35,4 +36,6 @@ __all__ = [
     "ModelRegistry",
     "LLMInterviewIntegration",
     "LLMNegotiationIntegration",
+    "LLMSemanticMatching",
+    "SemanticMatchResult",
 ]

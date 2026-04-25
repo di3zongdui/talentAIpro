@@ -22,6 +22,7 @@ from TalentAI_Pro.llm.integrations import (
     LLMInterviewIntegration,
     LLMNegotiationIntegration,
 )
+from TalentAI_Pro.llm.semantic_matching import LLMSemanticMatching
 
 
 # 测试配置
@@ -231,6 +232,94 @@ async def test_gateway_stats():
     print("✓ Gateway stats test passed")
 
 
+async def test_semantic_matching():
+    """测试语义匹配功能"""
+    print("\n" + "="*60)
+    print("Test 8: Semantic Matching")
+    print("="*60)
+
+    gateway = LLMGateway()
+    gateway.configure_provider("siliconflow", TEST_API_KEY)
+
+    matcher = LLMSemanticMatching(gateway)
+
+    job_info = {
+        "title": "高级Python工程师",
+        "required_skills": ["Python", "Django", "Flask", "PostgreSQL", "Docker"],
+        "min_experience_years": 3,
+        "level": "senior",
+    }
+
+    candidate_info = {
+        "name": "李明",
+        "current_title": "Python开发工程师",
+        "years_of_experience": 4,
+        "skills": ["Flask", "Django", "PostgreSQL", "Docker", "Redis"],
+        "achievements": "主导过电商平台后端开发，日活10万",
+    }
+
+    # 技能匹配
+    skill_result = await matcher.match_skills(
+        required_skills=job_info["required_skills"],
+        candidate_skills=candidate_info["skills"],
+    )
+    print(f"Skill match score: {skill_result.get('skill_match_score', 0)}")
+
+    # 经验匹配
+    exp_result = await matcher.match_experience(
+        job_info=job_info,
+        candidate_info=candidate_info,
+    )
+    print(f"Experience match score: {exp_result.get('experience_match_score', 0)}")
+
+    # 整体匹配
+    overall_result = await matcher.overall_match(
+        job_info=job_info,
+        candidate_info=candidate_info,
+    )
+    print(f"Overall score: {overall_result.overall_score}")
+    print(f"Recommendation: {overall_result.recommendation}")
+    print(f"Hidden strengths: {overall_result.hidden_strengths}")
+    print(f"Gaps: {overall_result.gaps}")
+
+    print("✓ Semantic matching test passed")
+    return overall_result
+
+
+async def test_interview_focus():
+    """测试面试重点生成"""
+    print("\n" + "="*60)
+    print("Test 9: Interview Focus Generation")
+    print("="*60)
+
+    gateway = LLMGateway()
+    gateway.configure_provider("siliconflow", TEST_API_KEY)
+
+    matcher = LLMSemanticMatching(gateway)
+
+    job_info = {
+        "title": "高级Python工程师",
+        "required_skills": ["Python", "Django", "系统设计"],
+    }
+
+    candidate_info = {
+        "name": "李明",
+        "skills": ["Flask", "Django"],
+        "gaps": ["缺少大规模系统设计经验"],
+    }
+
+    focus_areas = await matcher.suggest_interview_focus(
+        job_info=job_info,
+        candidate_info=candidate_info,
+    )
+
+    print(f"Generated {len(focus_areas)} focus areas:")
+    for i, area in enumerate(focus_areas[:3], 1):
+        print(f"  {i}. {area.get('topic', 'N/A')}")
+
+    print("✓ Interview focus test passed")
+
+
 async def main():
     """运行所有测试"""
     print("""
@@ -252,6 +341,8 @@ async def main():
         await test_gateway_stream()
         await test_interview_evaluation()
         await test_negotiation_message()
+        await test_semantic_matching()
+        await test_interview_focus()
 
         print("""
 ╔═══════════════════════════════════════════════════════════╗
