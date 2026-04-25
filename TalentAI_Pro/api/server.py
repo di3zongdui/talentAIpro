@@ -12,6 +12,7 @@ Agent信任与通信协议 v2 API
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 import uvicorn
 import os
 
@@ -76,6 +77,19 @@ if v2_router:
 # 注册LLM路由
 if llm_router:
     app.include_router(llm_router)
+
+# ========== 静态文件服务 ==========
+# 提供前端页面访问
+frontend_path = Path(__file__).parent.parent / "frontend"
+if frontend_path.exists():
+    app.mount("/frontend", StaticFiles(directory=str(frontend_path), html=True), name="frontend")
+    print(f"[Static] Serving frontend from {frontend_path}")
+
+    # 添加根路径重定向到前端
+    @app.get("/")
+    async def root():
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/frontend/llm_test_dashboard.html")
 
 
 # ========== 根路径 ==========
