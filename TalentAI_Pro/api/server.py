@@ -85,23 +85,23 @@ if frontend_path.exists():
     app.mount("/frontend", StaticFiles(directory=str(frontend_path), html=True), name="frontend")
     print(f"[Static] Serving frontend from {frontend_path}")
 
-    # 添加根路径重定向到前端
-    @app.get("/")
-    async def root():
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/frontend/llm_test_dashboard.html")
-
 
 # ========== 根路径 ==========
 
 @app.get("/")
 async def root():
-    """API根路径"""
+    """API根路径 - 重定向到前端"""
+    from fastapi.responses import RedirectResponse
+    if frontend_path.exists():
+        return RedirectResponse(url="/frontend/llm_test_dashboard.html")
     return {
         "name": "TalentAI Pro - Agent API",
         "version": "2.0.0",
         "docs": "/docs",
         "agent_api_v2": "/api/v2",
+        "llm_api": "/api/llm",
+        "status": "running"
+    }
         "status": "running"
     }
 
