@@ -56,34 +56,26 @@ app.add_middleware(
 
 # ========== API v2 端点导入 ==========
 
-from api.v2 import (
-    router as v2_router,
-    # Agent注册与认证
-    router as agents_router,
-    # 代理授权
-    router as authorization_router,
-    # 偏好模型
-    router as preferences_router,
-    # 用途绑定披露
-    router as disclosure_router,
-    # 语义共识
-    router as semantics_router,
-    # 谈判协议
-    router as negotiations_router,
-    # 消息通信
-    router as messages_router,
-    # 事件系统
-    router as events_router,
-)
+try:
+    from api.v2 import router as v2_router
+except ImportError:
+    v2_router = None
+    print("[Warning] v2 router not available")
 
 # LLM路由
-from api.llm_routes import router as llm_router
+try:
+    from api.llm_routes import router as llm_router
+except ImportError:
+    llm_router = None
+    print("[Warning] llm router not available")
 
 # 注册v2路由
-app.include_router(v2_router)
+if v2_router:
+    app.include_router(v2_router)
 
 # 注册LLM路由
-app.include_router(llm_router)
+if llm_router:
+    app.include_router(llm_router)
 
 
 # ========== 根路径 ==========
