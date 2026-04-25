@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>LLM API 诊断工具</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a2e; color: #fff; }
+        .test-btn { padding: 10px 20px; margin: 5px; cursor: pointer; background: #007bff; border: none; color: white; border-radius: 5px; }
+        .test-btn:hover { background: #0056b3; }
+        .result { background: #2d2d44; padding: 15px; margin: 10px 0; border-radius: 5px; white-space: pre-wrap; word-break: break-all; }
+        .error { color: #ff6b6b; }
+        .success { color: #51cf66; }
+    </style>
+</head>
+<body>
+    <h1>🔧 LLM API 诊断工具</h1>
+
+    <h3>1. 检查服务器健康状态</h3>
+    <button class="test-btn" onclick="testHealth()">测试 /health</button>
+    <button class="test-btn" onclick="testProviders()">测试 /providers</button>
+
+    <h3>2. 测试 Provider 连接</h3>
+    <button class="test-btn" onclick="testProvider()">测试 SiliconFlow 连接</button>
+
+    <h3>3. 测试对话功能</h3>
+    <button class="test-btn" onclick="testChat()">测试 /chat</button>
+
+    <h3>4. 测试面试评估</h3>
+    <button class="test-btn" onclick="testInterview()">测试 /interview-evaluate</button>
+
+    <h3>5. 测试谈判消息</h3>
+    <button class="test-btn" onclick="testNegotiation()">测试 /negotiation-message</button>
+
+    <h3>6. 测试语义匹配</h3>
+    <button class="test-btn" onclick="testSemantic()">测试 /semantic-match</button>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8089/api/llm';
+
+        function log(msg, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'result' + (isError ? ' error' : ' success');
+            div.textContent = `${new Date().toLocaleTimeString()}: ${msg}`;
+            document.getElementById('results').prepend(div);
+        }
+
+        async function test(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: { 'Content-Type': 'application/json', ...options.headers },
+                    ...options
+                });
+                const data = await response.json();
+                log(`${endpoint}: ${JSON.stringify(data, null, 2)}`);
+                return data;
+            } catch (e) {
+                log(`${endpoint}: ❌ ${e.message}`, true);
+                return null;
+            }
+        }
+
+        function testHealth() { test('/health'); }
+        function testProviders() { test('/providers'); }
+
+        async function testProvider() {
+            const data = await test('/test', {
+                method: 'POST',
+                body: JSON.stringify({
+                    provider: 'siliconflow',
+                    api_key: 'sk-unpavlxvzzormhmxlpzlajqadfrgvybfzevprbjqphbzigtr',
+                    base_url: 'https://api.siliconflow.cn/v1'
+                })
+            });
+        }
+
+        async function testChat() {
+            const data = await test('/chat', {
+                method: 'POST',
+                body: JSON.stringify({
+                    prompt: '你好，介绍一下你自己',
+                    model: 'Qwen/Qwen3-Omni-30B-A3B-Instruct'
+                })
+            });
+        }
+
+        async function testInterview() {
+            const data = await test('/interview-evaluate', {
+                method: 'POST',
+                body: JSON.stringify({
+                    question: '请介绍一下Python的装饰器',
+                    answer: '装饰器是Python的一种语法糖，可以在不修改原函数的情况下，给函数添加新的功能。',
+                    context: '后端开发面试'
+                })
+            });
+        }
+
+        async function testNegotiation() {
+            const data = await test('/negotiation-message', {
+                method: 'POST',
+                body: JSON.stringify({
+                    situation: '候选人期望薪资30K，公司offer 25K，差距5K',
+                    tone: 'moderate'
+                })
+            });
+        }
+
+        async function testSemantic() {
+            const data = await test('/semantic-match', {
+                method: 'POST',
+                body: JSON.stringify({
+                    job_description: '招聘Python后端开发，熟练掌握Django框架',
+                    resume: '5年Python开发经验，熟悉Django和Flask'
+                })
+            });
+        }
+    </script>
+</body>
+</html>

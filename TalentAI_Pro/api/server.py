@@ -102,8 +102,6 @@ async def root():
         "llm_api": "/api/llm",
         "status": "running"
     }
-        "status": "running"
-    }
 
 
 @app.get("/health")

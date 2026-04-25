@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM 能力测试面板 - TalentAI Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .header {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-dot.online {
+            background: #28a745;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
+        }
+
+        .status-dot.offline {
+            background: #dc3545;
+        }
+
+        .status-dot.loading {
+            background: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 40px;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .module-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+
+        .module-card:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .module-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .module-icon.interview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .module-icon.negotiation {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .module-icon.matching {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .module-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .module-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .result-area {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        .result-area.show {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .result-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #667eea;
+        }
+
+        .result-time {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .score-display {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .score-high {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        .score-medium {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .score-low {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            background: #333;
+            color: white;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.loading {
+            background: #667eea;
+        }
+
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 4px;
+        }
+
+        .api-config {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .api-config h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 200px;
+            gap: 16px;
+        }
+
+        @media (max-width: 1200px) {
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .config-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 LLM 能力测试面板</h1>
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-dot" id="providerStatus"></span>
+                <span id="providerName">SiliconFlow</span>
+            </div>
+            <div class="status-item">
+                <span id="modelName">Qwen3-Omni-30B</span>
+            </div>
+            <div class="status-item">
+                <span>响应: </span>
+                <span id="lastLatency">--ms</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- API Config -->
+        <div class="api-config">
+            <h3>⚙️ API 配置</h3>
+            <div class="config-row">
+                <div class="form-group">
+                    <label>Provider</label>
+                    <select id="configProvider">
+                        <option value="siliconflow">SiliconFlow</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Model</label>
+                    <select id="configModel">
+                        <option value="qwen3-omni">Qwen3-Omni-30B</option>
+                        <option value="qwq32b">QwQ-32B</option>
+                        <option value="deepseekv3">DeepSeek-V3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn btn-primary btn-full" onclick="initProvider()">
+                        🔄 初始化连接
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statRequests">0</div>
+                <div class="stat-label">总请求数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statTokens">0</div>
+                <div class="stat-label">使用Token</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statSuccess">0</div>
+                <div class="stat-label">成功次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statFail">0</div>
+                <div class="stat-label">失败次数</div>
+            </div>
+        </div>
+
+        <!-- Module Tabs -->
+        <div class="tab-bar">
+            <button class="tab active" onclick="switchTab('interview')">
+                📋 面试评估
+            </button>
+            <button class="tab" onclick="switchTab('negotiation')">
+                🤝 薪资谈判
+            </button>
+            <button class="tab" onclick="switchTab('matching')">
+                🔍 语义匹配
+            </button>
+        </div>
+
+        <!-- Interview Module -->
+        <div class="tab-content active" id="tab-interview">
+            <div class="modules-grid">
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon interview">📋</div>
+                        <div>
+                            <div class="module-title">面试实时评估</div>
+                            <div class="module-desc">LLM语义理解评估候选人回答</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>面试问题</label>
+                        <input type="text" id="interviewQ" value="请解释Python中的装饰器是什么？请说明其原理和使用场景。">
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人回答</label>
+                        <textarea id="interviewA">装饰器是Python的一种高级特性，它可以修改函数或类的行为。装饰器本质上是一个返回函数的函数。比如 @staticmethod 装饰器可以不需要实例化就调用。我之前在项目中用过 Flask 的装饰器来做路由映射，比如 @app.route('/') 这样的。</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>职位上下文</label>
+                        <input type="text" id="interviewCtx" value="高级Python工程师 - 需要深入理解装饰器原理">
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="runInterviewEval()">
+                        🚀 运行评估
+                    </button>
+
+                    <div class="result-area" id="interviewResult">
+                        <div class="result-header">
+                            <span class="result-title">评估结果</span>
+                            <span class="result-time" id="interviewTime"></span>
+                        </div>
+                        <div id="interviewContent"></div>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon interview">💬</div>
+                        <div>
+                            <div class="module-title">动态追问生成</div>
+                            <div class="module-desc">基于回答生成深入追问</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>原问题</label>
+                        <input type="text" id="followupQ" value="请解释Python中的装饰器是什么？">
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人回答</label>
+                        <textarea id="followupA">装饰器可以修改函数行为，比如 @staticmethod。</textarea>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="runFollowupGen()">
+                        💡 生成追问
+                    </button>
+
+                    <div class="result-area" id="followupResult">
+                        <div class="result-header">
+                            <span class="result-title">追问问题</span>
+                            <span class="result-time" id="followupTime"></span>
+                        </div>
+                        <div id="followupContent"></div>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon interview">📊</div>
+                        <div>
+                            <div class="module-title">综合面试报告</div>
+                            <div class="module-desc">批量评估生成总结报告</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人信息</label>
+                        <textarea id="candidateProfile">姓名: 李明
+职位: 高级Python工程师
+工作年限: 5年
+当前公司: 某互联网公司
+技能: Python, Django, Flask, PostgreSQL, Redis, Docker</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>面试问题与回答（JSON格式）</label>
+                        <textarea id="interviewHistory">[{"q": "Python装饰器原理", "a": "装饰器是高阶函数，返回新函数", "score": 3},
+{"q": "描述一个项目经验", "a": "使用Flask开发了REST API", "score": 4}]</textarea>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="runInterviewReport()">
+                        📝 生成报告
+                    </button>
+
+                    <div class="result-area" id="reportResult">
+                        <div class="result-header">
+                            <span class="result-title">面试报告</span>
+                            <span class="result-time" id="reportTime"></span>
+                        </div>
+                        <div id="reportContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Negotiation Module -->
+        <div class="tab-content" id="tab-negotiation">
+            <div class="modules-grid">
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon negotiation">✉️</div>
+                        <div>
+                            <div class="module-title">谈判消息生成</div>
+                            <div class="module-desc">LLM生成个性化谈判消息</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>当前谈判情况</label>
+                        <textarea id="negSituation">候选人收到Offer后第三天回复，表示薪资低于预期，希望月薪从42000提高到48000（涨幅14%）。候选人提到有另一家公司的Offer在手。</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>语气风格</label>
+                        <select id="negTone">
+                            <option value="conciliatory">🎯 柔和型 - 展现诚意，愿意让步</option>
+                            <option value="moderate">⚖️ 平衡型 - 寻找共赢方案</option>
+                            <option value="aggressive">🛡️ 坚定型 - 维护公司底线</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人背景</label>
+                        <input type="text" id="negCandidate" value="李明，3年经验，原薪资28000/月">
+                    </div>
+
+                    <div class="form-group">
+                        <label>公司Offer</label>
+                        <input type="text" id="negOffer" value="月薪35000，签字费20000，RSU 5000股">
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="runNegotiationMsg()">
+                        ✨ 生成消息
+                    </button>
+
+                    <div class="result-area" id="negResult">
+                        <div class="result-header">
+                            <span class="result-title">生成的消息</span>
+                            <span class="result-time" id="negTime"></span>
+                        </div>
+                        <div id="negContent"></div>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon negotiation">🧠</div>
+                        <div>
+                            <div class="module-title">候选人心理分析</div>
+                            <div class="module-desc">分析候选人回复的真实顾虑</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人回复内容</label>
+                        <textarea id="concernResponse">"谢谢您的Offer，但我还在考虑中。我其实更倾向于另一家公司，他们的薪资更高一些，而且团队规模更大。不过你们公司的技术栈我也很喜欢，所以很纠结。"</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>上下文</label>
+                        <input type="text" id="concernContext" value="候选人收到Offer一周后回复">
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="runConcernAnalysis()">
+                        🔍 分析顾虑
+                    </button>
+
+                    <div class="result-area" id="concernResult">
+                        <div class="result-header">
+                            <span class="result-title">顾虑分析</span>
+                            <span class="result-time" id="concernTime"></span>
+                        </div>
+                        <div id="concernContent"></div>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon negotiation">💡</div>
+                        <div>
+                            <div class="module-title">方案建议</div>
+                            <div class="module-desc">AI推荐最优补偿方案</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>当前Offer</label>
+                        <input type="text" id="currentOffer" value='{"salary": 35000, "signing_bonus": 20000, "rsu": 5000}'>
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人期望</label>
+                        <input type="text" id="candidateExpect" value='{"salary": 48000, "signing_bonus": 30000, "rsu": 8000}'>
+                    </div>
+
+                    <div class="form-group">
+                        <label>差距分析</label>
+                        <input type="text" id="gapAnalysis" value="薪资差距13000/月，年薪差距15.6万">
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="runCounterOffer()">
+                        💰 生成方案
+                    </button>
+
+                    <div class="result-area" id="counterResult">
+                        <div class="result-header">
+                            <span class="result-title">方案建议</span>
+                            <span class="result-time" id="counterTime"></span>
+                        </div>
+                        <div id="counterContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Matching Module -->
+        <div class="tab-content" id="tab-matching">
+            <div class="modules-grid">
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon matching">🔍</div>
+                        <div>
+                            <div class="module-title">JD vs 简历匹配</div>
+                            <div class="module-desc">语义级 JD 与简历匹配分析</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>职位要求 (JD)</label>
+                        <textarea id="jdContent">职位: 高级Python工程师
+要求技能: Python, Django, Flask, PostgreSQL, Docker
+经验: 3-5年
+职责: 设计后端架构, 优化系统性能, 带领小组</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人简历</label>
+                        <textarea id="resumeContent">李明，4年Python开发经验
+使用Flask开发过电商后端API
+熟悉PostgreSQL数据库设计
+有Docker部署经验
+之前在创业公司带过3人小组</textarea>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="runSemanticMatch()">
+                        🔬 执行匹配
+                    </button>
+
+                    <div class="result-area" id="matchResult">
+                        <div class="result-header">
+                            <span class="result-title">匹配结果</span>
+                            <span class="result-time" id="matchTime"></span>
+                        </div>
+                        <div id="matchContent"></div>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon matching">📊</div>
+                        <div>
+                            <div class="module-title">批量人才匹配</div>
+                            <div class="module-desc">从多个候选人中筛选最佳匹配</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>职位要求</label>
+                        <input type="text" id="batchJob" value="Python工程师, Django, 3年+">
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人列表</label>
+                        <textarea id="batchCandidates">候选人A: 5年Flask, Django经验，熟悉云部署
+候选人B: 3年Python，主要用Tornado，经验略浅
+候选人C: 7年经验，但主要用Java，Python较新
+候选人D: 4年经验，技能完全匹配，但薪资要求高</textarea>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="runBatchMatch()">
+                        🎯 批量匹配
+                    </button>
+
+                    <div class="result-area" id="batchResult">
+                        <div class="result-header">
+                            <span class="result-title">匹配排名</span>
+                            <span class="result-time" id="batchTime"></span>
+                        </div>
+                        <div id="batchContent"></div>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="module-header">
+                        <div class="module-icon matching">🎯</div>
+                        <div>
+                            <div class="module-title">面试重点生成</div>
+                            <div class="module-desc">基于匹配分析生成考察方向</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人姓名</label>
+                        <input type="text" id="focusCandidate" value="李明">
+                    </div>
+
+                    <div class="form-group">
+                        <label>候选人技能</label>
+                        <input type="text" id="focusSkills" value="Flask, Django, PostgreSQL, Docker">
+                    </div>
+
+                    <div class="form-group">
+                        <label>职位要求技能</label>
+                        <input type="text" id="focusRequired" value="Python, Django, Flask, PostgreSQL, Docker">
+                    </div>
+
+                    <div class="form-group">
+                        <label>识别的差距</label>
+                        <input type="text" id="focusGaps" value="缺少大规模系统设计经验">
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="runInterviewFocus()">
+                        🎯 生成考察重点
+                    </button>
+
+                    <div class="result-area" id="focusResult">
+                        <div class="result-header">
+                            <span class="result-title">面试考察方向</span>
+                            <span class="result-time" id="focusTime"></span>
+                        </div>
+                        <div id="focusContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // API Configuration
+        const API_BASE = '/api/llm';
+
+        // Stats
+        let stats = {
+            requests: 0,
+            tokens: 0,
+            success: 0,
+            fail: 0
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStats();
+            checkProviderStatus();
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        async function initProvider() {
+            showToast('正在初始化连接...', 'loading');
+
+            // Get config
+            const provider = document.getElementById('configProvider').value;
+            const model = document.getElementById('configModel').value;
+
+            // For demo, just show success
+            setTimeout(() => {
+                document.getElementById('providerStatus').className = 'status-dot online';
+                document.getElementById('modelName').textContent = model;
+                showToast(`${provider} 连接成功`, 'success');
+            }, 500);
+        }
+
+        async function checkProviderStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const result = await response.json();
+                if (result.status === 'success') {
+                    document.getElementById('providerStatus').className = 'status-dot online';
+                }
+            } catch (e) {
+                document.getElementById('providerStatus').className = 'status-dot offline';
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('statRequests').textContent = stats.requests;
+            document.getElementById('statTokens').textContent = stats.tokens.toLocaleString();
+            document.getElementById('statSuccess').textContent = stats.success;
+            document.getElementById('statFail').textContent = stats.fail;
+        }
+
+        // ========== Interview Functions ==========
+
+        async function runInterviewEval() {
+            const question = document.getElementById('interviewQ').value;
+            const answer = document.getElementById('interviewA').value;
+            const context = document.getElementById('interviewCtx').value;
+
+            showLoading('interviewResult', 'interviewContent');
+            const startTime = Date.now();
+
+            try {
+                const response = await fetch(`${API_BASE}/interview-evaluate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, answer, context })
+                });
+
+                const result = await response.json();
+                const latency = Date.now() - startTime;
+
+                if (result.status === 'success') {
+                    const data = result.data;
+                    const scoreClass = data.score >= 4 ? 'score-high' : data.score >= 3 ? 'score-medium' : 'score-low';
+
+                    document.getElementById('interviewContent').innerHTML = `
+                        <span class="score-display ${scoreClass}">评分: ${data.score}/5 (${data.quality})</span>
+                        <br><br><strong>关键词匹配:</strong> ${(data.keywords_found || []).join(', ') || '无'}
+                        <br><br><strong>缺失关键词:</strong> ${(data.keywords_missing || []).join(', ') || '无'}
+                        <br><br><strong>反馈:</strong><br>${data.feedback}
+                        <br><br><strong>建议:</strong> ${(data.suggestions || []).join('; ') || '无'}
+                    `;
+                    document.getElementById('interviewTime').textContent = `${latency}ms`;
+                    document.getElementById('lastLatency').textContent = `${latency}ms`;
+
+                    updateStatsSuccess(latency, result.data);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                document.getElementById('interviewContent').textContent = `错误: ${error.message}`;
+                updateStatsFail();
+            }
+
+            document.getElementById('interviewResult').classList.add('show');
+        }
+
+        async function runFollowupGen() {
+            const question = document.getElementById('followupQ').value;
+            const answer = document.getElementById('followupA').value;
+
+            showLoading('followupResult', 'followupContent');
+            const startTime = Date.now();
+
+            try {
+                // For demo, generate a follow-up question
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                document.getElementById('followupContent').innerHTML = `
+                    <strong>追问问题:</strong><br><br>
+                    "你提到了装饰器可以修改函数行为，能具体说说 Python 是如何实现这一点的吗？
+                    比如闭包在装饰器中扮演什么角色？"<br><br>
+                    <strong>追问意图:</strong> 深入考察候选人对装饰器底层原理的理解
+                `;
+                document.getElementById('followupTime').textContent = `${Date.now() - startTime}ms`;
+                updateStatsSuccess(Date.now() - startTime, {});
+            } catch (error) {
+                document.getElementById('followupContent').textContent = `错误: ${error.message}`;
+                updateStatsFail();
+            }
+
+            document.getElementById('followupResult').classList.add('show');
+        }
+
+        async function runInterviewReport() {
+            showLoading('reportResult', 'reportContent');
+            const startTime = Date.now();
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                document.getElementById('reportContent').innerHTML = `
+                    <strong>候选人:</strong> 李明<br>
+                    <strong>综合评分:</strong> <span class="score-display score-medium">3.5/5 (良好)</span><br><br>
+                    <strong>技术深度:</strong> 3.5/5 - 对装饰器有基本理解，但深度不足<br>
+                    <strong>项目经验:</strong> 4.0/5 - 有实际项目经验<br>
+                    <strong>表达清晰度:</strong> 4.0/5 - 表达清晰有条理<br><br>
+                    <strong>优势:</strong><br>
+                    • Flask实战经验丰富<br>
+                    • 有团队管理经验<br>
+                    • 技术栈匹配度高<br><br>
+                    <strong>待提升:</strong><br>
+                    • Python底层原理理解不够深入<br>
+                    • 大规模系统设计经验<br><br>
+                    <strong>总体建议:</strong> 推荐进入下一轮技术面试
+                `;
+                document.getElementById('reportTime').textContent = `${Date.now() - startTime}ms`;
+                updateStatsSuccess(Date.now() - startTime, {});
+            } catch (error) {
+                document.getElementById('reportContent').textContent = `错误: ${error.message}`;
+                updateStatsFail();
+            }
+
+            document.getElementById('reportResult').classList.add('show');
+        }
+
+        // ========== Negotiation Functions ==========
+
+        async function runNegotiationMsg() {
+            const situation = document.getElementById('negSituation').value;
+            const tone = document.getElementById('negTone').value;
+            const candidate = document.getElementById('negCandidate').value;
+            const offer = document.getElementById('negOffer').value;
+
+            showLoading('negResult', 'negContent');
+            const startTime = Date.now();
+
+            try {
+                const response = await fetch(`${API_BASE}/negotiation-message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        situation,
+                        tone,
+                        candidate_info: candidate,
+                        company_offer: offer
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    document.getElementById('negContent').textContent = result.data;
+                    updateStatsSuccess(Date.now() - startTime, {});
+                } else {
+                    throw new Error(result.error);
+                }
+                document.getElementById('negTime').textContent = `${Date.now() - startTime}ms`;
+            } catch (error) {
+                document.getElementById('negContent').textContent = `错误: ${error.message}`;
+                updateStatsFail();
+            }
+
+            document.getElementById('negResult').classList.add('show');
+        }
+
+        async function runConcernAnalysis() {
+            const response_text = document.getElementById('concernResponse').value;
+
+            showLoading('concernResult', 'concernContent');
+            const startTime = Date.now();
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                document.getElementById('concernContent').innerHTML = `
+                    <strong>顾虑类型:</strong> <span class="score-display score-medium">薪资 + 稳定性</span><br><br>
+                    <strong>顾虑等级:</strong> 中高<br><br>
+                    <strong>紧迫度:</strong> 高 - 候选人已有其他Offer在手<br><br>
+                    <strong>分析:</strong><br>
+                    从回复可以看出候选人对公司技术栈有兴趣（积极信号），
+                    但被另一家公司更高薪资吸引。候选人在薪资上有较强谈判筹码。<br><br>
+                    <strong>建议策略:</strong><br>
+                    1. 强调公司技术成长空间和团队稳定性<br>
+                    2. 考虑在签字费或福利上做文章，而非直接加薪<br>
+                    3. 设置deadline，给出明确决策时间
+                `;
+                document.getElementById('concernTime').textContent = `${Date.now() - startTime}ms`;
+                updateStatsSuccess(Date.now() - startTime, {});
+            } catch (error) {
+                document.getElementById('concernContent').textContent = `错误: ${error.message}`;
+                updateStatsFail();
+            }
+
+            document.getElementById('concernResult').classList.add('show');
+        }
+
+        async function runCounterOffer() {
+            showLoading('counterResult', 'counterContent');
+            const startTime = Date.now();
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                document.getElementById('counterContent').innerHTML = `
+                    <strong>建议方案:</strong><br><br>
+                    <table style="width:100%; text-align:left; border-collapse:collapse;">
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                            <th style="padding:8px;">项目</th>
+                            <th style="padding:8px;">原方案</th>
+                            <th style="padding:8px;">建议方案</th>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px;">月薪</td>
+                            <td style="padding:8px;">¥35,000</td>
+                            <td style="padding:8px;">¥38,000</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px;">签字费</td>
+                            <td style="padding:8px;">¥20,000</td>
+                            <td style="padding:8px;">¥30,000</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px;">RSU</td>
+                            <td style="padding:8px;">5,000股</td>
+                            <td style="padding:8px;">6,000股</td>
+                        </tr>
+                    </table>
+                    <br><strong>调整理由:</strong> 候选人主要诉求是薪资，通过提高签字费可以满足候选人短期现金需求，同时控制长期成本。<br><br>
+                    <strong>预计接受概率:</strong> 75%<br><br>
+                    <strong>关键卖点:</strong><br>
+                    • 签字费提高50%，相当于额外3个月薪资<br>
+                    • RSU增加20%，长期激励更强
+                `;
+                document.getElementById('counterTime').textContent = `${Date.now() - startTime}ms`;
+                updateStatsSuccess(Date.now() - startTime, {});
+            } catch (error) {
+                document.getElementById('counterContent').textContent = `错误: ${error.message}`;
+                updateStatsFail();
+            }
+
+            document.getElementById('counterResult').classList.add('show');
+        }
+
+        // ========== Matching Functions ==========
+
+        async function runSemanticMatch() {
+            const jd = document.getElementById('jdContent').value;
+            const resume = document.getElementById('resumeContent').value;
+
+            showLoading('matchResult', 'matchContent');
+            const startTime = Date.now();
+
+            try {
+                const response = await fetch(`${API_BASE}/semantic-match`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        job_info: {
+                            title: "高级Python工程师",
+                            required_skills: ["Python", "Django", "Flask", "PostgreSQL", "Docker"],
+                            min_experience_years: 3
+                        },
+                        candidate_info: {
+                            name: "李明",
+                            current_title: "Python开发工程师",
+                            years_of_experience: 4,
+                            skills: ["Flask", "Django", "PostgreSQL", "Docker", "Redis"]
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const data = result.data;
+                    const scoreClass = data.overall_score >= 75 ? 'score-high' : data.overall_score >= 50 ? 'score-medium' : 'score-low';
+
+                    document.getElementById('matchContent').innerHTML = `
+                        <strong>综合匹配度:</strong> <span class="score-display ${scoreClass}">${data.overall_score}/100</span><br><br>
+                        <strong>技能匹配:</strong> ${data.skill_match_score}/100<br>
+                        <strong>经验匹配:</strong> ${data.experience_match_score}/100<br><br>
+                        <strong>隐藏优势:</strong><br>${(data.hidden_strengths || []).join('<br>') || '无明显优势'}<br><br>
+                        <strong>差距:</strong><br>${(data.gaps || []).join('<br>') || '无明显差距'}<br><br>
+                        <strong>推荐理由:</strong><br>${data.reasoning}<br><br>
+                        <strong>建议:</strong> ${data.recommendation}
+                    `;
+                    document.getElementById('matchTime').textContent = `${Date.now() - startTime}ms`;
+                    updateStatsSuccess(Date.now() - startTime, data);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                document.getElementById('matchContent').textContent = `错误: ${error.message}`;
+                updateStatsFail();
+            }
+
+            document.getElementById('matchResult').classList.add('show');
+        }
+
+        async function runBatchMatch() {
+            showLoading('batchResult', 'batchContent');
+            const startTime = Date.now();
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1200));
+
+                document.getElementById('batchContent').innerHTML = `
+                    <strong>匹配排名:</strong><br><br>
+                    <table style="width:100%; text-align:left;">
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                            <th style="padding:8px;">排名</th>
+                            <th style="padding:8px;">候选人</th>
+                            <th style="padding:8px;">匹配度</th>
+                            <th style="padding:8px;">建议</th>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px;">🥇</td>
+                            <td style="padding:8px;">候选人A</td>
+                            <td style="padding:8px;"><span class="score-display score-high">85/100</span></td>
+                            <td style="padding:8px;">强烈推荐</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px;">🥈</td>
+                            <td style="padding:8px;">候选人D</td>
+                            <td style="padding:8px;"><span class="score-display score-high">78/100</span></td>
+                            <td style="padding:8px;">推荐（需谈薪资）</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px;">🥉</td>
+                            <td style="padding:8px;">候选人B</td>
+                            <td style="padding:8px;"><span class="score-display score-medium">65/100</span></td>
+                            <td style="padding:8px;">可考虑</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px;">4</td>
+                            <td style="padding:8px;">候选人C</td>
+                            <td style="padding:8px;"><span class="score-display score-low">45/100</span></td>
+                            <td style="padding:8px;">不建议</td>
+                        </tr>
+                    </table>
+                `;
+                document.getElementById('batchTime').textContent = `${Date.now() - startTime}ms`;
+                updateStatsSuccess(Date.now() - startTime, {});
+            } catch (error) {
+                document.getElementById('batchContent').textContent = `错误: ${error.message}`;
+                updateStatsFail();
+            }
+
+            document.getElementById('batchResult').classList.add('show');
+        }
+
+        async function runInterviewFocus() {
+            showLoading('focusResult', 'focusContent');
+            const startTime = Date.now();
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                document.getElementById('focusContent').innerHTML = `
+                    <strong>面试重点考察方向:</strong><br><br>
+                    <table style="width:100%;">
+                        <tr>
+                            <td style="padding:12px; background:rgba(102,126,234,0.2); border-radius:8px;">
+                                <strong>1. 系统设计能力</strong><br>
+                                问题: "假设你需要设计一个日活1000万的社交系统后端，你会如何设计？"<br>
+                                追问: "如何处理热点事件带来的流量峰值？"<br>
+                                <em>目的: 验证候选人大规模系统设计经验</em>
+                            </td>
+                        </tr>
+                        <tr><td style="height:12px;"></td></tr>
+                        <tr>
+                            <td style="padding:12px; background:rgba(102,126,234,0.2); border-radius:8px;">
+                                <strong>2. 技术深度</strong><br>
+                                问题: "Django的ORM如何实现事务和锁？"<br>
+                                追问: "遇到过哪些性能问题，如何优化？"<br>
+                                <em>目的: 验证技术底层理解</em>
+                            </td>
+                        </tr>
+                        <tr><td style="height:12px;"></td></tr>
+                        <tr>
+                            <td style="padding:12px; background:rgba(102,126,234,0.2); border-radius:8px;">
+                                <strong>3. 团队协作</strong><br>
+                                问题: "你之前带3人小组时，如何分配任务和code review的？"<br>
+                                追问: "遇到意见分歧如何处理？"<br>
+                                <em>目的: 验证团队管理能力</em>
+                            </td>
+                        </tr>
+                    </table>
+                `;
+                document.getElementById('focusTime').textContent = `${Date.now() - startTime}ms`;
+                updateStatsSuccess(Date.now() - startTime, {});
+            } catch (error) {
+                document.getElementById('focusContent').textContent = `错误: ${error.message}`;
+                updateStatsFail();
+            }
+
+            document.getElementById('focusResult').classList.add('show');
+        }
+
+        // ========== Utility Functions ==========
+
+        function showLoading(resultId, contentId) {
+            document.getElementById(resultId).classList.add('show');
+            document.getElementById(contentId).innerHTML = '<div class="loading-spinner"></div> 加载中...';
+        }
+
+        function updateStatsSuccess(latency, data) {
+            stats.requests++;
+            stats.success++;
+            stats.tokens += (data.usage?.total_tokens || 150);
+            updateStats();
+        }
+
+        function updateStatsFail() {
+            stats.requests++;
+            stats.fail++;
+            updateStats();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = type === 'loading'
+                ? `<div class="loading-spinner"></div> ${message}`
+                : message;
+            toast.className = `toast ${type} show`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
