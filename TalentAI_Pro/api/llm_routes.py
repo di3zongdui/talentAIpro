@@ -42,6 +42,11 @@ def get_gateway() -> LLMGateway:
     global _gateway
     if _gateway is None:
         _gateway = LLMGateway()
+        # 从registry加载已配置的providers
+        registry = get_registry()
+        for p_id, p_config in registry.providers.items():
+            if p_config.api_key:
+                _gateway.configure_provider(p_id, p_config.api_key, p_config.base_url)
     return _gateway
 
 
