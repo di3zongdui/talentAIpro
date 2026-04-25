@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM 模型配置 - TalentAI Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-header h2 {
+            color: #333;
+            font-size: 20px;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .provider-card {
+            border: 2px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .provider-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .provider-card.configured {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+
+        .provider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .provider-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .model-list {
+            margin-top: 15px;
+        }
+
+        .model-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .model-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .model-key {
+            font-size: 11px;
+            color: #999;
+            font-family: monospace;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group input.api-key {
+            font-family: monospace;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-dot.online {
+            background: #28a745;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
+        }
+
+        .status-dot.offline {
+            background: #dc3545;
+        }
+
+        .status-dot.connecting {
+            background: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .test-result {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        .test-result.show {
+            display: block;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .response-time {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 LLM 模型配置中心</h1>
+            <p>配置和管理 TalentAI Pro 的大模型提供商，支持 SiliconFlow、阿里云、智谱等多种 Provider</p>
+        </div>
+
+        <!-- Provider Cards -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📡 已集成的 Providers</h2>
+                <button class="btn btn-primary btn-sm" onclick="openAddProviderModal()">+ 添加 Provider</button>
+            </div>
+
+            <div class="provider-grid" id="providerGrid">
+                <!-- SiliconFlow -->
+                <div class="provider-card" id="provider-siliconflow">
+                    <div class="provider-header">
+                        <span class="provider-name">🔥 SiliconFlow</span>
+                        <span class="status-dot" id="status-siliconflow"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" class="api-key" id="apiKey-siliconflow"
+                               placeholder="sk-xxxxxxxxxxxxxxxx"
+                               onkeypress="if(event.key==='Enter') saveProvider('siliconflow')">
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="saveProvider('siliconflow')" style="margin-right: 8px;">
+                        保存配置
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="testProvider('siliconflow')">
+                        测试连接
+                    </button>
+                    <div class="model-list" id="models-siliconflow">
+                        <!-- Models will be populated here -->
+                    </div>
+                </div>
+
+                <!-- DashScope -->
+                <div class="provider-card" id="provider-dashscope">
+                    <div class="provider-header">
+                        <span class="provider-name">☁️ 阿里云 DashScope</span>
+                        <span class="status-dot" id="status-dashscope"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" class="api-key" id="apiKey-dashscope"
+                               placeholder="sk-xxxxxxxxxxxxxxxx"
+                               onkeypress="if(event.key==='Enter') saveProvider('dashscope')">
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="saveProvider('dashscope')" style="margin-right: 8px;">
+                        保存配置
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="testProvider('dashscope')">
+                        测试连接
+                    </button>
+                </div>
+
+                <!-- Zhipu -->
+                <div class="provider-card" id="provider-zhipu">
+                    <div class="provider-header">
+                        <span class="provider-name">📊 智谱 GLM</span>
+                        <span class="status-dot" id="status-zhipu"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" class="api-key" id="apiKey-zhipu"
+                               placeholder="xxxxxxxxxxxxxxxx"
+                               onkeypress="if(event.key==='Enter') saveProvider('zhipu')">
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="saveProvider('zhipu')" style="margin-right: 8px;">
+                        保存配置
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="testProvider('zhipu')">
+                        测试连接
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Area -->
+        <div class="card">
+            <div class="card-header">
+                <h2>🧪 模型测试</h2>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('chat')">💬 对话测试</button>
+                <button class="tab" onclick="switchTab('interview')">📋 面试评估</button>
+                <button class="tab" onclick="switchTab('negotiation')">🤝 谈判消息</button>
+            </div>
+
+            <!-- Chat Test -->
+            <div class="tab-content active" id="tab-chat">
+                <div class="form-group">
+                    <label>选择模型</label>
+                    <select id="testModel" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        <option value="qwen3-omni">Qwen3-Omni-30B (SiliconFlow)</option>
+                        <option value="qwq32b">QwQ-32B (SiliconFlow)</option>
+                        <option value="deepseekv3">DeepSeek-V3 (SiliconFlow)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>输入内容</label>
+                    <textarea id="testInput" rows="4" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; resize: vertical;"
+                              placeholder="输入测试内容...">你好，请用一句话介绍你自己</textarea>
+                </div>
+                <button class="btn btn-primary" onclick="runChatTest()">▶️ 发送测试</button>
+
+                <div class="test-section">
+                    <strong>响应结果：</strong>
+                    <div class="test-result" id="testResult"></div>
+                    <div class="response-time" id="responseTime"></div>
+                </div>
+            </div>
+
+            <!-- Interview Test -->
+            <div class="tab-content" id="tab-interview">
+                <div class="form-group">
+                    <label>面试问题</label>
+                    <input type="text" id="interviewQ" value="请解释Python中的装饰器是什么？"
+                           style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+                <div class="form-group">
+                    <label>候选人回答</label>
+                    <textarea id="interviewA" rows="3" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; resize: vertical;"
+ placeholder="输入候选人回答...">装饰器是Python的一种高级特性，它可以修改函数或类的行为。装饰器本质上是一个函数，它接受一个函数作为参数，并返回一个新的函数。比如 @staticmethod 就是装饰器。</textarea>
+                </div>
+                <button class="btn btn-primary" onclick="runInterviewTest()">📊 运行评估</button>
+                <div class="test-section">
+                    <strong>评估结果：</strong>
+                    <div class="test-result" id="interviewResult"></div>
+                </div>
+            </div>
+
+            <!-- Negotiation Test -->
+            <div class="tab-content" id="tab-negotiation">
+                <div class="form-group">
+                    <label>谈判情况</label>
+                    <textarea id="negSituation" rows="2" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; resize: vertical;"
+ placeholder="描述当前谈判情况">候选人收到Offer后表示薪资低于预期，希望月薪从42000提高到48000</textarea>
+                </div>
+                <div class="form-group">
+                    <label>语气风格</label>
+                    <select id="negTone" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                        <option value="moderate">平衡型 - 寻找共赢</option>
+                        <option value="conciliatory">柔和型 - 展现诚意</option>
+                        <option value="aggressive">坚定型 - 维护底线</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="runNegotiationTest()">✉️ 生成消息</button>
+                <div class="test-section">
+                    <strong>生成的消息：</strong>
+                    <div class="test-result" id="negResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Stats -->
+        <div class="card">
+            <div class="card-header">
+                <h2>📈 用量统计</h2>
+            </div>
+            <div id="usageStats" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: 600; color: #667eea;" id="statRequests">0</div>
+                    <div style="font-size: 12px; color: #666;">总请求数</div>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: 600; color: #28a745;" id="statTokens">0</div>
+                    <div style="font-size: 12px; color: #666;">使用Token</div>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: 600; color: #ffc107;" id="statCost">¥0.00</div>
+                    <div style="font-size: 12px; color: #666;">预估成本</div>
+                </div>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; text-align: center;">
+                    <div style="font-size: 28px; font-weight: 600; color: #dc3545;" id="statProviders">0</div>
+                    <div style="font-size: 12px; color: #666;">已配置Provider</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Provider Modal -->
+    <div class="modal" id="addProviderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加自定义 Provider</h3>
+                <button class="modal-close" onclick="closeAddProviderModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Provider 名称</label>
+                <input type="text" id="newProviderName" placeholder="如：我的自定义Provider">
+            </div>
+            <div class="form-group">
+                <label>API Base URL</label>
+                <input type="text" id="newProviderUrl" placeholder="https://api.example.com/v1">
+            </div>
+            <div class="form-group">
+                <label>API Key</label>
+                <input type="password" id="newProviderKey" class="api-key" placeholder="sk-xxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label>模型名称</label>
+                <input type="text" id="newModelName" placeholder="如：Qwen-7B">
+            </div>
+            <button class="btn btn-primary" onclick="addCustomProvider()" style="width: 100%;">添加</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // State
+        const state = {
+            providers: {
+                siliconflow: { configured: false, apiKey: '', models: [] },
+                dashscope: { configured: false, apiKey: '', models: [] },
+                zhipu: { configured: false, apiKey: '', models: [] }
+            },
+            activeProvider: null
+        };
+
+        // Model lists by provider
+        const modelLists = {
+            siliconflow: [
+                { id: 'qwen3-omni', name: 'Qwen3-Omni-30B', key: 'Qwen/Qwen3-Omni-30B-A3B-Instruct' },
+                { id: 'qwq32b', name: 'QwQ-32B', key: 'Qwen/QwQ-32B' },
+                { id: 'deepseekv3', name: 'DeepSeek-V3', key: 'deepseek-ai/DeepSeek-V3' },
+                { id: 'glm4', name: 'GLM-4', key: 'THUDM/GLM-4-0520' },
+            ],
+            dashscope: [
+                { id: 'qwen-plus', name: 'Qwen-Plus', key: 'qwen-plus' },
+                { id: 'qwen-max', name: 'Qwen-Max', key: 'qwen-max' },
+            ]
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved configs from localStorage
+            loadConfigs();
+            // Populate model lists
+            populateModelLists();
+            // Update status indicators
+            updateStatusIndicators();
+        });
+
+        function loadConfigs() {
+            const saved = localStorage.getItem('llm_provider_configs');
+            if (saved) {
+                const configs = JSON.parse(saved);
+                Object.keys(configs).forEach(key => {
+                    if (state.providers[key]) {
+                        state.providers[key].apiKey = configs[key].apiKey || '';
+                        state.providers[key].configured = configs[key].configured || false;
+                        document.getElementById(`apiKey-${key}`).value = state.providers[key].apiKey;
+                    }
+                });
+            }
+        }
+
+        function saveConfigs() {
+            const configs = {};
+            Object.keys(state.providers).forEach(key => {
+                configs[key] = {
+                    apiKey: state.providers[key].apiKey,
+                    configured: state.providers[key].configured
+                };
+            });
+            localStorage.setItem('llm_provider_configs', JSON.stringify(configs));
+        }
+
+        function populateModelLists() {
+            Object.keys(modelLists).forEach(providerId => {
+                const container = document.getElementById(`models-${providerId}`);
+                if (!container) return;
+
+                let html = '<div style="margin-top: 15px; font-size: 12px; color: #666;">可用模型：</div>';
+                modelLists[providerId].forEach(model => {
+                    html += `
+                        <div class="model-item">
+                            <div>
+                                <div class="model-name">${model.name}</div>
+                                <div class="model-key">${model.key}</div>
+                            </div>
+                            <span class="badge badge-success" style="font-size: 10px;">✓</span>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            });
+        }
+
+        function updateStatusIndicators() {
+            Object.keys(state.providers).forEach(key => {
+                const dot = document.getElementById(`status-${key}`);
+                const card = document.getElementById(`provider-${key}`);
+                if (state.providers[key].configured) {
+                    dot.className = 'status-dot online';
+                    card.classList.add('configured');
+                } else {
+                    dot.className = 'status-dot offline';
+                    card.classList.remove('configured');
+                }
+            });
+        }
+
+        async function saveProvider(providerId) {
+            const apiKey = document.getElementById(`apiKey-${providerId}`).value.trim();
+            if (!apiKey) {
+                showToast('请输入 API Key', 'error');
+                return;
+            }
+
+            state.providers[providerId].apiKey = apiKey;
+            state.providers[providerId].configured = true;
+            saveConfigs();
+            updateStatusIndicators();
+
+            showToast(`${providerId} 配置已保存`, 'success');
+        }
+
+        async function testProvider(providerId) {
+            const dot = document.getElementById(`status-${providerId}`);
+            dot.className = 'status-dot connecting';
+            dot.textContent = '测试中...';
+
+            const apiKey = state.providers[providerId].apiKey ||
+                           document.getElementById(`apiKey-${providerId}`).value.trim();
+
+            if (!apiKey) {
+                showToast('请先保存 API Key', 'error');
+                dot.className = 'status-dot offline';
+                return;
+            }
+
+            try {
+                // Call backend API to test
+                const response = await fetch('/api/llm/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        provider: providerId,
+                        api_key: apiKey
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    dot.className = 'status-dot online';
+                    showToast(`${providerId} 连接成功！响应时间: ${result.latency_ms}ms`, 'success');
+                } else {
+                    dot.className = 'status-dot offline';
+                    showToast(`连接失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                dot.className = 'status-dot offline';
+                showToast(`测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function runChatTest() {
+            const model = document.getElementById('testModel').value;
+            const input = document.getElementById('testInput').value;
+            const resultDiv = document.getElementById('testResult');
+            const timeDiv = document.getElementById('responseTime');
+
+            resultDiv.textContent = '正在生成...';
+            resultDiv.classList.add('show');
+
+            const startTime = Date.now();
+
+            try {
+                const response = await fetch('/api/llm/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: input,
+                        model: model
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    resultDiv.textContent = result.data.content;
+                    timeDiv.textContent = `响应时间: ${result.data.latency_ms}ms | 使用Token: ${result.data.usage?.total_tokens || 0}`;
+                } else {
+                    resultDiv.textContent = `错误: ${result.error}`;
+                }
+            } catch (error) {
+                resultDiv.textContent = `请求失败: ${error.message}`;
+            }
+        }
+
+        async function runInterviewTest() {
+            const question = document.getElementById('interviewQ').value;
+            const answer = document.getElementById('interviewA').value;
+            const resultDiv = document.getElementById('interviewResult');
+
+            resultDiv.textContent = '正在评估...';
+            resultDiv.classList.add('show');
+
+            try {
+                const response = await fetch('/api/llm/interview-evaluate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: question,
+                        answer: answer,
+                        context: '高级Python工程师职位'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const data = result.data;
+                    resultDiv.innerHTML = `评分: ${data.score}/5 (${data.quality})
+反馈: ${data.feedback}
+建议: ${(data.suggestions || []).join(', ')}`;
+                } else {
+                    resultDiv.textContent = `错误: ${result.error}`;
+                }
+            } catch (error) {
+                resultDiv.textContent = `请求失败: ${error.message}`;
+            }
+        }
+
+        async function runNegotiationTest() {
+            const situation = document.getElementById('negSituation').value;
+            const tone = document.getElementById('negTone').value;
+            const resultDiv = document.getElementById('negResult');
+
+            resultDiv.textContent = '正在生成...';
+            resultDiv.classList.add('show');
+
+            try {
+                const response = await fetch('/api/llm/negotiation-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        situation: situation,
+                        tone: tone,
+                        candidate_info: '李明，3年Python开发经验，原薪资28000',
+                        company_offer: '月薪35000，签字费20000，RSU 5000股'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    resultDiv.textContent = result.data;
+                } else {
+                    resultDiv.textContent = `错误: ${result.error}`;
+                }
+            } catch (error) {
+                resultDiv.textContent = `请求失败: ${error.message}`;
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        function openAddProviderModal() {
+            document.getElementById('addProviderModal').classList.add('show');
+        }
+
+        function closeAddProviderModal() {
+            document.getElementById('addProviderModal').classList.remove('show');
+        }
+
+        async function addCustomProvider() {
+            const name = document.getElementById('newProviderName').value;
+            const url = document.getElementById('newProviderUrl').value;
+            const key = document.getElementById('newProviderKey').value;
+            const model = document.getElementById('newModelName').value;
+
+            if (!name || !url || !key || !model) {
+                showToast('请填写所有字段', 'error');
+                return;
+            }
+
+            showToast('Provider 添加成功', 'success');
+            closeAddProviderModal();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Update usage stats periodically
+        async function updateUsageStats() {
+            try {
+                const response = await fetch('/api/llm/stats');
+                const result = await response.json();
+                if (result.status === 'success') {
+                    document.getElementById('statRequests').textContent = result.data.total_requests;
+                    document.getElementById('statTokens').textContent = result.data.total_tokens.toLocaleString();
+                    document.getElementById('statCost').textContent = `¥${result.data.cost.toFixed(2)}`;
+                    document.getElementById('statProviders').textContent = result.data.providers_configured?.length || 0;
+                }
+            } catch (e) {
+                console.log('Stats update skipped');
+            }
+        }
+
+        setInterval(updateUsageStats, 5000);
+        updateUsageStats();
+    </script>
+</body>
+</html>

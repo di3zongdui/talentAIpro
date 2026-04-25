@@ -1,0 +1,94 @@
+{
+  "providers": [
+    {
+      "id": "siliconflow",
+      "name": "SiliconFlow",
+      "provider_type": "siliconflow",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "api_key": "sk-unpavlxvzzormhmxlpzlajqadfrgvybfzevprbjqphbzigtr",
+      "enabled": true,
+      "models": [
+        {
+          "id": "qwen3-omni",
+          "name": "Qwen3-Omni-30B",
+          "provider": "siliconflow",
+          "model_key": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+          "capabilities": ["chat", "function_calling", "streaming", "vision"],
+          "max_tokens": 8192,
+          "default_temperature": 0.7,
+          "context_window": 32000,
+          "input_price": 0.001,
+          "output_price": 0.002,
+          "enabled": true,
+          "description": "通义千问全模态旗舰模型，支持音频理解"
+        },
+        {
+          "id": "qwq32b",
+          "name": "QwQ-32B",
+          "provider": "siliconflow",
+          "model_key": "Qwen/QwQ-32B",
+          "capabilities": ["chat", "function_calling", "streaming"],
+          "max_tokens": 8192,
+          "default_temperature": 0.7,
+          "context_window": 32000,
+          "enabled": true,
+          "description": "深度思考模型，数学和代码能力强"
+        },
+        {
+          "id": "deepseekv3",
+          "name": "DeepSeek-V3",
+          "provider": "siliconflow",
+          "model_key": "deepseek-ai/DeepSeek-V3",
+          "capabilities": ["chat", "function_calling", "streaming"],
+          "max_tokens": 8192,
+          "default_temperature": 0.7,
+          "context_window": 64000,
+          "enabled": true,
+          "description": "DeepSeek最新模型，性价比高"
+        },
+        {
+          "id": "glm4",
+          "name": "GLM-4",
+          "provider": "siliconflow",
+          "model_key": "THUDM/GLM-4-0520",
+          "capabilities": ["chat", "function_calling", "streaming"],
+          "max_tokens": 8192,
+          "default_temperature": 0.7,
+          "context_window": 128000,
+          "enabled": true,
+          "description": "智谱GLM-4旗舰模型"
+        }
+      ]
+    },
+    {
+      "id": "dashscope",
+      "name": "阿里云DashScope",
+      "provider_type": "dashscope",
+      "base_url": "https://dashscope.aliyuncs.com/api/v1",
+      "api_key": "",
+      "enabled": false,
+      "models": [
+        {
+          "id": "qwen-plus",
+          "name": "Qwen-Plus",
+          "provider": "dashscope",
+          "model_key": "qwen-plus",
+          "capabilities": ["chat", "function_calling", "streaming"],
+          "context_window": 131072,
+          "enabled": true,
+          "description": "阿里云通义千问Plus模型"
+        },
+        {
+          "id": "qwen-max",
+          "name": "Qwen-Max",
+          "provider": "dashscope",
+          "model_key": "qwen-max",
+          "capabilities": ["chat", "function_calling", "streaming"],
+          "context_window": 8192,
+          "enabled": true,
+          "description": "阿里云通义千问最强模型"
+        }
+      ]
+    }
+  ]
+}
