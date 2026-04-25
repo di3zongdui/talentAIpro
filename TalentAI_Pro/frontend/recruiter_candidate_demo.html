@@ -3685,7 +3685,7 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
 
             const fullView = NegotiationEngine.generateFullNegotiationView();
 
-            // Agent's first message (as HR would send via WeChat)
+            // Agent's first message (sent directly via WeChat)
             const firstMessage = {
                 side: 'agent',
                 sender: 'HR张老师',
@@ -3698,7 +3698,8 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
 
 方便的时候我们电话聊几分钟？`,
                 time: getTimestamp(),
-                copyable: true
+                sentVia: 'wechat',
+                sentStatus: 'delivered'
             };
 
             hybridState.messages.push(firstMessage);
@@ -3721,16 +3722,23 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
                 const align = isAgent ? 'flex-start' : 'flex-end';
                 const senderColor = isAgent ? 'var(--accent-blue)' : 'var(--accent-green)';
 
+                // Delivery status indicators
+                let statusIcon = '';
+                if (m.sentVia === 'wechat') {
+                    statusIcon = m.sentStatus === 'delivered' ? ' ✓' : m.sentStatus === 'read' ? ' ✓✓' : ' ...';
+                } else if (m.sentVia === 'email') {
+                    statusIcon = ` 📧`;
+                }
+
                 return `
                     <div style="display: flex; flex-direction: column; align-items: ${align}; max-width: 85%;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; ${isAgent ? '' : 'flex-direction: row-reverse;'}">
                             <span style="font-size: 14px;">${m.avatar}</span>
                             <span style="font-size: 12px; font-weight: 600; color: ${senderColor};">${m.sender}</span>
-                            <span style="font-size: 10px; color: var(--text-secondary);">${m.time}</span>
+                            <span style="font-size: 10px; color: var(--text-secondary);">${m.time}${statusIcon}</span>
                         </div>
                         <div style="background: ${bgColor}; border: 1px solid ${borderColor}; border-radius: 12px; padding: 12px 16px; ${isAgent ? 'border-top-left-radius: 2px;' : 'border-top-right-radius: 2px;'}">
                             <div style="font-size: 13px; line-height: 1.7; white-space: pre-wrap; color: var(--text-primary);">${m.text}</div>
-                            ${m.copyable ? '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: var(--accent-orange);">📋 可复制转发到微信</div>' : ''}
                         </div>
                     </div>
                 `;
@@ -3774,7 +3782,8 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
                 avatar: '👤',
                 text: text,
                 time: getTimestamp(),
-                copyable: false
+                sentVia: 'wechat',
+                sentStatus: 'read'
             });
             renderWeChatThread();
 
@@ -3784,13 +3793,20 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
             await sleep(2500);
 
             const response = generateAgentResponse(text);
+
+            // Agent sends via WeChat (auto-send)
+            const channel = hybridState.phase === 'deadlocked' ? 'email' : 'wechat';
+            const channelName = channel === 'wechat' ? '微信' : '邮件';
+
             hybridState.messages.push({
                 side: 'agent',
                 sender: 'HR张老师',
                 avatar: '👔',
                 text: response.message,
                 time: getTimestamp(),
-                copyable: true
+                sentVia: channel,
+                sentStatus: 'delivered',
+                channelIcon: channel === 'wechat' ? '💬' : '📧'
             });
 
             // Update agent analysis
@@ -3800,8 +3816,14 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
                 mediatorMessage: response.agentAnalysis.nextStep
             });
 
+            // Simulate actual sending via WeChat/Email
+            const sendLog = channel === 'wechat'
+                ? `Agent通过微信自动发送消息给候选人`
+                : `Agent发送邮件至候选人邮箱 li-ming@email.com`;
+            addLog('HR Agent', 'info', sendLog);
+
             renderWeChatThread();
-            addLog('HR Agent', 'success', `Agent生成了调解回复，发送至候选人`);
+            addLog('HR Agent', 'success', `Agent生成了调解回复，通过${channelName}已送达`);
 
             // Check if deal is reached
             if (response.dealReached) {
@@ -3812,7 +3834,8 @@ ${state.interview.answers[2]?.feedback || '回答非常完整'}
                 showToast('🎉 双方达成一致！', 'success');
             } else if (response.deadlocked) {
                 hybridState.phase = 'deadlocked';
-                addLog('HR Agent', 'warning', '⚠️ 谈判陷入僵局，Agent正在寻找新突破点...');
+                // Switch to email for formal communication
+                addLog('HR Agent', 'warning', '⚠️ 微信谈判陷入僵局，切换至邮件继续沟通');
             }
         }
 
