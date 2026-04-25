@@ -11,6 +11,10 @@ from ..base import (
     AgentMessage, ProxyAuthorization, AgentDecision
 )
 
+# Import Negotiation Engine Skill
+from skills.negotiation import NegotiationEngine
+from skills.negotiation.prompts import ChannelType
+
 
 class RecruiterAgent(Agent):
     """
@@ -21,6 +25,7 @@ class RecruiterAgent(Agent):
     - Screen resumes automatically
     - Schedule interviews
     - Make job offers
+    - Negotiate offers (via NegotiationEngine Skill)
     - Manage onboarding
     """
 
@@ -34,6 +39,7 @@ class RecruiterAgent(Agent):
                 AgentCapability.SCREEN_RESUMES,
                 AgentCapability.SCHEDULE_INTERVIEWS,
                 AgentCapability.MAKE_OFFERS,
+                AgentCapability.NEGOTIATE_OFFERS,
                 AgentCapability.ONBOARD_CANDIDATES,
                 AgentCapability.COMMUNICATE,
                 AgentCapability.LEARN_PREFERENCES,
@@ -52,6 +58,10 @@ class RecruiterAgent(Agent):
         self._candidate_pool: Dict[str, Dict[str, Any]] = {}
         self._interview_schedules: Dict[str, Dict[str, Any]] = {}
         self._offers_made: Dict[str, Dict[str, Any]] = {}
+
+        # Negotiation state - one engine per active negotiation
+        self._negotiation_engines: Dict[str, NegotiationEngine] = {}
+        self._negotiation_history: Dict[str, List[Dict[str, Any]]] = {}
 
     @property
     def company_id(self) -> str:
@@ -438,31 +448,154 @@ class RecruiterAgent(Agent):
         )
 
     def _process_negotiation(self, offer_id: str, negotiation_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Process offer negotiation"""
+        """Process offer negotiation using NegotiationEngine Skill"""
         offer = self._offers_made.get(offer_id)
         if not offer:
             return {"error": "Offer not found"}
 
-        # Simple negotiation logic
-        counteroffer_salary = negotiation_data.get("counteroffer_salary")
-        if counteroffer_salary:
-            current_salary = offer.get("salary", 0)
-            max_salary = self._get_max_salary_for_offer(offer["requisition_id"])
+        offer = self._offers_made.get(offer_id)
+        if not offer:
+            return {"error": "Offer not found"}
 
-            if counteroffer_salary <= max_salary:
-                offer["salary"] = counteroffer_salary
-                return {
-                    "status": "counteroffer_accepted",
-                    "new_offer": offer,
-                }
-            else:
-                return {
-                    "status": "counteroffer_rejected",
-                    "reason": f"Exceeds maximum budget of {max_salary}",
-                    "current_offer": offer,
-                }
+        candidate_id = offer["candidate_id"]
+        requisition_id = offer["requisition_id"]
+        req = self._active_requisitions.get(requisition_id, {})
+        candidate = self._candidate_pool.get(candidate_id, {})
 
-        return {"status": "negotiation_continued"}
+        # Initialize negotiation engine if not exists
+        if offer_id not in self._negotiation_engines:
+            # Get job context
+            job_context = {
+                "candidate_name": candidate.get("name", "候选人"),
+                "required_skills": req.get("skills", []),
+                "candidate_skills": candidate.get("skills", []),
+                "candidate_years": candidate.get("experience_years", 3),
+                "required_years": req.get("experience_years", 3),
+                "hiring_urgency": req.get("urgency", "normal"),
+                "market_competition": req.get("market_competition", "medium"),
+                "offer_percentile": 50,
+                "candidate_market_percentile": 60,
+                "growth_score": 0.80,
+                "tech_stack_match": 0.85,
+            }
+
+            self._negotiation_engines[offer_id] = NegotiationEngine(
+                perspective='recruiter',
+                company_offer={
+                    "salary": offer.get("salary", 0),
+                    "signing_bonus": offer.get("signing_bonus", 0),
+                    "rsu": offer.get("rsu", 0),
+                    "vesting_years": 4,
+                    "vacation_days": 10,
+                    "remote_days": 1,
+                    "learning_budget": 0,
+                },
+                candidate_expectation={
+                    "salary": negotiation_data.get("counteroffer_salary", offer.get("salary", 0)),
+                    "signing_bonus": negotiation_data.get("counteroffer_signing_bonus", 0),
+                    "rsu": negotiation_data.get("counteroffer_rsu", 0),
+                },
+                job_context=job_context,
+            )
+            self._negotiation_history[offer_id] = []
+
+        engine = self._negotiation_engines[offer_id]
+        round_num = len(self._negotiation_history[offer_id]) + 1
+
+        # Analyze sentiment from candidate's response
+        sentiment = self._analyze_sentiment(negotiation_data)
+
+        # Run negotiation engine
+        result = engine.analyze_and_negotiate(
+            round_num=round_num,
+            counter_offer=negotiation_data,
+            candidate_sentiment=sentiment,
+        )
+
+        # Record history
+        self._negotiation_history[offer_id].append({
+            "round": round_num,
+            "timestamp": datetime.now().isoformat(),
+            "counter_offer": negotiation_data,
+            "sentiment": sentiment,
+            "proposals": result["proposals"],
+            "deal_reached": result["deal_reached"],
+        })
+
+        # Update offer status
+        if result["deal_reached"]:
+            # Extract the agreed terms from the best proposal
+            best_proposal = result["proposals"][0] if result["proposals"] else None
+            if best_proposal:
+                components = best_proposal.get("components", {})
+                offer["salary"] = components.get("salary", offer["salary"])
+                offer["signing_bonus"] = components.get("signing_bonus", offer.get("signing_bonus"))
+                offer["rsu"] = components.get("rsu", offer.get("rsu"))
+                offer["vacation_days"] = components.get("vacation_days", offer.get("vacation_days", 10))
+                offer["remote_days"] = components.get("remote_days", offer.get("remote_days", 1))
+
+            offer["status"] = "accepted"
+            self._offers_made[offer_id] = offer
+
+            return {
+                "status": "deal_reached",
+                "final_offer": offer,
+                "message": result["message"]["body"],
+                "mutual_fit": result["mutual_fit"],
+            }
+
+        # Return negotiation state for next round
+        return {
+            "status": "negotiation_continued",
+            "round": round_num,
+            "gap_analysis": result["gap"],
+            "proposals": result["proposals"],
+            "persuasion_for_company": result["persuasion"],
+            "suggested_message": result["message"]["body"],
+            "mutual_fit": result["mutual_fit"],
+        }
+
+    def _analyze_sentiment(self, negotiation_data: Dict[str, Any]) -> str:
+        """Analyze candidate's sentiment from negotiation data"""
+        text = str(negotiation_data.get("message", "")).lower()
+        counteroffer = negotiation_data.get("counteroffer_salary", 0)
+
+        # Simple sentiment analysis
+        positive_keywords = ["可以", "接受", "好的", "满意", "同意", "yes", "acceptable"]
+        negative_keywords = ["不行", "太低", "不接受", "太少", "no", "insufficient", "reject"]
+        question_keywords = ["怎么", "能否", "是否", "可以", "how", "can", "?"]
+
+        has_positive = any(kw in text for kw in positive_keywords)
+        has_negative = any(kw in text for kw in negative_keywords)
+        has_question = any(kw in text for kw in question_keywords)
+
+        # High counteroffer indicates negative sentiment
+        if counteroffer > 0:
+            return "negative" if has_negative else "question"
+
+        if has_positive and not has_negative:
+            return "positive"
+        elif has_negative:
+            return "negative"
+        elif has_question:
+            return "question"
+        else:
+            return "neutral"
+
+    def get_negotiation_status(self, offer_id: str) -> Dict[str, Any]:
+        """Get current negotiation status"""
+        if offer_id not in self._negotiation_engines:
+            return {"error": "No active negotiation for this offer"}
+
+        engine = self._negotiation_engines[offer_id]
+        history = self._negotiation_history.get(offer_id, [])
+
+        return {
+            "offer_id": offer_id,
+            "current_round": len(history),
+            "history": history,
+            "mutual_fit": engine.evaluate_mutual_fit(),
+        }
 
     def _get_max_salary_for_offer(self, requisition_id: str) -> int:
         """Get max salary for a requisition"""
