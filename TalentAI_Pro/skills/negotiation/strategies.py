@@ -44,7 +44,7 @@ class StrategyConfig:
     key_selling_points: List[str]
 
     # 适用场景
-   适用场景: str
+    适用场景: str
 
     # 风险提示
     risk_note: Optional[str] = None

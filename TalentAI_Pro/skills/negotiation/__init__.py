@@ -24,12 +24,13 @@ Usage:
 """
 
 from .engine import NegotiationEngine
-from .strategies import NegotiationStrategy, StrategyType
+from .strategies import StrategyConfig, NegotiationStrategyLibrary, StrategyType
 from .prompts import MessageTemplate, ChannelType
 
 __all__ = [
     'NegotiationEngine',
-    'NegotiationStrategy',
+    'StrategyConfig',
+    'NegotiationStrategyLibrary',
     'StrategyType',
     'MessageTemplate',
     'ChannelType',
