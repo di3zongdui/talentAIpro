@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作流中心 - TalentAI Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #00d4ff;
+        }
+
+        .workflow-tabs {
+            display: flex;
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        .tab-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.recruiter {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .tab-btn.candidate {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .tab-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0,212,255,0.3);
+        }
+
+        .workflow-panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            display: none;
+        }
+
+        .workflow-panel.active {
+            display: block;
+        }
+
+        .workflow-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .workflow-subtitle {
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        /* 流程图样式 */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .flow-stage {
+            flex: 1;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .flow-stage:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(0,212,255,0.5);
+        }
+
+        .flow-stage.active {
+            background: rgba(0,212,255,0.15);
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0,212,255,0.2);
+        }
+
+        .flow-stage.completed {
+            background: rgba(16,185,129,0.15);
+            border-color: #10b981;
+        }
+
+        .flow-stage.pending {
+            opacity: 0.5;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: #00d4ff;
+            color: #1a1a2e;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .completed .step-number {
+            background: #10b981;
+        }
+
+        .stage-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stage-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stage-status {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .flow-arrow {
+            display: flex;
+            justify-content: center;
+            color: #475569;
+            font-size: 24px;
+        }
+
+        /* 操作面板 */
+        .action-panel {
+            margin-top: 30px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .action-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #00d4ff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #007bff 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 结果显示 */
+        .result-panel {
+            margin-top: 20px;
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-title {
+            color: #00d4ff;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .result-content {
+            font-family: monospace;
+            font-size: 13px;
+            color: #94a3b8;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* 历史记录 */
+        .history-panel {
+            margin-top: 30px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .history-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #94a3b8;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: #64748b;
+            min-width: 140px;
+        }
+
+        .history-action {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .history-direction {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .direction-forward {
+            background: rgba(16,185,129,0.2);
+            color: #10b981;
+        }
+
+        .direction-backward {
+            background: rgba(239,68,68,0.2);
+            color: #ef4444;
+        }
+
+        /* 双向流程指示 */
+        .flow-direction {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .direction-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .direction-forward {
+            background: rgba(16,185,129,0.2);
+            color: #10b981;
+        }
+
+        .direction-backward {
+            background: rgba(239,68,68,0.2);
+            color: #ef4444;
+        }
+
+        /* 底部API区域 */
+        .api-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .api-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #94a3b8;
+        }
+
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .api-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .api-method {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .method-post {
+            background: #10b981;
+            color: white;
+        }
+
+        .method-get {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .api-path {
+            font-family: monospace;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .api-desc {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        /* 状态徽章 */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .status-running {
+            background: rgba(59,130,246,0.2);
+            color: #3b82f6;
+        }
+
+        .status-success {
+            background: rgba(16,185,129,0.2);
+            color: #10b981;
+        }
+
+        .status-error {
+            background: rgba(239,68,68,0.2);
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔄 工作流中心</h1>
+            <div class="nav-links">
+                <a href="/frontend/index.html">← 返回首页</a>
+                <a href="/docs" target="_blank">API文档</a>
+            </div>
+        </header>
+
+        <!-- 工作流标签 -->
+        <div class="workflow-tabs">
+            <button class="tab-btn recruiter active" onclick="switchWorkflow('recruiter')">
+                🧑‍💼 招聘流程
+            </button>
+            <button class="tab-btn candidate" onclick="switchWorkflow('candidate')">
+                👤 求职流程
+            </button>
+        </div>
+
+        <!-- 招聘流程面板 -->
+        <div class="workflow-panel active" id="recruiter-panel">
+            <div class="workflow-title">🧑‍💼 招聘工作流</div>
+            <div class="workflow-subtitle">从职位发布到录用的完整流程，支持正向和反向操作</div>
+
+            <!-- 流程图 - 正向 -->
+            <div class="flowchart" id="recruiter-flow">
+                <div class="flow-direction">
+                    <span class="direction-badge direction-forward">→ 正向流程</span>
+                    <span class="direction-badge direction-backward">← 反向流程</span>
+                </div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="job_created" onclick="executeStage('recruiter', 'job_created')">
+                        <span class="step-number">1</span>
+                        <div class="stage-icon">📋</div>
+                        <div class="stage-name">创建职位</div>
+                        <div class="stage-status">职位信息录入</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="candidates_found" onclick="executeStage('recruiter', 'candidates_found')">
+                        <span class="step-number">2</span>
+                        <div class="stage-icon">🔍</div>
+                        <div class="stage-name">搜索候选人</div>
+                        <div class="stage-status">AI搜索匹配人才</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="matching_done" onclick="executeStage('recruiter', 'matching_done')">
+                        <span class="step-number">3</span>
+                        <div class="stage-icon">🎯</div>
+                        <div class="stage-name">智能匹配</div>
+                        <div class="stage-status">人岗匹配评分</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="interview_scheduled" onclick="executeStage('recruiter', 'interview_scheduled')">
+                        <span class="step-number">4</span>
+                        <div class="stage-icon">📅</div>
+                        <div class="stage-name">安排面试</div>
+                        <div class="stage-status">生成面试问题</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="evaluation_done" onclick="executeStage('recruiter', 'evaluation_done')">
+                        <span class="step-number">5</span>
+                        <div class="stage-icon">📊</div>
+                        <div class="stage-name">评估结果</div>
+                        <div class="stage-status">AI面试评估</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="negotiation_done" onclick="executeStage('recruiter', 'negotiation_done')">
+                        <span class="step-number">6</span>
+                        <div class="stage-icon">🤝</div>
+                        <div class="stage-name">薪资谈判</div>
+                        <div class="stage-status">双方谈判</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="hired" onclick="executeStage('recruiter', 'hired')">
+                        <span class="step-number">7</span>
+                        <div class="stage-icon">🎉</div>
+                        <div class="stage-name">录用</div>
+                        <div class="stage-status">流程完成</div>
+                    </div>
+                </div>
+
+                <!-- 反向流程 -->
+                <div style="margin-top: 30px;">
+                    <div style="color: #ef4444; margin-bottom: 15px;">← 反向操作（拒绝候选人后可重新搜索）</div>
+                    <div class="flow-row">
+                        <div class="flow-stage" data-stage="rejected" onclick="executeStage('recruiter', 'rejected')" style="border-color: rgba(239,68,68,0.3);">
+                            <span class="step-number" style="background: #ef4444;">✕</span>
+                            <div class="stage-icon">❌</div>
+                            <div class="stage-name">拒绝</div>
+                            <div class="stage-status">候选人未通过</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作面板 -->
+            <div class="action-panel">
+                <div class="action-title">⚡ 执行操作</div>
+
+                <div class="form-group">
+                    <label>职位名称</label>
+                    <input type="text" id="job-title" placeholder="例如：高级Python工程师">
+                </div>
+
+                <div class="form-group">
+                    <label>公司名称</label>
+                    <input type="text" id="company-name" placeholder="例如：字节跳动">
+                </div>
+
+                <div class="form-group">
+                    <label>职位要求（逗号分隔）</label>
+                    <input type="text" id="job-requirements" placeholder="Python, AI, 机器学习">
+                </div>
+
+                <div class="form-group">
+                    <label>薪资范围</label>
+                    <input type="text" id="salary-range" placeholder="例如：30-50K">
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="recruiterAction('create-job')" id="btn-create-job">
+                        1️⃣ 创建职位
+                    </button>
+                    <button class="btn btn-primary" onclick="recruiterAction('search-candidates')" id="btn-search-candidates" disabled>
+                        2️⃣ 搜索候选人
+                    </button>
+                    <button class="btn btn-primary" onclick="recruiterAction('match')" id="btn-match" disabled>
+                        3️⃣ 匹配
+                    </button>
+                    <button class="btn btn-success" onclick="recruiterAction('interview')" id="btn-interview" disabled>
+                        4️⃣ 面试
+                    </button>
+                    <button class="btn btn-success" onclick="recruiterAction('evaluate')" id="btn-evaluate" disabled>
+                        5️⃣ 评估
+                    </button>
+                    <button class="btn btn-warning" onclick="recruiterAction('negotiate')" id="btn-negotiate" disabled>
+                        6️⃣ 谈判
+                    </button>
+                    <button class="btn btn-success" onclick="recruiterAction('hire')" id="btn-hire" disabled>
+                        7️⃣ 录用
+                    </button>
+                    <button class="btn btn-danger" onclick="recruiterAction('reject')" id="btn-reject" disabled>
+                        ❌ 拒绝
+                    </button>
+                </div>
+
+                <div class="result-panel" id="result-panel-recruiter">
+                    <div class="result-title">📋 执行结果</div>
+                    <div class="result-content" id="result-content-recruiter"></div>
+                </div>
+            </div>
+
+            <!-- 历史记录 -->
+            <div class="history-panel">
+                <div class="history-title">📜 操作历史</div>
+                <div id="history-recruiter">
+                    <div style="color: #64748b; text-align: center; padding: 20px;">
+                        暂无操作记录
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 求职流程面板 -->
+        <div class="workflow-panel" id="candidate-panel">
+            <div class="workflow-title">👤 求职工作流</div>
+            <div class="workflow-subtitle">从创建简历到接受Offer的完整流程</div>
+
+            <div class="flowchart" id="candidate-flow">
+                <div class="flow-direction">
+                    <span class="direction-badge direction-forward">→ 正向流程</span>
+                    <span class="direction-badge direction-backward">← 反向流程</span>
+                </div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="profile_created" onclick="executeStage('candidate', 'profile_created')">
+                        <span class="step-number">1</span>
+                        <div class="stage-icon">📝</div>
+                        <div class="stage-name">创建简历</div>
+                        <div class="stage-status">个人信息录入</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="jobs_found" onclick="executeStage('candidate', 'jobs_found')">
+                        <span class="step-number">2</span>
+                        <div class="stage-icon">🔍</div>
+                        <div class="stage-name">搜索职位</div>
+                        <div class="stage-status">AI推荐职位</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="applied" onclick="executeStage('candidate', 'applied')">
+                        <span class="step-number">3</span>
+                        <div class="stage-icon">📨</div>
+                        <div class="stage-name">投递简历</div>
+                        <div class="stage-status">一键投递</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="interview_passed" onclick="executeStage('candidate', 'interview_passed')">
+                        <span class="step-number">4</span>
+                        <div class="stage-icon">✅</div>
+                        <div class="stage-name">面试</div>
+                        <div class="stage-status">面试评估</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="offer_received" onclick="executeStage('candidate', 'offer_received')">
+                        <span class="step-number">5</span>
+                        <div class="stage-icon">📨</div>
+                        <div class="stage-name">收到Offer</div>
+                        <div class="stage-status">等待决策</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-row">
+                    <div class="flow-stage" data-stage="offer_accepted" onclick="executeStage('candidate', 'offer_accepted')">
+                        <span class="step-number">6</span>
+                        <div class="stage-icon">🎉</div>
+                        <div class="stage-name">接受Offer</div>
+                        <div class="stage-status">流程完成</div>
+                    </div>
+                </div>
+
+                <!-- 反向流程 -->
+                <div style="margin-top: 30px;">
+                    <div style="color: #ef4444; margin-bottom: 15px;">← 反向操作</div>
+                    <div class="flow-row">
+                        <div class="flow-stage" data-stage="offer_declined" onclick="executeStage('candidate', 'offer_declined')" style="border-color: rgba(239,68,68,0.3);">
+                            <span class="step-number" style="background: #ef4444;">✕</span>
+                            <div class="stage-icon">❌</div>
+                            <div class="stage-name">拒绝Offer</div>
+                            <div class="stage-status">继续寻找</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-panel">
+                <div class="action-title">⚡ 执行操作</div>
+
+                <div class="form-group">
+                    <label>姓名</label>
+                    <input type="text" id="candidate-name" placeholder="例如：张三">
+                </div>
+
+                <div class="form-group">
+                    <label>邮箱</label>
+                    <input type="email" id="candidate-email" placeholder="例如：zhangsan@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>技能（逗号分隔）</label>
+                    <input type="text" id="candidate-skills" placeholder="Python, AI, 机器学习">
+                </div>
+
+                <div class="form-group">
+                    <label>期望薪资</label>
+                    <input type="text" id="expected-salary" placeholder="例如：40-60K">
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="candidateAction('create-profile')" id="btn-create-profile">
+                        1️⃣ 创建简历
+                    </button>
+                    <button class="btn btn-primary" onclick="candidateAction('search-jobs')" id="btn-search-jobs" disabled>
+                        2️⃣ 搜索职位
+                    </button>
+                    <button class="btn btn-primary" onclick="candidateAction('apply')" id="btn-apply" disabled>
+                        3️⃣ 投递
+                    </button>
+                    <button class="btn btn-success" onclick="candidateAction('interview-pass')" id="btn-interview-pass" disabled>
+                        ✅ 面试通过
+                    </button>
+                    <button class="btn btn-success" onclick="candidateAction('interview-fail')" id="btn-interview-fail" disabled>
+                        ❌ 面试未通过
+                    </button>
+                    <button class="btn btn-warning" onclick="candidateAction('receive-offer')" id="btn-receive-offer" disabled>
+                        📨 收到Offer
+                    </button>
+                    <button class="btn btn-success" onclick="candidateAction('accept-offer')" id="btn-accept-offer" disabled>
+                        🎉 接受Offer
+                    </button>
+                    <button class="btn btn-danger" onclick="candidateAction('decline-offer')" id="btn-decline-offer" disabled>
+                        ❌ 拒绝Offer
+                    </button>
+                </div>
+
+                <div class="result-panel" id="result-panel-candidate">
+                    <div class="result-title">📋 执行结果</div>
+                    <div class="result-content" id="result-content-candidate"></div>
+                </div>
+            </div>
+
+            <div class="history-panel">
+                <div class="history-title">📜 操作历史</div>
+                <div id="history-candidate">
+                    <div style="color: #64748b; text-align: center; padding: 20px;">
+                        暂无操作记录
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底层API参考 -->
+        <div class="api-section">
+            <div class="api-title">🔌 底层 API 端点（API First）</div>
+            <div class="api-grid">
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/recruiter/create-job</span>
+                    <div class="api-desc">创建招聘职位</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/recruiter/search-candidates</span>
+                    <div class="api-desc">搜索候选人</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/recruiter/match</span>
+                    <div class="api-desc">人岗匹配</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/recruiter/schedule-interview</span>
+                    <div class="api-desc">安排面试</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/recruiter/evaluate</span>
+                    <div class="api-desc">评估面试结果</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/recruiter/negotiate</span>
+                    <div class="api-desc">薪资谈判</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/recruiter/hire</span>
+                    <div class="api-desc">录用候选人</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/recruiter/reject</span>
+                    <div class="api-desc">拒绝候选人</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/candidate/create-profile</span>
+                    <div class="api-desc">创建求职简历</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/candidate/search-jobs</span>
+                    <div class="api-desc">搜索职位</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-post">POST</span>
+                    <span class="api-path">/api/workflow/candidate/apply</span>
+                    <div class="api-desc">投递简历</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-get">GET</span>
+                    <span class="api-path">/api/workflow/status/{workflow_id}</span>
+                    <div class="api-desc">查询工作流状态</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-get">GET</span>
+                    <span class="api-path">/api/workflow/stages</span>
+                    <div class="api-desc">获取所有阶段定义</div>
+                </div>
+                <div class="api-item">
+                    <span class="api-method method-get">GET</span>
+                    <span class="api-path">/health</span>
+                    <div class="api-desc">健康检查</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8089';
+
+        // 状态管理
+        let recruiterWorkflow = {
+            id: null,
+            job_id: null,
+            candidate_ids: [],
+            interview_id: null,
+            current_stage: null
+        };
+
+        let candidateWorkflow = {
+            id: null,
+            job_id: null,
+            current_stage: null
+        };
+
+        let recruiterHistory = [];
+        let candidateHistory = [];
+
+        // 切换工作流
+        function switchWorkflow(type) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.workflow-panel').forEach(panel => panel.classList.remove('active'));
+
+            if (type === 'recruiter') {
+                document.querySelector('.tab-btn.recruiter').classList.add('active');
+                document.getElementById('recruiter-panel').classList.add('active');
+            } else {
+                document.querySelector('.tab-btn.candidate').classList.add('active');
+                document.getElementById('candidate-panel').classList.add('active');
+            }
+        }
+
+        // 更新阶段显示
+        function updateRecruiterStages(stage) {
+            const stages = ['job_created', 'candidates_found', 'matching_done', 'interview_scheduled', 'evaluation_done', 'negotiation_done', 'hired'];
+
+            document.querySelectorAll('#recruiter-flow .flow-stage').forEach(el => {
+                const elStage = el.dataset.stage;
+                el.classList.remove('active', 'completed', 'pending');
+
+                if (elStage === stage) {
+                    el.classList.add('active');
+                } else if (stages.indexOf(elStage) < stages.indexOf(stage)) {
+                    el.classList.add('completed');
+                } else {
+                    el.classList.add('pending');
+                }
+            });
+
+            // 更新按钮状态
+            const btnMap = {
+                'job_created': ['btn-create-job'],
+                'candidates_found': ['btn-create-job', 'btn-search-candidates'],
+                'matching_done': ['btn-create-job', 'btn-search-candidates', 'btn-match'],
+                'interview_scheduled': ['btn-create-job', 'btn-search-candidates', 'btn-match', 'btn-interview'],
+                'evaluation_done': ['btn-create-job', 'btn-search-candidates', 'btn-match', 'btn-interview', 'btn-evaluate'],
+                'negotiation_done': ['btn-create-job', 'btn-search-candidates', 'btn-match', 'btn-interview', 'btn-evaluate', 'btn-negotiate'],
+                'hired': ['btn-create-job', 'btn-search-candidates', 'btn-match', 'btn-interview', 'btn-evaluate', 'btn-negotiate', 'btn-hire']
+            };
+
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+                if (btn.id.startsWith('btn-')) {
+                    const canEnable = btnMap[stage] && btnMap[stage].includes(btn.id);
+                    btn.disabled = !canEnable;
+                }
+            });
+
+            // 拒绝按钮始终可用
+            document.getElementById('btn-reject').disabled = false;
+        }
+
+        function updateCandidateStages(stage) {
+            const stages = ['profile_created', 'jobs_found', 'applied', 'interview_passed', 'offer_received', 'offer_accepted'];
+
+            document.querySelectorAll('#candidate-flow .flow-stage').forEach(el => {
+                const elStage = el.dataset.stage;
+                el.classList.remove('active', 'completed', 'pending');
+
+                if (elStage === stage) {
+                    el.classList.add('active');
+                } else if (stages.indexOf(elStage) < stages.indexOf(stage)) {
+                    el.classList.add('completed');
+                } else {
+                    el.classList.add('pending');
+                }
+            });
+
+            // 更新按钮状态
+            const btnMap = {
+                'profile_created': ['btn-create-profile'],
+                'jobs_found': ['btn-create-profile', 'btn-search-jobs'],
+                'applied': ['btn-create-profile', 'btn-search-jobs', 'btn-apply'],
+                'interview_passed': ['btn-create-profile', 'btn-search-jobs', 'btn-apply', 'btn-interview-pass', 'btn-interview-fail'],
+                'offer_received': ['btn-create-profile', 'btn-search-jobs', 'btn-apply', 'btn-interview-pass', 'btn-interview-fail', 'btn-receive-offer'],
+                'offer_accepted': ['btn-create-profile', 'btn-search-jobs', 'btn-apply', 'btn-interview-pass', 'btn-interview-fail', 'btn-receive-offer', 'btn-accept-offer', 'btn-decline-offer']
+            };
+
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+                if (btn.id.startsWith('btn-')) {
+                    const canEnable = btnMap[stage] && btnMap[stage].includes(btn.id);
+                    btn.disabled = !canEnable;
+                }
+            });
+        }
+
+        // 执行招聘操作
+        async function recruiterAction(action) {
+            const resultPanel = document.getElementById('result-panel-recruiter');
+            const resultContent = document.getElementById('result-content-recruiter');
+
+            try {
+                let response, data;
+
+                switch (action) {
+                    case 'create-job':
+                        const title = document.getElementById('job-title').value;
+                        const company = document.getElementById('company-name').value;
+                        const requirements = document.getElementById('job-requirements').value.split(',').map(s => s.trim());
+                        const salary = document.getElementById('salary-range').value;
+
+                        response = await fetch(`${API_BASE}/api/workflow/recruiter/create-job`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({title, company, requirements, salary_range: salary})
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            recruiterWorkflow.id = data.workflow_id;
+                            recruiterWorkflow.job_id = data.job_id;
+                            updateRecruiterStages('job_created');
+                        }
+                        break;
+
+                    case 'search-candidates':
+                        const skills = document.getElementById('job-requirements').value.split(',').map(s => s.trim());
+
+                        response = await fetch(`${API_BASE}/api/workflow/recruiter/search-candidates?workflow_id=${recruiterWorkflow.id}&skills=${skills.join(',')}`, {
+                            method: 'POST'
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            recruiterWorkflow.candidate_ids = data.candidates.map(c => c.id);
+                            updateRecruiterStages('candidates_found');
+                        }
+                        break;
+
+                    case 'match':
+                        response = await fetch(`${API_BASE}/api/workflow/recruiter/match`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: recruiterWorkflow.id,
+                                candidate_ids: recruiterWorkflow.candidate_ids
+                            })
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            updateRecruiterStages('matching_done');
+                        }
+                        break;
+
+                    case 'interview':
+                        if (recruiterWorkflow.candidate_ids.length === 0) {
+                            alert('请先搜索并匹配候选人');
+                            return;
+                        }
+                        response = await fetch(`${API_BASE}/api/workflow/recruiter/schedule-interview?workflow_id=${recruiterWorkflow.id}&candidate_id=${recruiterWorkflow.candidate_ids[0]}`, {
+                            method: 'POST'
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            recruiterWorkflow.interview_id = data.interview_id;
+                            updateRecruiterStages('interview_scheduled');
+                        }
+                        break;
+
+                    case 'evaluate':
+                        response = await fetch(`${API_BASE}/api/workflow/recruiter/evaluate`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: recruiterWorkflow.id,
+                                interview_id: recruiterWorkflow.interview_id,
+                                answers: ['回答1', '回答2', '回答3', '回答4'],
+                                score: 0.85
+                            })
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            updateRecruiterStages('evaluation_done');
+                        }
+                        break;
+
+                    case 'negotiate':
+                        response = await fetch(`${API_BASE}/api/workflow/recruiter/negotiate`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: recruiterWorkflow.id,
+                                candidate_id: recruiterWorkflow.candidate_ids[0],
+                                initial_offer: document.getElementById('salary-range').value || '面议'
+                            })
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            updateRecruiterStages('negotiation_done');
+                        }
+                        break;
+
+                    case 'hire':
+                        response = await fetch(`${API_BASE}/api/workflow/recruiter/hire`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: recruiterWorkflow.id,
+                                candidate_id: recruiterWorkflow.candidate_ids[0],
+                                final_deal: document.getElementById('salary-range').value
+                            })
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            updateRecruiterStages('hired');
+                        }
+                        break;
+
+                    case 'reject':
+                        response = await fetch(`${API_BASE}/api/workflow/recruiter/reject`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: recruiterWorkflow.id,
+                                candidate_id: recruiterWorkflow.candidate_ids[0] || 'unknown',
+                                reason: '综合评估不通过'
+                            })
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            updateRecruiterStages('rejected');
+                        }
+                        break;
+                }
+
+                // 显示结果
+                resultPanel.classList.add('show');
+                resultContent.textContent = JSON.stringify(data, null, 2);
+
+                // 添加历史记录
+                if (data.success) {
+                    recruiterHistory.unshift({
+                        action: action,
+                        time: new Date().toLocaleString(),
+                        direction: 'forward',
+                        data: data
+                    });
+                    renderRecruiterHistory();
+                }
+
+            } catch (error) {
+                resultPanel.classList.add('show');
+                resultContent.textContent = `❌ 错误: ${error.message}\n\n请确保服务器正在运行 (python api/server.py)`;
+            }
+        }
+
+        // 执行求职操作
+        async function candidateAction(action) {
+            const resultPanel = document.getElementById('result-panel-candidate');
+            const resultContent = document.getElementById('result-content-candidate');
+
+            try {
+                let response, data;
+
+                switch (action) {
+                    case 'create-profile':
+                        const name = document.getElementById('candidate-name').value;
+                        const email = document.getElementById('candidate-email').value;
+                        const skills = document.getElementById('candidate-skills').value.split(',').map(s => s.trim());
+                        const salary = document.getElementById('expected-salary').value;
+
+                        response = await fetch(`${API_BASE}/api/workflow/candidate/create-profile`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({name, email, skills, expected_salary: salary})
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            candidateWorkflow.id = data.workflow_id;
+                            updateCandidateStages('profile_created');
+                        }
+                        break;
+
+                    case 'search-jobs':
+                        const keywords = document.getElementById('candidate-skills').value.split(',').map(s => s.trim());
+
+                        response = await fetch(`${API_BASE}/api/workflow/candidate/search-jobs?workflow_id=${candidateWorkflow.id}&keywords=${keywords.join(',')}`, {
+                            method: 'POST'
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            candidateWorkflow.job_id = data.jobs[0]?.id;
+                            updateCandidateStages('jobs_found');
+                        }
+                        break;
+
+                    case 'apply':
+                        response = await fetch(`${API_BASE}/api/workflow/candidate/apply`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: candidateWorkflow.id,
+                                job_id: candidateWorkflow.job_id
+                            })
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            updateCandidateStages('applied');
+                        }
+                        break;
+
+                    case 'interview-pass':
+                        response = await fetch(`${API_BASE}/api/workflow/candidate/record-interview`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: candidateWorkflow.id,
+                                passed: true,
+                                score: 0.85
+                            })
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            updateCandidateStages('interview_passed');
+                        }
+                        break;
+
+                    case 'interview-fail':
+                        response = await fetch(`${API_BASE}/api/workflow/candidate/record-interview`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: candidateWorkflow.id,
+                                passed: false
+                            })
+                        });
+                        data = await response.json();
+                        break;
+
+                    case 'receive-offer':
+                        response = await fetch(`${API_BASE}/api/workflow/candidate/receive-offer`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: candidateWorkflow.id,
+                                offer_details: document.getElementById('expected-salary').value + ' + 期权'
+                            })
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            updateCandidateStages('offer_received');
+                        }
+                        break;
+
+                    case 'accept-offer':
+                        response = await fetch(`${API_BASE}/api/workflow/candidate/accept-offer`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: candidateWorkflow.id
+                            })
+                        });
+                        data = await response.json();
+
+                        if (data.success) {
+                            updateCandidateStages('offer_accepted');
+                        }
+                        break;
+
+                    case 'decline-offer':
+                        response = await fetch(`${API_BASE}/api/workflow/candidate/decline-offer`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                workflow_id: candidateWorkflow.id,
+                                reason: '综合考虑'
+                            })
+                        });
+                        data = await response.json();
+                        break;
+                }
+
+                resultPanel.classList.add('show');
+                resultContent.textContent = JSON.stringify(data, null, 2);
+
+                if (data.success) {
+                    candidateHistory.unshift({
+                        action: action,
+                        time: new Date().toLocaleString(),
+                        direction: 'forward',
+                        data: data
+                    });
+                    renderCandidateHistory();
+                }
+
+            } catch (error) {
+                resultPanel.classList.add('show');
+                resultContent.textContent = `❌ 错误: ${error.message}\n\n请确保服务器正在运行`;
+            }
+        }
+
+        // 渲染历史记录
+        function renderRecruiterHistory() {
+            const container = document.getElementById('history-recruiter');
+
+            if (recruiterHistory.length === 0) {
+                container.innerHTML = '<div style="color: #64748b; text-align: center; padding: 20px;">暂无操作记录</div>';
+                return;
+            }
+
+            container.innerHTML = recruiterHistory.map(h => `
+                <div class="history-item">
+                    <span class="history-time">${h.time}</span>
+                    <span class="history-action">${h.action}</span>
+                    <span class="history-direction ${h.direction === 'forward' ? 'direction-forward' : 'direction-backward'}">
+                        ${h.direction === 'forward' ? '→ 正向' : '← 反向'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function renderCandidateHistory() {
+            const container = document.getElementById('history-candidate');
+
+            if (candidateHistory.length === 0) {
+                container.innerHTML = '<div style="color: #64748b; text-align: center; padding: 20px;">暂无操作记录</div>';
+                return;
+            }
+
+            container.innerHTML = candidateHistory.map(h => `
+                <div class="history-item">
+                    <span class="history-time">${h.time}</span>
+                    <span class="history-action">${h.action}</span>
+                    <span class="history-direction ${h.direction === 'forward' ? 'direction-forward' : 'direction-backward'}">
+                        ${h.direction === 'forward' ? '→ 正向' : '← 反向'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // 点击阶段
+        function executeStage(type, stage) {
+            // 只是视觉反馈，不需要实际执行
+            console.log(`Stage clicked: ${type} - ${stage}`);
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查服务器连接
+            fetch(`${API_BASE}/health`)
+                .then(r => r.json())
+                .then(data => {
+                    console.log('Server connected:', data);
+                })
+                .catch(err => {
+                    console.error('Server not connected:', err);
+                });
+        });
+    </script>
+</body>
+</html>

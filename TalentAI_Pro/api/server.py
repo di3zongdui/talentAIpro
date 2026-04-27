@@ -70,6 +70,13 @@ except ImportError:
     llm_router = None
     print("[Warning] llm router not available")
 
+# Workflow路由
+try:
+    from api.workflow_routes import router as workflow_router
+except ImportError:
+    workflow_router = None
+    print("[Warning] workflow router not available")
+
 # 注册v2路由
 if v2_router:
     app.include_router(v2_router)
@@ -77,6 +84,10 @@ if v2_router:
 # 注册LLM路由
 if llm_router:
     app.include_router(llm_router)
+
+# 注册Workflow路由
+if workflow_router:
+    app.include_router(workflow_router)
 
 # ========== 静态文件服务 ==========
 # 提供前端页面访问
