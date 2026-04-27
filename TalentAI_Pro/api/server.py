@@ -93,7 +93,7 @@ async def root():
     """API根路径 - 重定向到前端"""
     from fastapi.responses import RedirectResponse
     if frontend_path.exists():
-        return RedirectResponse(url="/frontend/llm_test_dashboard.html")
+        return RedirectResponse(url="/frontend/index.html")
     return {
         "name": "TalentAI Pro - Agent API",
         "version": "2.0.0",

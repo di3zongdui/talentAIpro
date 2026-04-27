@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentAI Pro - AI猎头系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .version {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 12px;
+        }
+
+        .modules-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: rgba(255,255,255,0.9);
+            border-left: 4px solid #667eea;
+            padding-left: 16px;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .module-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .module-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+        }
+
+        .module-icon {
+            font-size: 36px;
+            margin-bottom: 16px;
+        }
+
+        .module-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .module-desc {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .module-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 12px;
+        }
+
+        .badge-primary {
+            background: rgba(102, 126, 234, 0.3);
+            color: #667eea;
+        }
+
+        .badge-success {
+            background: rgba(40, 167, 69, 0.3);
+            color: #28a745;
+        }
+
+        .badge-warning {
+            background: rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.online { background: #28a745; }
+        .status-dot.offline { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>TalentAI Pro</h1>
+            <p>AI驱动的猎头生态系统 - 让招聘更智能</p>
+            <span class="version">v2.0</span>
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-dot online"></span>
+                    <span>API服务</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot online"></span>
+                    <span>LLM引擎</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- LLM & AI 工具 -->
+        <div class="modules-section">
+            <h2 class="section-title">🤖 LLM & AI 工具</h2>
+            <div class="modules-grid">
+                <a href="/frontend/llm_test_dashboard.html" class="module-card">
+                    <div class="module-icon">🧪</div>
+                    <div class="module-title">LLM 测试面板</div>
+                    <div class="module-desc">测试和配置大语言模型，支持面试评估、薪资谈判、语义匹配</div>
+                    <span class="module-badge badge-primary">核心工具</span>
+                </a>
+                <a href="/frontend/llm_config.html" class="module-card">
+                    <div class="module-icon">⚙️</div>
+                    <div class="module-title">LLM 配置</div>
+                    <div class="module-desc">配置API Key和模型参数，管理多个LLM提供商</div>
+                    <span class="module-badge badge-primary">配置</span>
+                </a>
+                <a href="/frontend/llm_diagnostic.html" class="module-card">
+                    <div class="module-icon">🔍</div>
+                    <div class="module-title">API 诊断</div>
+                    <div class="module-desc">测试所有API端点，诊断连接和认证问题</div>
+                    <span class="module-badge badge-success">调试</span>
+                </a>
+                <a href="/docs" class="module-card">
+                    <div class="module-icon">📚</div>
+                    <div class="module-title">API 文档</div>
+                    <div class="module-desc">Swagger/OpenAPI文档，查看所有REST API端点</div>
+                    <span class="module-badge badge-success">文档</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Agent 系统 -->
+        <div class="modules-section">
+            <h2 class="section-title">🤝 Agent 智能体</h2>
+            <div class="modules-grid">
+                <a href="/frontend/consultant_agent.html" class="module-card">
+                    <div class="module-icon">💼</div>
+                    <div class="module-title">顾问 Agent</div>
+                    <div class="module-desc">AI招聘顾问，自主完成候选人沟通和筛选</div>
+                    <span class="module-badge badge-primary">核心</span>
+                </a>
+                <a href="/frontend/consultant_realtime.html" class="module-card">
+                    <div class="module-icon">⚡</div>
+                    <div class="module-title">实时顾问</div>
+                    <div class="module-desc">实时多轮对话，动态生成招聘策略</div>
+                    <span class="module-badge badge-warning">预览</span>
+                </a>
+                <a href="/frontend/interview_agent.html" class="module-card">
+                    <div class="module-icon">🎤</div>
+                    <div class="module-title">面试 Agent</div>
+                    <div class="module-desc">智能面试评估，生成候选人能力画像</div>
+                    <span class="module-badge badge-primary">核心</span>
+                </a>
+                <a href="/frontend/agent_ecosystem.html" class="module-card">
+                    <div class="module-icon">🌐</div>
+                    <div class="module-title">Agent 生态</div>
+                    <div class="module-desc">多Agent协作系统，可视化工作流程</div>
+                    <span class="module-badge badge-warning">预览</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- HR & 招聘Demo -->
+        <div class="modules-section">
+            <h2 class="section-title">👔 HR & 招聘演示</h2>
+            <div class="modules-grid">
+                <a href="/frontend/hr_e2e_demo.html" class="module-card">
+                    <div class="module-icon">🔄</div>
+                    <div class="module-title">HR 端到端演示</div>
+                    <div class="module-desc">从JD发布到Offer发放的完整招聘流程</div>
+                    <span class="module-badge badge-primary">演示</span>
+                </a>
+                <a href="/frontend/recruiter_candidate_demo.html" class="module-card">
+                    <div class="module-icon">🔗</div>
+                    <div class="module-title">猎头-候选人匹配</div>
+                    <div class="module-desc">猎头顾问与候选人的智能匹配演示</div>
+                    <span class="module-badge badge-primary">演示</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 管理后台 -->
+        <div class="modules-section">
+            <h2 class="section-title">🛠️ 管理后台</h2>
+            <div class="modules-grid">
+                <a href="/frontend/admin_dashboard.html" class="module-card">
+                    <div class="module-icon">📊</div>
+                    <div class="module-title">管理员后台</div>
+                    <div class="module-desc">系统管理、用户管理、权限控制</div>
+                    <span class="module-badge badge-success">管理</span>
+                </a>
+                <a href="/frontend/developer_dashboard.html" class="module-card">
+                    <div class="module-icon">🔧</div>
+                    <div class="module-title">开发者面板</div>
+                    <div class="module-desc">API密钥管理、Webhook配置、日志查看</div>
+                    <span class="module-badge badge-success">开发</span>
+                </a>
+                <a href="/frontend/plugin_manager.html" class="module-card">
+                    <div class="module-icon">🔌</div>
+                    <div class="module-title">插件管理</div>
+                    <div class="module-desc">管理和扩展系统功能插件</div>
+                    <span class="module-badge badge-success">工具</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>TalentAI Pro - 让AI成为每个猎头的超能力</p>
+            <p style="margin-top: 8px;">API服务: localhost:8089 | GitHub: github.com/di3zongdui/talentAIpro</p>
+        </div>
+    </div>
+
+    <script>
+        // 检查API状态
+        fetch('/health')
+            .then(r => r.json())
+            .then(data => {
+                document.querySelectorAll('.status-dot').forEach(dot => {
+                    if (dot.parentElement.querySelector('span:last-child').textContent.includes('API')) {
+                        dot.className = 'status-dot ' + (data.status === 'healthy' ? 'online' : 'offline');
+                    }
+                });
+            })
+            .catch(() => {
+                document.querySelectorAll('.status-dot').forEach(dot => {
+                    dot.className = 'status-dot offline';
+                });
+            });
+    </script>
+</body>
+</html>
