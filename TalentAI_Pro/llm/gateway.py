@@ -92,9 +92,21 @@ class LLMGateway:
             配置是否成功
         """
         provider_config = self.registry.get_provider(provider_id)
+        
+        # 如果provider不存在，自动注册
         if not provider_config:
-            logger.error(f"Provider {provider_id} not found in registry")
-            return False
+            logger.warning(f"Provider {provider_id} not found, auto-registering...")
+            from llm.models import ProviderConfig, ModelConfig, ProviderType as ModelProviderType
+            new_provider = ProviderConfig(
+                id=provider_id,
+                name=provider_id.capitalize(),
+                provider_type="siliconflow",
+                base_url=base_url or "https://api.siliconflow.cn/v1",
+                api_key=api_key,
+                models=[]
+            )
+            self.registry.add_provider(new_provider)
+            provider_config = self.registry.get_provider(provider_id)
 
         # 根据类型创建Provider实例
         if provider_config.provider_type == ProviderType.SILICONFLOW.value:
@@ -112,6 +124,8 @@ class LLMGateway:
             return False
 
         self._providers[provider_id] = provider
+        # 更新registry中的API key
+        provider_config.api_key = api_key
         logger.info(f"Provider {provider_id} configured successfully")
         return True
 

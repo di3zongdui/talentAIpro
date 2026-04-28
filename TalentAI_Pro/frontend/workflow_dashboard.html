@@ -959,11 +959,11 @@
             
             const endpoints = [
                 { name: '服务器健康检查', url: '/health', method: 'GET' },
-                { name: 'LLM配置', url: '/api/llm/configure', method: 'POST', body: {} },
-                { name: 'LLM对话', url: '/api/llm/chat', method: 'POST', body: { message: 'test', provider: 'siliconflow' } },
+                { name: 'LLM配置', url: '/api/llm/configure', method: 'POST', body: { provider: 'siliconflow', api_key: 'sk-test', base_url: 'https://api.siliconflow.cn/v1' } },
+                { name: 'LLM对话', url: '/api/llm/chat', method: 'POST', body: { message: '你好', provider: 'siliconflow', model: 'deepseek-ai/DeepSeek-V3' } },
                 { name: '工作流状态', url: '/api/workflow/stages', method: 'GET' },
-                { name: '招聘-创建职位', url: '/api/workflow/recruiter/create-job', method: 'POST', body: { title: '测试', department: '技术部' } },
-                { name: '求职-创建简历', url: '/api/workflow/candidate/create-profile', method: 'POST', body: { name: '测试', title: '工程师' } },
+                { name: '招聘-创建职位', url: '/api/workflow/recruiter/create-job', method: 'POST', body: { title: '前端工程师', company: '科技公司', requirements: ['Vue3', 'React'] } },
+                { name: '求职-创建简历', url: '/api/workflow/candidate/create-profile', method: 'POST', body: { name: '张三', email: 'test@example.com', skills: ['Vue3', 'React'] } },
             ];
             
             const results = [];
