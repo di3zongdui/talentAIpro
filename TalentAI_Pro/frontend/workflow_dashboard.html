@@ -817,37 +817,59 @@
             btn.textContent = '⏳ 执行中...';
             
             const steps = demoData[currentMode];
+            currentStage = 0;
             
             for (let i = 0; i < steps.length; i++) {
                 const step = steps[i];
                 
-                // Open modal and wait for it
-                openAgent(step.agent);
-                await new Promise(r => setTimeout(r, 800));
+                // Update current stage
+                currentStage = i;
                 
-                // Auto-fill form
-                const form = document.getElementById('agentForm');
-                if (form) {
-                    Object.keys(step.data).forEach(key => {
-                        const input = form.querySelector(`[name="${key}"]`);
-                        if (input) input.value = step.data[key];
-                    });
+                // Activate this stage
+                const stages = document.querySelectorAll(`#${currentMode}Stages .stage`);
+                stages.forEach(s => s.classList.remove('active'));
+                if (stages[i]) {
+                    stages[i].classList.add('active');
+                    stages[i].querySelector('.stage-status').textContent = '进行中';
+                }
+                updateCurrentStageLabel();
+                
+                // Simulate success immediately (no modal)
+                const agent = agentInfo[step.agent] || { name: step.agent };
+                const mockResult = {
+                    status: 'success',
+                    agent: agent.name,
+                    message: `${agent.name} 执行成功`,
+                    data: step.data,
+                    timestamp: new Date().toISOString()
+                };
+                
+                addLog(step.agent, step.data, 'success', mockResult);
+                
+                // Mark as completed
+                if (stages[i]) {
+                    stages[i].classList.remove('active');
+                    stages[i].classList.add('completed');
+                    stages[i].querySelector('.stage-status').textContent = '已完成';
                 }
                 
-                await new Promise(r => setTimeout(r, 500));
-                
-                // Execute (simulated for demo)
-                await executeAgent(step.agent);
-                
-                await new Promise(r => setTimeout(r, 1500));
-                
-                // Close modal if still open
-                closeModal();
+                await new Promise(r => setTimeout(r, 800));
             }
+            
+            currentStage = steps.length;
+            updateCurrentStageLabel();
+            
+            // Enable reverse button
+            document.getElementById('reverseBtn').disabled = false;
             
             isDemoRunning = false;
             btn.disabled = false;
-            btn.textContent = '🚀 自动演示';
+            btn.textContent = '🎉 演示完成';
+            
+            // Show completion message
+            setTimeout(() => {
+                btn.textContent = '🚀 自动演示';
+            }, 3000);
         }
         
         function resetWorkflow() {
@@ -920,16 +942,38 @@
             alert('测试所有API端点...');
         }
         
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Explicitly activate first stage
+        // Initialize on page load - immediately set up the UI
+        (function initWorkflow() {
+            currentStage = 0;
+            
+            // Activate first stage
             const firstStage = document.querySelector('#recruiterStages .stage');
             if (firstStage) {
                 firstStage.classList.add('active');
                 firstStage.querySelector('.stage-status').textContent = '进行中';
             }
+            
+            // Update stage label
             document.getElementById('currentStageLabel').textContent = '1. 创建职位';
-        });
+            
+            // Update history log to show ready state
+            document.getElementById('historyContainer').innerHTML = `
+                <div class="log-entry">
+                    <span class="log-time">${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
+                    <span class="log-stage">📋</span>
+                    <span class="log-action">工作流已就绪，点击「🚀 自动演示」开始</span>
+                    <span class="log-status success">✅</span>
+                </div>
+            `;
+            
+            // Also ensure the modal close handler works
+            const modal = document.getElementById('agentModal');
+            modal.addEventListener('click', (e) => {
+                if (e.target.id === 'agentModal') closeModal();
+            });
+            
+            console.log('Workflow initialized, currentStage:', currentStage);
+        })();
         
         // Close modal on outside click
         document.getElementById('agentModal').addEventListener('click', (e) => {
