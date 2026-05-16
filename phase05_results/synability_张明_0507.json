@@ -1,0 +1,73 @@
+{
+  "subject": "张明",
+  "profile": "35岁，互联网大厂技术总监，每天用AI写代码和设计架构，deep user。思维偏工程化、系统化。答案会包含具体技术术语。",
+  "style": "工程师型",
+  "timestamp": "2026-05-07T21:47:17.288446",
+  "session": "first",
+  "responses": [
+    {
+      "round": 1,
+      "dimension": "ai_operation",
+      "question": "假设你是一个团队负责人，需要快速收集某行业的竞品信息，并整理成一份简报。请告诉我：你会如何利用AI来完成这个任务？具体会怎么跟AI说？",
+      "answer": "我会让AI从权威渠道抓取竞品信息，然后用 Prompt 告诉它：“整理XX行业TOP5竞品的核心功能、技术架构特点和商业化策略，输出一份结构化简报，包含对比表格和关键洞察。” 并让AI附上数据来源。"
+    },
+    {
+      "round": 2,
+      "dimension": "critical_integration",
+      "question": "假设AI已经帮你整理好了一份竞品简报，但你发现其中几个数据来源似乎不可靠。你会怎么处理这种情况？请描述你的具体步骤。",
+      "answer": "我第一反应是拉上团队做溯源验证。用Python爬虫重新跑原始数据源，比对时间戳和API字段。如果验证失败，就切换到高权重信源，比如Statista或官方财报。最后把验证流程写进文档，确保下次能自动捕获异常。"
+    },
+    {
+      "round": 3,
+      "dimension": "ethical_judgment",
+      "question": "继续上面的场景，如果AI建议你在简报中忽略那些不可靠的数据，因为'这样看起来更好'。你怎么看这个问题？有没有什么伦理或风险方面的考虑？",
+      "answer": "我肯定不会这么干。作为技术负责人，数据可靠性是底线。AI建议忽略数据可能误导决策，甚至引发产品事故。我更愿意用技术手段清洗数据，而不是牺牲真实性来追求美观。"
+    },
+    {
+      "round": 4,
+      "dimension": "workflow_orchestration",
+      "question": "现在需要你设计一个包含AI协作的完整工作流程，用来每周自动生成一份市场动态报告。请描述这个流程的各个环节，以及人和AI分别在哪些环节做什么。",
+      "answer": "我设计了个全自动pipeline：每天凌晨用Airflow触发爬虫抓取各大平台数据，存入Kafka，Flink实时清洗后落地到Iceberg表。每天由LangChain调度LangGraph完成信息抽取，QA模块用T5做摘要，再调用LLM+prompt工程生成报告初稿。最后人工审核关键章节，AI辅助润色，自动发布到Notion。全流程用Monitor监控，保证时效性和准确性。"
+    },
+    {
+      "round": 5,
+      "dimension": "ai_collaborative_creativity",
+      "question": "以上这些工作如果全部由AI自动化完成了，你觉得人在这个过程中还能发挥什么独特的价值？同时，如果你需要把这份报告的价值讲给团队听，你会怎么组织你的叙述？",
+      "answer": "AI再牛也替代不了人的系统思维和需求洞察。我会强调：AI优化效率，但人得定义问题、权衡取舍、抗住边界模糊场景。汇报时我会说：「工具是杠杆，但支点永远在我们手上——架构决策、风险预判和团队对齐，这些才是高阶玩家的核心竞争力。」"
+    },
+    {
+      "round": 6,
+      "dimension": "ai_adaptability",
+      "question": "回想一下你在过去半年使用AI工具的经历——有没有遇到过某个AI工具更新后你需要调整使用方式的情况？你是怎么应对的？你平时如何保持对AI新进展的了解？",
+      "answer": "有啊，上周CodeWhisperer升级后把注释生成逻辑改了，我直接去看了AWS的更新日志，调整了提示词模板。平时我定个日历提醒，关注Hugging Face和DeepSeek的release notes，技术栈更新快得很。"
+    }
+  ],
+  "status": "pending_scoring",
+  "scores": {
+    "ai_operation": {
+      "score": 95,
+      "evidence": "用户能精准指挥AI完成竞品信息抓取与结构化简报生成，并要求附带数据来源，体现对AI能力的清晰认知和有效调度。"
+    },
+    "critical_integration": {
+      "score": 90,
+      "evidence": "用户主动拉团队溯源验证，使用爬虫和API字段比对，并建立信源切换机制，还文档化流程，展现强批判性整合能力。"
+    },
+    "ethical_judgment": {
+      "score": 95,
+      "evidence": "用户明确拒绝牺牲数据真实性换取美观，强调可靠性底线，体现高度伦理敏感性和责任感。"
+    },
+    "workflow_orchestration": {
+      "score": 98,
+      "evidence": "设计了端到端自动化pipeline，融合Airflow、Kafka、Flink、LangChain、LangGraph等技术，实现高效人机协同，流程完整且可监控。"
+    },
+    "ai_collaborative_creativity": {
+      "score": 90,
+      "evidence": "强调AI优化效率但人主导系统思维与决策，能用比喻传达人机关系，展现高阶协同创造力与领导力表达。"
+    },
+    "ai_adaptability": {
+      "score": 95,
+      "evidence": "能快速响应CodeWhisperer更新并调整提示词，建立技术追踪机制，体现对AI生态变化的敏锐适应能力。"
+    }
+  },
+  "scored_at": "2026-05-07T21:47:45.204273"
+}

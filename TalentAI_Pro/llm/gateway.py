@@ -24,6 +24,8 @@ Usage:
 
 import asyncio
 import logging
+import uuid
+from datetime import datetime
 from typing import List, Optional, Dict, Any, Callable, Awaitable
 from dataclasses import dataclass, field
 
@@ -140,6 +142,10 @@ class LLMGateway:
             model = self.registry.get_model(provider_id, model_id)
             if model:
                 return model
+            # 备用：通过 model_key 查找
+            model_by_key = self.get_model_by_key(provider_id, model_id)
+            if model_by_key:
+                return model_by_key
         return None
 
     def get_model_by_key(self, provider_id: str, model_key: str) -> Optional[ModelConfig]:
@@ -167,7 +173,7 @@ class LLMGateway:
 
         Args:
             prompt: 用户输入
-            model: 模型ID (如 "qwen3-omni")
+            model: 模型ID 或 模型key (如 "qwen3-omni" 或 "Qwen/Qwen3-Omni-30B-A3B-Instruct")
             messages: 完整消息列表（可选）
             system: 系统提示（可选）
             temperature: 温度参数
@@ -186,7 +192,29 @@ class LLMGateway:
         # 解析model
         model_config = self.get_model(model or self.config.default_model)
         if not model_config:
-            raise ValueError(f"Model {model} not found or not configured")
+            # 如果找不到model配置，尝试直接使用传入的model作为model_key
+            # 这允许直接使用 "Qwen/Qwen3-Omni-30B-A3B-Instruct" 这样的完整model_key
+            logger.warning(f"Model {model} not found in registry, attempting direct provider call")
+            # 获取默认provider
+            provider_id = list(self._providers.keys())[0] if self._providers else "siliconflow"
+            provider = self._providers.get(provider_id)
+            if not provider:
+                raise ValueError(f"No provider configured. Call configure_provider() first.")
+            # 直接使用model参数发送请求
+            if messages is None:
+                messages = []
+                if system:
+                    messages.append(Message(role="system", content=system))
+                messages.append(Message(role="user", content=prompt))
+            response = await provider.chat(
+                messages=messages,
+                model=model,
+                temperature=temperature or 0.7,
+                max_tokens=max_tokens,
+                **kwargs,
+            )
+            self._update_usage(response)
+            return response
 
         # 获取Provider
         provider = self._providers.get(model_config.provider)
@@ -372,20 +400,29 @@ class LLMGateway:
         self,
         situation: str,
         tone: str,
-        candidate_info: str,
-        company_offer: str,
-    ) -> str:
+        candidate_info: str = "",
+        company_offer: str = "",
+        session_id: Optional[str] = None,
+        candidate_reply: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
-        谈判消息生成专用接口
+        谈判消息生成专用接口（增强版 - 支持多轮对话记忆）
 
         Args:
             situation: 当前谈判情况
             tone: 期望语气 (aggressive/moderate/conciliatory)
-            candidate_info: 候选人信息
-            company_offer: 公司Offer
+            candidate_info: 候选人信息（首次调用时必填）
+            company_offer: 公司Offer（首次调用时必填）
+            session_id: 谈判会话ID（多轮对话时使用）
+            candidate_reply: 候选人回复（多轮对话时传入）
 
         Returns:
-            生成的谈判消息
+            {
+                "message": "生成的谈判消息",
+                "session_id": "会话ID",
+                "round": 当前轮次,
+                "context_summary": "谈判历史摘要"
+            }
         """
         model = self.get_model("qwen3-omni") or self.get_model(self.config.default_model)
         if not model:
@@ -395,20 +432,56 @@ class LLMGateway:
         if not provider:
             raise ValueError(f"Provider {model.provider} not configured")
 
+        # 获取或创建会话
+        if session_id:
+            session = get_or_create_negotiation_session(session_id, candidate_info, company_offer)
+        else:
+            # 首次调用，生成新session_id
+            session_id = f"neg-{uuid.uuid4().hex[:12]}"
+            session = get_or_create_negotiation_session(session_id, candidate_info, company_offer)
+            # 同时写入数据库
+            from db.negotiation_db import NegotiationDB
+            NegotiationDB.create_session(
+                session_id=session_id,
+                candidate_info=candidate_info,
+                company_offer=company_offer,
+                tone=tone
+            )
+
+        # 如果有候选人回复，记录到历史
+        if candidate_reply:
+            session.add_message("candidate", candidate_reply)
+            session.rounds += 1
+            # 同步到数据库
+            from db.negotiation_db import NegotiationDB
+            NegotiationDB.add_message(session_id, "candidate", candidate_reply, session.rounds)
+
+        # 构建提示词
         tone_instruction = {
             "aggressive": "坚定维护公司利益，直接表达底线",
             "moderate": "平衡双方利益，寻找共赢方案",
             "conciliatory": "积极倾听候选人诉求，展现诚意",
         }.get(tone, "专业友善")
 
-        messages = [
-            Message(role="system", content=f"""你是一个经验丰富的HR谈判专家，帮助公司在薪资谈判中达成双赢。
+        # 获取谈判历史上下文
+        context_summary = session.get_context_summary()
+
+        # 构建消息列表
+        system_prompt = f"""你是一个经验丰富的HR谈判专家，帮助公司在薪资谈判中达成双赢。
 语气要求: {tone_instruction}
 不要使用AI、Agent、系统等词汇，用"我"代表公司。
-消息要自然、人性化，像真实的人类HR对话。"""),
-            Message(role="user", content=f"""候选人背景: {candidate_info}
-公司Offer: {company_offer}
-当前谈判情况: {situation}
+消息要自然、人性化，像真实的人类HR对话。
+
+候选人背景: {session.candidate_info}
+公司Offer: {session.company_offer}"""
+
+        if context_summary:
+            system_prompt += f"\n\n{context_summary}"
+
+        messages = [
+            Message(role="system", content=system_prompt),
+            Message(role="user", content=f"""当前谈判情况: {situation}
+{"候选人最新回复: " + candidate_reply if candidate_reply else ""}
 
 请生成一条发送给候选人的微信消息（100字以内）："""),
         ]
@@ -419,7 +492,92 @@ class LLMGateway:
             temperature=0.8,
         )
 
-        return response.content.strip()
+        hr_message = response.content.strip()
+
+        # 记录HR消息到历史
+        session.add_message("hr", hr_message)
+
+        # 同步HR消息到数据库
+        from db.negotiation_db import NegotiationDB
+        NegotiationDB.add_message(session_id, "hr", hr_message, session.rounds)
+
+        return {
+            "message": hr_message,
+            "session_id": session_id,
+            "round": session.rounds,
+            "context_summary": context_summary,
+        }
+
+
+# ========== 谈判会话存储（多轮记忆）==========
+
+class NegotiationSession:
+    """谈判会话 - 维护多轮对话记忆"""
+    def __init__(self, session_id: str, candidate_info: str, company_offer: str):
+        self.session_id = session_id
+        self.candidate_info = candidate_info
+        self.company_offer = company_offer
+        self.messages: List[Dict[str, str]] = []  # [{"role": "user/assistant", "content": "..."}]
+        self.rounds = 0
+        self.created_at = datetime.now()
+
+    def add_message(self, role: str, content: str):
+        self.messages.append({"role": role, "content": content, "timestamp": datetime.now().isoformat()})
+
+    def get_context_summary(self) -> str:
+        """获取上下文摘要"""
+        if not self.messages:
+            return ""
+        history = "\n".join([f"{'候选人' if m['role'] == 'candidate' else 'HR'}: {m['content']}" for m in self.messages])
+        return f"谈判历史（共{self.rounds}轮）：\n{history}"
+
+
+# 全局谈判会话存储
+_negotiation_sessions: Dict[str, NegotiationSession] = {}
+
+
+def get_or_create_negotiation_session(
+    session_id: str,
+    candidate_info: str = "",
+    company_offer: str = ""
+) -> NegotiationSession:
+    """获取或创建谈判会话（优先从数据库加载）"""
+    if session_id not in _negotiation_sessions:
+        # 尝试从数据库加载
+        from db.negotiation_db import NegotiationDB
+        db_session = NegotiationDB.get_session(session_id)
+        if db_session:
+            _negotiation_sessions[session_id] = NegotiationSession(
+                session_id=session_id,
+                candidate_info=db_session.get('candidate_info', ''),
+                company_offer=db_session.get('company_offer', '')
+            )
+            _negotiation_sessions[session_id].rounds = db_session.get('rounds', 0)
+            # 加载历史消息
+            messages = NegotiationDB.get_messages(session_id)
+            for msg in messages:
+                _negotiation_sessions[session_id].messages.append({
+                    "role": msg['role'],
+                    "content": msg['content'],
+                    "timestamp": msg['created_at']
+                })
+        else:
+            _negotiation_sessions[session_id] = NegotiationSession(
+                session_id=session_id,
+                candidate_info=candidate_info,
+                company_offer=company_offer
+            )
+    return _negotiation_sessions[session_id]
+
+
+def clear_negotiation_session(session_id: str) -> bool:
+    """清除谈判会话（同时删除数据库记录）"""
+    if session_id in _negotiation_sessions:
+        del _negotiation_sessions[session_id]
+    # 删除数据库记录
+    from db.negotiation_db import NegotiationDB
+    NegotiationDB.delete_session(session_id)
+    return True
 
 
 # 全局单例

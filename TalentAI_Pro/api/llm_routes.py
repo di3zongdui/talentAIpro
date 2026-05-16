@@ -7,6 +7,7 @@ LLM API Routes - LLM配置和控制API
 
 import os
 import json
+import uuid
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, HTTPException
@@ -114,8 +115,10 @@ class InterviewEvaluateRequest(BaseModel):
 class NegotiationMessageRequest(BaseModel):
     situation: str
     tone: str = "moderate"  # aggressive/moderate/conciliatory
-    candidate_info: str = ""
-    company_offer: str = ""
+    candidate_info: str = ""  # 首次调用时必填
+    company_offer: str = ""   # 首次调用时必填
+    session_id: Optional[str] = None   # 多轮对话时使用
+    candidate_reply: Optional[str] = None  # 候选人回复（多轮对话时传入）
 
 
 class ModelConfigRequest(BaseModel):
@@ -303,16 +306,74 @@ async def negotiation_message(request: NegotiationMessageRequest):
         raise HTTPException(status_code=400, detail="No provider configured")
 
     try:
-        message = await gateway.negotiation_message(
+        result = await gateway.negotiation_message(
             situation=request.situation,
             tone=request.tone,
             candidate_info=request.candidate_info,
             company_offer=request.company_offer,
+            session_id=request.session_id,
+            candidate_reply=request.candidate_reply,
         )
 
-        return {"status": "success", "data": message}
+        return {
+            "status": "success",
+            "data": {
+                "message": result["message"],
+                "session_id": result["session_id"],
+                "round": result["round"],
+            }
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/negotiation-session/{session_id}")
+async def clear_negotiation_session(session_id: str):
+    """清除谈判会话"""
+    from llm.gateway import clear_negotiation_session as clear_session
+    cleared = clear_session(session_id)
+    return {"status": "success", "cleared": cleared}
+
+
+@router.get("/negotiation-session/{session_id}")
+async def get_negotiation_session(session_id: str):
+    """获取谈判会话历史（从数据库读取）"""
+    from db.negotiation_db import NegotiationDB
+    session = NegotiationDB.get_session_with_messages(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {
+        "status": "success",
+        "data": {
+            "session_id": session['id'],
+            "candidate_info": session.get('candidate_info', ''),
+            "company_offer": session.get('company_offer', ''),
+            "rounds": session.get('rounds', 0),
+            "status": session.get('status', 'active'),
+            "final_deal": session.get('final_deal'),
+            "messages": session.get('messages', []),
+        }
+    }
+
+
+@router.get("/negotiation-sessions")
+async def list_negotiation_sessions(
+    limit: int = 50,
+    offset: int = 0,
+    status: str = None
+):
+    """列出所有谈判会话（分页）"""
+    from db.negotiation_db import NegotiationDB
+    sessions = NegotiationDB.list_sessions(status=status, limit=limit, offset=offset)
+    return {"status": "success", "data": sessions}
+
+
+@router.get("/negotiation-search")
+async def search_negotiation_sessions(keyword: str):
+    """搜索谈判会话"""
+    from db.negotiation_db import NegotiationDB
+    sessions = NegotiationDB.search_sessions(keyword)
+    return {"status": "success", "data": sessions}
 
 
 @router.get("/stats")

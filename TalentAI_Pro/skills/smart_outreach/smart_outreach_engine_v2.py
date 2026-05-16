@@ -198,7 +198,7 @@ class SmartOutlookEngineV2:
         if top_highlight and len(candidate_highlights) >= 2:
             return f"{prefix}{job_title} - 您的{top_highlight}背景让我们特别感兴趣"
         else:
-            return f"{prefix}{job_title} - CGL高端猎头推荐"
+            return f"{prefix}{job_title} - TalentAI Pro推荐"
 
     def _generate_body(
         self,
@@ -258,7 +258,7 @@ class SmartOutlookEngineV2:
         else:  # COMPLETE
             body = f"""{opening}
 
-我是CGL高端猎头的George，专注于AI/科技领域的人才战略。
+我是TalentAI Pro的招聘顾问，专注于AI/科技领域的人才战略。
 
 【为什么联系您】
 {highlight_paragraph}
@@ -276,7 +276,7 @@ class SmartOutlookEngineV2:
 
 祝好，
 George Guo
-CGL高端猎头
+TalentAI Pro
 """
 
         return body
@@ -450,7 +450,7 @@ CGL高端猎头
         if keep_connection:
             body += "我们珍视这次交流的机会，期待未来有其他合作可能。"
         body += "\n\n" + template[1]
-        body += "\n\n祝好，\nGeorge Guo\nCGL高端猎头"
+        body += "\n\n祝好，\n招聘顾问\nTalentAI Pro 团队"
 
         return body
 

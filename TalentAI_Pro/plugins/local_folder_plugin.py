@@ -241,7 +241,7 @@ class LocalFolderPlugin(TalentAIPlugin):
              "education": "本科", "current_company": "阿里巴巴", "expected_salary": 28, "status": "passive"}
         ]
         self._jobs_found = [
-            {"id": "job_001", "title": "高级前端开发工程师", "company": "CGL",
+            {"id": "job_001", "title": "高级前端开发工程师", "company": "TechCorp",
              "skills_required": ["React", "Vue", "Node.js"], "experience_required": "3-5年",
              "salary_range": "30-50K", "status": "open"},
             {"id": "job_002", "title": "产品总监", "company": "某知名互联网",

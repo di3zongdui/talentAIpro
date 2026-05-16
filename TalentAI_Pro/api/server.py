@@ -77,6 +77,13 @@ except ImportError:
     workflow_router = None
     print("[Warning] workflow router not available")
 
+# Interview路由
+try:
+    from api.interview_routes import router as interview_router
+except ImportError:
+    interview_router = None
+    print("[Warning] interview router not available")
+
 # 注册v2路由
 if v2_router:
     app.include_router(v2_router)
@@ -88,6 +95,18 @@ if llm_router:
 # 注册Workflow路由
 if workflow_router:
     app.include_router(workflow_router)
+
+# 注册Interview路由
+if interview_router:
+    app.include_router(interview_router)
+
+# 多猎搜索路由
+try:
+    from api.duolie_routes import router as duolie_router
+    app.include_router(duolie_router)
+    print("[Info] duolie router loaded")
+except ImportError as e:
+    print(f"[Warning] duolie router not available: {e}")
 
 # ========== 静态文件服务 ==========
 # 提供前端页面访问

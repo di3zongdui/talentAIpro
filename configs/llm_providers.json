@@ -5,7 +5,7 @@
       "name": "SiliconFlow",
       "provider_type": "siliconflow",
       "base_url": "https://api.siliconflow.cn/v1",
-      "api_key": "sk-unpavlxvzzormhmxlpzlajqadfrgvybfzevprbjqphbzigtr",
+      "api_key": "sk-u***igtr",
       "enabled": true,
       "models": [
         {
@@ -13,7 +13,12 @@
           "name": "Qwen3-Omni-30B",
           "provider": "siliconflow",
           "model_key": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
-          "capabilities": ["chat", "function_calling", "streaming", "vision"],
+          "capabilities": [
+            "chat",
+            "function_calling",
+            "streaming",
+            "vision"
+          ],
           "max_tokens": 8192,
           "default_temperature": 0.7,
           "context_window": 32000,
@@ -27,10 +32,16 @@
           "name": "QwQ-32B",
           "provider": "siliconflow",
           "model_key": "Qwen/QwQ-32B",
-          "capabilities": ["chat", "function_calling", "streaming"],
+          "capabilities": [
+            "chat",
+            "function_calling",
+            "streaming"
+          ],
           "max_tokens": 8192,
           "default_temperature": 0.7,
           "context_window": 32000,
+          "input_price": 0.0,
+          "output_price": 0.0,
           "enabled": true,
           "description": "深度思考模型，数学和代码能力强"
         },
@@ -39,10 +50,16 @@
           "name": "DeepSeek-V3",
           "provider": "siliconflow",
           "model_key": "deepseek-ai/DeepSeek-V3",
-          "capabilities": ["chat", "function_calling", "streaming"],
+          "capabilities": [
+            "chat",
+            "function_calling",
+            "streaming"
+          ],
           "max_tokens": 8192,
           "default_temperature": 0.7,
           "context_window": 64000,
+          "input_price": 0.0,
+          "output_price": 0.0,
           "enabled": true,
           "description": "DeepSeek最新模型，性价比高"
         },
@@ -51,12 +68,72 @@
           "name": "GLM-4",
           "provider": "siliconflow",
           "model_key": "THUDM/GLM-4-0520",
-          "capabilities": ["chat", "function_calling", "streaming"],
+          "capabilities": [
+            "chat",
+            "function_calling",
+            "streaming"
+          ],
           "max_tokens": 8192,
           "default_temperature": 0.7,
           "context_window": 128000,
+          "input_price": 0.0,
+          "output_price": 0.0,
           "enabled": true,
           "description": "智谱GLM-4旗舰模型"
+        },
+        {
+          "id": "syn-v4-flash",
+          "name": "合能评估-V4 Flash",
+          "provider": "siliconflow",
+          "model_key": "deepseek-ai/DeepSeek-V4-Flash",
+          "capabilities": [
+            "chat",
+            "function_calling",
+            "streaming"
+          ],
+          "max_tokens": 8192,
+          "default_temperature": 0.1,
+          "context_window": 32000,
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "enabled": true,
+          "description": "合能Phase 0.5首测：DeepSeek V4 Flash，13B活跃参数，极低成本"
+        },
+        {
+          "id": "syn-v32",
+          "name": "合能评估-V3.2",
+          "provider": "siliconflow",
+          "model_key": "deepseek-ai/DeepSeek-V3.2",
+          "capabilities": [
+            "chat",
+            "function_calling",
+            "streaming"
+          ],
+          "max_tokens": 8192,
+          "default_temperature": 0.1,
+          "context_window": 64000,
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "enabled": true,
+          "description": "合能Phase 0.5备选：DeepSeek V3.2，671B，IMO金牌推理，国产综合87分"
+        },
+        {
+          "id": "syn-glm-z1",
+          "name": "合能评估-GLM Z1",
+          "provider": "siliconflow",
+          "model_key": "THUDM/GLM-Z1-32B-0414",
+          "capabilities": [
+            "chat",
+            "function_calling",
+            "streaming"
+          ],
+          "max_tokens": 8192,
+          "default_temperature": 0.1,
+          "context_window": 128000,
+          "input_price": 0.0,
+          "output_price": 0.0,
+          "enabled": true,
+          "description": "合能Phase 0.5备选：GLM-Z1-32B推理型，深度反思推理适合评分"
         }
       ]
     },
@@ -66,15 +143,23 @@
       "provider_type": "dashscope",
       "base_url": "https://dashscope.aliyuncs.com/api/v1",
       "api_key": "",
-      "enabled": false,
+      "enabled": true,
       "models": [
         {
           "id": "qwen-plus",
           "name": "Qwen-Plus",
           "provider": "dashscope",
           "model_key": "qwen-plus",
-          "capabilities": ["chat", "function_calling", "streaming"],
+          "capabilities": [
+            "chat",
+            "function_calling",
+            "streaming"
+          ],
+          "max_tokens": 8192,
+          "default_temperature": 0.7,
           "context_window": 131072,
+          "input_price": 0.0,
+          "output_price": 0.0,
           "enabled": true,
           "description": "阿里云通义千问Plus模型"
         },
@@ -83,8 +168,16 @@
           "name": "Qwen-Max",
           "provider": "dashscope",
           "model_key": "qwen-max",
-          "capabilities": ["chat", "function_calling", "streaming"],
+          "capabilities": [
+            "chat",
+            "function_calling",
+            "streaming"
+          ],
+          "max_tokens": 8192,
+          "default_temperature": 0.7,
           "context_window": 8192,
+          "input_price": 0.0,
+          "output_price": 0.0,
           "enabled": true,
           "description": "阿里云通义千问最强模型"
         }

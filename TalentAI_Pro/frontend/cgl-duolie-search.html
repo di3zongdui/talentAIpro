@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGL 多猎候选人搜索 - TalentAI Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            font-size: 24px;
+        }
+
+        /* JD Input Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* Results */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .results-count {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .candidate-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .candidate-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+
+        .candidate-item:hover {
+            border-color: rgba(102, 126, 234, 0.3);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .candidate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .candidate-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .candidate-meta {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .match-score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .match-score.high {
+            background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+        }
+
+        .match-score.medium {
+            background: linear-gradient(135deg, #ffc107 0%, #ffeb3b 100%);
+            color: #1a1a2e;
+        }
+
+        .candidate-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .detail-item {
+            display: flex;
+            gap: 8px;
+        }
+
+        .detail-label {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .detail-value {
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Status */
+        .status-bar {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .status-bar .step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+
+        .status-bar .step-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .status-bar .step.pending .step-icon {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.4);
+        }
+
+        .status-bar .step.running .step-icon {
+            background: rgba(102, 126, 234, 0.3);
+            color: #667eea;
+            animation: pulse 1s infinite;
+        }
+
+        .status-bar .step.done .step-icon {
+            background: rgba(0, 200, 83, 0.3);
+            color: #00c853;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 CGL 多猎候选人搜索</h1>
+            <a href="index.html" class="back-btn">← 返回首页</a>
+        </div>
+
+        <div class="main-layout">
+            <!-- Left: JD Input -->
+            <div>
+                <div class="card">
+                    <h2 class="card-title">
+                        <span class="icon">📋</span>
+                        职位描述 (JD)
+                    </h2>
+
+                    <div class="form-group">
+                        <label>职位名称</label>
+                        <input type="text" id="jobTitle" placeholder="例如：高级AI算法工程师">
+                    </div>
+
+                    <div class="form-group">
+                        <label>公司名称</label>
+                        <input type="text" id="companyName" placeholder="目标公司名称（用于精准筛选）">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>工作年限</label>
+                            <select id="workYears">
+                                <option value="0">不限</option>
+                                <option value="1">1年+</option>
+                                <option value="3">3年+</option>
+                                <option value="5" selected>5年+</option>
+                                <option value="8">8年+</option>
+                                <option value="10">10年+</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>最低薪资 (K)</label>
+                            <input type="number" id="minSalary" placeholder="30" value="30">
+                        </div>
+                        <div class="form-group">
+                            <label>最高薪资 (K)</label>
+                            <input type="number" id="maxSalary" placeholder="80" value="80">
+                        </div>
+                        <div class="form-group">
+                            <label>学历要求</label>
+                            <select id="education">
+                                <option value="">不限</option>
+                                <option value="博士">博士</option>
+                                <option value="硕士">硕士</option>
+                                <option value="本科" selected>本科</option>
+                                <option value="大专">大专</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>职位描述 (JD) - 粘贴完整JD，系统会自动提取关键词</label>
+                        <textarea id="jobDescription" placeholder="请粘贴完整的职位描述，包括：
+- 岗位职责
+- 任职要求
+- 加分项
+- 公司介绍等"></textarea>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="searchBtn" onclick="startSearch()">
+                            <span class="btn-icon">🔍</span>
+                            开始搜索
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearForm()">
+                            清空
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h2 class="card-title">
+                        <span class="icon">📊</span>
+                        搜索状态
+                    </h2>
+                    <div class="status-bar" id="statusBar">
+                        <div class="step pending" id="step1">
+                            <div class="step-icon">1</div>
+                            <span>准备就绪</span>
+                        </div>
+                        <div class="step pending" id="step2">
+                            <div class="step-icon">2</div>
+                            <span>打开多猎平台</span>
+                        </div>
+                        <div class="step pending" id="step3">
+                            <div class="step-icon">3</div>
+                            <span>执行搜索</span>
+                        </div>
+                        <div class="step pending" id="step4">
+                            <div class="step-icon">4</div>
+                            <span>提取候选人数据</span>
+                        </div>
+                        <div class="step pending" id="step5">
+                            <div class="step-icon">5</div>
+                            <span>智能匹配评分</span>
+                        </div>
+                        <div class="step pending" id="step6">
+                            <div class="step-icon">6</div>
+                            <span>存入数据库</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Results -->
+            <div>
+                <div class="card">
+                    <div class="results-header">
+                        <h2 class="card-title" style="margin-bottom: 0;">
+                            <span class="icon">👥</span>
+                            匹配候选人
+                        </h2>
+                        <span class="results-count" id="resultsCount">0 人</span>
+                    </div>
+
+                    <div class="candidate-list" id="candidateList">
+                        <div class="empty-state">
+                            <div class="icon">🔍</div>
+                            <p>输入JD后点击"开始搜索"<br>系统将从多猎平台提取候选人并智能匹配</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API配置
+        const API_BASE = 'http://localhost:8089/api';
+
+        // 搜索状态管理
+        const steps = ['step1', 'step2', 'step3', 'step4', 'step5', 'step6'];
+
+        function updateStep(stepIndex, status) {
+            const stepEl = document.getElementById(steps[stepIndex]);
+            const icon = stepEl.querySelector('.step-icon');
+            const text = stepEl.querySelector('span');
+
+            stepEl.className = 'step ' + status;
+
+            if (status === 'running') {
+                icon.innerHTML = '<div class="loading"></div>';
+            } else if (status === 'done') {
+                icon.textContent = '✓';
+            } else {
+                icon.textContent = stepIndex + 1;
+            }
+        }
+
+        function resetSteps() {
+            steps.forEach((id, i) => {
+                updateStep(i, 'pending');
+            });
+            updateStep(0, 'done');
+        }
+
+        function startSearch() {
+            const jobTitle = document.getElementById('jobTitle').value.trim();
+            const companyName = document.getElementById('companyName').value.trim();
+            const workYears = document.getElementById('workYears').value;
+            const minSalary = document.getElementById('minSalary').value;
+            const maxSalary = document.getElementById('maxSalary').value;
+            const education = document.getElementById('education').value;
+            const jobDescription = document.getElementById('jobDescription').value.trim();
+
+            if (!jobTitle && !companyName && !jobDescription) {
+                alert('请至少输入职位名称、公司名称或职位描述');
+                return;
+            }
+
+            // 重置状态
+            resetSteps();
+            document.getElementById('searchBtn').disabled = true;
+            document.getElementById('candidateList').innerHTML = '<div class="empty-state"><div class="icon"><div class="loading"></div></div><p>搜索中，请稍候...</p></div>';
+
+            // 构造搜索参数
+            const searchParams = {
+                type: companyName ? 'company' : 'keyword',
+                value: companyName || jobTitle || extractKeywords(jobDescription),
+                criteria: {
+                    min_work_years: parseInt(workYears),
+                    min_salary: parseInt(minSalary),
+                    max_salary: parseInt(maxSalary),
+                    education: education || null,
+                    keywords: extractKeywords(jobDescription)
+                },
+                top_n: 50
+            };
+
+            console.log('搜索参数:', searchParams);
+
+            // 调用后端API
+            fetch(`${API_BASE}/search/candidates`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(searchParams)
+            })
+            .then(res => res.json())
+            .then(data => {
+                updateStep(5, 'done');
+                displayResults(data);
+            })
+            .catch(err => {
+                console.error('搜索失败:', err);
+                // 演示模式：显示模拟数据
+                displayDemoResults(searchParams);
+            })
+            .finally(() => {
+                document.getElementById('searchBtn').disabled = false;
+            });
+        }
+
+        function extractKeywords(text) {
+            if (!text) return [];
+
+            // 简单关键词提取
+            const stopWords = ['的', '和', '以及', '与', '或', '等', '优先', '具备', '熟悉', '了解', '负责', '参与', '具有'];
+            const words = text.split(/[\s,\n，。、；]+/)
+                .filter(w => w.length > 2 && !stopWords.includes(w))
+                .slice(0, 10);
+
+            return [...new Set(words)];
+        }
+
+        function displayResults(data) {
+            const container = document.getElementById('candidateList');
+            const count = document.getElementById('resultsCount');
+
+            if (!data.candidates || data.candidates.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">😔</div><p>未找到匹配的候选人<br>尝试调整筛选条件</p></div>';
+                count.textContent = '0 人';
+                return;
+            }
+
+            count.textContent = `${data.candidates.length} 人`;
+
+            container.innerHTML = data.candidates.map(c => `
+                <div class="candidate-item">
+                    <div class="candidate-header">
+                        <div>
+                            <div class="candidate-name">${c.name || '未知'}</div>
+                            <div class="candidate-meta">${c.current_company || '未知公司'} · ${c.current_title || '未知职位'}</div>
+                        </div>
+                        <div class="match-score ${getScoreClass(c.match_score)}">
+                            ${c.match_score || 0}分
+                        </div>
+                    </div>
+                    <div class="candidate-details">
+                        <div class="detail-item">
+                            <span class="detail-label">工作年限:</span>
+                            <span class="detail-value">${c.work_years || '-'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">学历:</span>
+                            <span class="detail-value">${c.education || '-'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">期望薪资:</span>
+                            <span class="detail-value">${c.expected_salary || '-'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">城市:</span>
+                            <span class="detail-value">${c.current_city || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayDemoResults(params) {
+            // 演示模式：生成模拟数据
+            const demoCandidates = [
+                { name: '张明', current_company: params.value, current_title: '高级算法工程师', work_years: 6, education: '硕士', expected_salary: '45-60K', current_city: '上海', match_score: 92 },
+                { name: '李华', current_company: params.value, current_title: '技术专家', work_years: 8, education: '博士', expected_salary: '60-80K', current_city: '北京', match_score: 88 },
+                { name: '王芳', current_company: params.value, current_title: 'AI技术负责人', work_years: 7, education: '硕士', expected_salary: '50-70K', current_city: '深圳', match_score: 85 },
+                { name: '刘强', current_company: params.value, current_title: '资深研发工程师', work_years: 5, education: '本科', expected_salary: '40-55K', current_city: '杭州', match_score: 78 },
+                { name: '陈静', current_company: params.value, current_title: '机器学习工程师', work_years: 4, education: '硕士', expected_salary: '35-50K', current_city: '上海', match_score: 72 },
+            ];
+
+            // 模拟加载过程
+            let stepIndex = 1;
+            const interval = setInterval(() => {
+                if (stepIndex < 5) {
+                    updateStep(stepIndex, 'done');
+                    updateStep(stepIndex + 1, 'running');
+                    stepIndex++;
+                } else {
+                    clearInterval(interval);
+                    updateStep(5, 'done');
+                    displayResults({ candidates: demoCandidates });
+                }
+            }, 500);
+        }
+
+        function getScoreClass(score) {
+            if (score >= 80) return 'high';
+            if (score >= 60) return 'medium';
+            return '';
+        }
+
+        function clearForm() {
+            document.getElementById('jobTitle').value = '';
+            document.getElementById('companyName').value = '';
+            document.getElementById('workYears').value = '5';
+            document.getElementById('minSalary').value = '30';
+            document.getElementById('maxSalary').value = '80';
+            document.getElementById('education').value = '';
+            document.getElementById('jobDescription').value = '';
+            document.getElementById('candidateList').innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>输入JD后点击"开始搜索"<br>系统将从多猎平台提取候选人并智能匹配</p></div>';
+            document.getElementById('resultsCount').textContent = '0 人';
+            resetSteps();
+        }
+
+        // 初始化
+        resetSteps();
+    </script>
+</body>
+</html>

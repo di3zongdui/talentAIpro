@@ -426,6 +426,164 @@ async def start_negotiation(workflow_id: str, candidate_id: str,
     }
 
 
+# ========== 多Agent谈判 API ==========
+
+class MultiAgentNegotiationRequest(BaseModel):
+    """多Agent谈判请求"""
+    job_id: str
+    candidate_id: str
+    candidate_name: str
+    candidate_expected_salary: str
+    company_offer: str
+    company_budget_max: str
+    key_advantages: List[str] = []  # 候选人的关键优势
+    red_lines: List[str] = []  # 公司底线（薪资范围等）
+
+
+class MultiAgentNegotiationResponse(BaseModel):
+    """多Agent谈判响应"""
+    session_id: str
+    recruiter_strategy: Dict[str, Any]  # RecruiterAgent的策略
+    candidate_strategy: Dict[str, Any]  # CandidateAgent的策略
+    recommended_offer: str  # 推荐offer方案
+    win_probability: float  # 谈判成功率
+
+
+@router.post("/multi-agent/negotiate", response_model=MultiAgentNegotiationResponse)
+async def multi_agent_negotiate(request: MultiAgentNegotiationRequest) -> Dict[str, Any]:
+    """
+    多Agent同时谈判 - 模拟RecruiterAgent和CandidateAgent的博弈
+
+    同时调用LLM生成：
+    1. RecruiterAgent视角：公司的谈判策略和建议
+    2. CandidateAgent视角：候选人的期望和底线
+
+    返回推荐offer方案和谈判成功率
+    """
+    from api.llm_routes import get_gateway
+
+    gateway = get_gateway()
+
+    # 确保Provider已配置
+    if not gateway._providers:
+        raise HTTPException(status_code=400, detail="No provider configured. Please call /api/llm/configure first.")
+
+    # 1. RecruiterAgent视角
+    recruiter_prompt = f"""你是一个资深招聘专家（RecruiterAgent），负责为公司谈判最优方案。
+
+背景信息：
+- 职位ID: {request.job_id}
+- 候选人: {request.candidate_name}
+- 候选人期望薪资: {request.candidate_expected_salary}
+- 公司当前Offer: {request.company_offer}
+- 公司预算上限: {request.company_budget_max}
+- 候选人关键优势: {', '.join(request.key_advantages) if request.key_advantages else '暂无'}
+
+请分析并返回JSON格式：
+{{
+    "strategy": "谈判策略描述（aggressive/moderate/conciliatory）",
+    "recommended_counter": "建议还价方案",
+    "让步空间": ["可以让步的点1", "不能让步的点2"],
+    "候选人价值评估": "对该候选人的价值判断",
+    "成功关键因素": "谈判成功的关键因素"
+}}
+
+请生成真实、有洞察力的分析。"""
+
+    # 2. CandidateAgent视角
+    candidate_prompt = f"""你是一个资深职业顾问（CandidateAgent），代表候选人谈判最优方案。
+
+背景信息：
+- 候选人: {request.candidate_name}
+- 候选人期望薪资: {request.candidate_expected_salary}
+- 公司当前Offer: {request.company_offer}
+- 公司预算上限: {request.company_budget_max}
+- 候选人关键优势: {', '.join(request.key_advantages) if request.key_advantages else '暂无'}
+
+请分析并返回JSON格式：
+{{
+    "bottom_line": "候选人底线（最低接受薪资）",
+    "flexible_points": ["可以灵活的点1", "可以妥协的点2"],
+    "hard_points": ["坚持不妥协的点1", "必须争取的点2"],
+    "谈判策略": "建议的谈判策略",
+    "预期结果": "最可能的谈判结果"
+}}
+
+请生成真实、有洞察力的分析。"""
+
+    try:
+        # 并行调用两个Agent
+        import asyncio
+        # 使用完整的 model_key
+        model_key = "Qwen/Qwen3-Omni-30B-A3B-Instruct"
+        recruiter_task = gateway.chat(prompt=recruiter_prompt, model=model_key)
+        candidate_task = gateway.chat(prompt=candidate_prompt, model=model_key)
+
+        recruiter_response, candidate_response = await asyncio.gather(
+            recruiter_task, candidate_task
+        )
+
+        # 解析响应
+        import json
+        import re
+
+        def extract_json(text: str) -> dict:
+            """从文本中提取JSON"""
+            match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text, re.DOTALL)
+            if match:
+                try:
+                    return json.loads(match.group())
+                except:
+                    pass
+            return {}
+
+        recruiter_data = extract_json(recruiter_response.content)
+        candidate_data = extract_json(candidate_response.content)
+
+        # 计算推荐offer
+        try:
+            candidate_bottom = int(re.search(r'\d+', candidate_data.get('bottom_line', '0')).group())
+            company_max = int(re.search(r'\d+', request.company_budget_max).group())
+            recommended = max(candidate_bottom, int(company_max * 0.85))
+            recommended_offer = f"月薪{int(recommended / 1000)}K-{int(recommended / 1000 * 1.1)}K"
+        except:
+            recommended_offer = request.company_offer
+
+        # 计算成功率
+        try:
+            candidate_exp = int(re.search(r'\d+', request.candidate_expected_salary).group())
+            company_offer_val = int(re.search(r'\d+', request.company_offer).group())
+            win_prob = min(0.95, max(0.3, 1 - abs(candidate_exp - company_offer_val) / candidate_exp))
+        except:
+            win_prob = 0.75
+
+        # 生成session_id并存储
+        session_id = f"multi-neg-{uuid.uuid4().hex[:12]}"
+        from db.negotiation_db import NegotiationDB
+        NegotiationDB.create_session(
+            session_id=session_id,
+            candidate_info=f"{request.candidate_name} | 期望:{request.candidate_expected_salary}",
+            company_offer=f"{request.company_offer} | 预算上限:{request.company_budget_max}",
+            tone="moderate"
+        )
+        NegotiationDB.add_message(session_id, "recruiter_agent", json.dumps(recruiter_data), 0)
+        NegotiationDB.add_message(session_id, "candidate_agent", json.dumps(candidate_data), 0)
+        NegotiationDB.add_message(session_id, "system",
+            f"推荐方案:{recommended_offer}, 成功率:{win_prob:.0%}", 0)
+
+        return {
+            "success": True,
+            "session_id": session_id,
+            "recruiter_strategy": recruiter_data,
+            "candidate_strategy": candidate_data,
+            "recommended_offer": recommended_offer,
+            "win_probability": round(win_prob, 2)
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"多Agent谈判分析失败: {str(e)}")
+
+
 @router.post("/recruiter/hire")
 async def hire_candidate(workflow_id: str, candidate_id: str,
                          final_deal: str = None) -> Dict[str, Any]:

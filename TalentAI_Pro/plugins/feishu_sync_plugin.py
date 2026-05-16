@@ -106,11 +106,11 @@ class FeishuSyncPlugin(TalentAIPlugin):
              "end_time": "2024-03-15 15:00", "attendees": ["王总监", "李华"],
              "location": "北京办公室", "type": "interview"},
             {"event_id": "evt_003", "title": "候选人推荐评审会", "start_time": "2024-03-16 09:00",
-             "end_time": "2024-03-16 10:00", "attendees": ["CGL团队"],
+             "end_time": "2024-03-16 10:00", "attendees": ["招聘团队"],
              "location": "会议室A", "type": "meeting"}
         ]
         self._documents = [
-            {"doc_id": "doc_001", "title": "CGL-前端岗位JD-v2.1", "type": "doc",
+            {"doc_id": "doc_001", "title": "前端岗位JD-v2.1", "type": "doc",
              "url": "https://feishu.cn/doc/doc_001", "last_modified": "2024-03-10"},
             {"doc_id": "doc_002", "title": "候选人评估模板", "type": "doc",
              "url": "https://feishu.cn/doc/doc_002", "last_modified": "2024-03-08"}

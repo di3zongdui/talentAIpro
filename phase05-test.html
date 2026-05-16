@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>合能评估 · SynAbility</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;background:#f5f7fa;color:#1a1a2e;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:40px 20px}
+.container{background:#fff;max-width:680px;width:100%;border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.08);padding:40px 36px}
+.header{text-align:center;margin-bottom:28px}
+.header h1{font-size:22px;font-weight:700;letter-spacing:1px;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header p{color:#666;font-size:14px;margin-top:6px}
+.progress-bar{height:4px;background:#e8ecf1;border-radius:2px;margin-bottom:32px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#667eea,#764ba2);transition:width .4s ease;border-radius:2px}
+.step{display:none}
+.step.active{display:block}
+.welcome h2{font-size:20px;margin-bottom:12px}
+.welcome p{color:#555;font-size:14px;line-height:1.8;margin-bottom:16px}
+.welcome label{font-size:14px;font-weight:600;display:block;margin-bottom:6px}
+.welcome input[type="text"]{width:100%;padding:12px 14px;border:1.5px solid #dde1e8;border-radius:10px;font-size:15px;outline:none;transition:border .2s}
+.welcome input:focus{border-color:#667eea}
+.question-area{animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-badge{display:inline-block;font-size:12px;font-weight:600;background:#eef0ff;color:#667eea;border-radius:20px;padding:4px 12px;margin-bottom:12px}
+.q-text{font-size:16px;line-height:1.8;font-weight:500;margin-bottom:20px;color:#1a1a2e}
+textarea{width:100%;min-height:120px;padding:14px;border:1.5px solid #dde1e8;border-radius:12px;font-size:15px;line-height:1.7;outline:none;resize:vertical;transition:border .2s;font-family:inherit}
+textarea:focus{border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+textarea::placeholder{color:#bbb}
+.btn-row{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
+.btn{padding:12px 28px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;flex:1;text-align:center}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:#667eea;color:#fff}
+.btn-primary:hover:not(:disabled){background:#5a6fd6;transform:translateY(-1px)}
+.btn-secondary{background:#f0f2f5;color:#555}
+.btn-secondary:hover:not(:disabled){background:#e5e8ee}
+.btn-success{background:#34d399;color:#fff}
+.btn-success:hover:not(:disabled){background:#2ec48c}
+.btn-outline{background:transparent;border:1.5px solid #dde1e8;color:#666}
+.btn-outline:hover{background:#f5f7fa}
+.complete{text-align:center;animation:fadeUp .4s ease}
+.complete .icon{font-size:56px;margin-bottom:12px}
+.complete h2{font-size:20px;margin-bottom:8px}
+.complete p{color:#666;font-size:14px;margin-bottom:20px;line-height:1.7}
+.answer-review{text-align:left;background:#f8f9fc;border-radius:12px;padding:16px 20px;margin-bottom:20px;max-height:200px;overflow-y:auto}
+.answer-review .item{padding:6px 0;border-bottom:1px solid #eef0f5;font-size:13px}
+.answer-review .item:last-child{border:none}
+.answer-review .dim{color:#667eea;font-weight:600;margin-right:8px}
+.answer-review .preview{color:#555}
+.loading{text-align:center;padding:30px 0}
+.loading .spinner{display:inline-block;width:40px;height:40px;border:4px solid #eef0ff;border-top-color:#667eea;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{color:#666;margin-top:14px;font-size:14px}
+
+/* 画像结果 */
+.profile-card{margin-top:16px;text-align:left}
+.profile-header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:14px;padding:20px 24px;margin-bottom:20px;text-align:center}
+.profile-header .name{font-size:18px;font-weight:700;margin-bottom:4px}
+.profile-header .role{font-size:22px;font-weight:700;margin:8px 0 4px}
+.profile-header .total{font-size:13px;opacity:.85}
+.dim-bar{display:flex;align-items:center;margin-bottom:12px;gap:10px}
+.dim-bar .label{width:100px;font-size:13px;font-weight:600;color:#333;text-align:right;flex-shrink:0}
+.dim-bar .bar-wrap{flex:1;height:24px;background:#f0f2f5;border-radius:12px;overflow:hidden;position:relative}
+.dim-bar .bar-fill{height:100%;border-radius:12px;transition:width .8s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:11px;font-weight:700;color:#fff;min-width:32px}
+.dim-bar .bar-fill.lv5{background:linear-gradient(90deg,#667eea,#764ba2)}
+.dim-bar .bar-fill.lv4{background:#667eea}
+.dim-bar .bar-fill.lv3{background:#8b8be0}
+.dim-bar .bar-fill.lv2{background:#b0b0d6}
+.dim-bar .bar-fill.lv1{background:#d0d0e0}
+.dim-bar .score{width:32px;font-size:13px;font-weight:700;color:#667eea;text-align:center;flex-shrink:0}
+.evidence{color:#666;font-size:12px;margin-bottom:8px;margin-left:110px;padding-left:10px;border-left:2px solid #eef0ff}
+.role-desc{background:#f8f9fc;border-radius:12px;padding:16px 20px;margin-top:16px;font-size:14px;line-height:1.7;color:#333}
+.role-desc strong{color:#667eea}
+.error-msg{color:#ef4444;font-size:13px;margin-top:8px;display:none}
+.error-msg.show{display:block}
+@media(max-width:500px){.container{padding:24px 18px}.btn{padding:12px 16px;font-size:14px}}
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <div class="header">
+    <h1>合能评估 · SynAbility</h1>
+    <p>人机协作能力评估 · Phase 0.5</p>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <!-- Step 0: 欢迎 -->
+  <div class="step welcome active" id="step0">
+    <h2>👋 欢迎</h2>
+    <p>本次评估约需 <strong>10-15 分钟</strong>，包含 6 个开放式问题。<br>请按真实情况回答，没有"标准答案"。<br>你的回答仅用于研究目的，不会对外公开。</p>
+    <label for="subjectName">你的称呼</label>
+    <input type="text" id="subjectName" placeholder="如：张三" maxlength="20">
+    <div class="btn-row">
+      <span></span>
+      <button class="btn btn-primary" onclick="startAssessment()">开始评估 →</button>
+    </div>
+  </div>
+
+  <!-- Step 1-6: 问题 -->
+  <div id="questionContainer"></div>
+
+  <!-- Step 7: 加载中 -->
+  <div class="step" id="step7">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>🔍 正在评估你的合能画像...</p>
+    </div>
+  </div>
+
+  <!-- Step 8: 结果 -->
+  <div class="step" id="step8">
+    <div class="complete">
+      <div class="icon">🎯</div>
+      <h2>你的合能画像</h2>
+      <div id="profileCard" class="profile-card"></div>
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-outline" onclick="downloadResult()">📥 下载报告</button>
+        <button class="btn btn-success" onclick="resetAll()">✅ 再测一人</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS=[
+  {round:1,dim:"ai_operation",dimLabel:"AI操作力",text:"假设你是一个团队负责人，需要快速收集某行业的竞品信息，并整理成一份简报。请告诉我：你会如何利用AI来完成这个任务？具体会怎么跟AI说？"},
+  {round:2,dim:"critical_integration",dimLabel:"批判整合力",text:"假设AI已经帮你整理好了一份竞品简报，但你发现其中几个数据来源似乎不可靠。你会怎么处理这种情况？请描述你的具体步骤。"},
+  {round:3,dim:"ethical_judgment",dimLabel:"伦理判断力",text:"继续上面的场景，如果AI建议你在简报中忽略那些不可靠的数据，因为'这样看起来更好'。你怎么看这个问题？有没有什么伦理或风险方面的考虑？"},
+  {round:4,dim:"workflow_orchestration",dimLabel:"流程编排力",text:"现在需要你设计一个包含AI协作的完整工作流程，用来每周自动生成一份市场动态报告。请描述这个流程的各个环节，以及人和AI分别在哪些环节做什么。"},
+  {round:5,dim:"ai_collaborative_creativity",dimLabel:"AI协同创造力",text:"以上这些工作如果全部由AI自动化完成了，你觉得人在这个过程中还能发挥什么独特的价值？同时，如果你需要把这份报告的价值讲给团队听，你会怎么组织你的叙述？"},
+  {round:6,dim:"ai_adaptability",dimLabel:"AI适应力",text:"回想一下你在过去半年使用AI工具的经历——有没有遇到过某个AI工具更新后你需要调整使用方式的情况？你是怎么应对的？你平时如何保持对AI新进展的了解？"}
+];
+
+let currentStep=0,answers=[],currentSubject='',reportData=null;
+
+function initQuestions(){
+  const c=document.getElementById('questionContainer');c.innerHTML='';
+  QUESTIONS.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.className=`step question-area${i===0?' active':''}`;d.id=`step${i+1}`;
+    d.innerHTML=`<div class="q-badge">${q.dimLabel} · 第${q.round}题 / 共6题</div><div class="q-text">${q.text}</div><textarea id="answer${i}" placeholder="请在这里写下你的回答..."></textarea><div class="error-msg" id="error${i}">请填写回答后再继续</div><div class="btn-row"><button class="btn btn-secondary" onclick="prevStep()" id="prevBtn${i}">← 上一题</button><button class="btn btn-primary" onclick="nextStep()" id="nextBtn${i}" disabled>${i===QUESTIONS.length-1?'完成':'下一题 →'}</button></div>`;
+    c.appendChild(d);
+    // 实时检测输入
+    document.getElementById(`answer${i}`).addEventListener('input',()=>{
+      const v=document.getElementById(`answer${i}`).value.trim();
+      document.getElementById(`nextBtn${i}`).disabled=v.length<5;
+      document.getElementById(`error${i}`).classList.remove('show');
+    });
+  });
+  document.getElementById('prevBtn0').style.visibility='hidden';
+}
+
+function startAssessment(){
+  const n=document.getElementById('subjectName').value.trim();
+  if(!n){document.querySelector('.welcome input').focus();document.querySelector('.welcome input').style.borderColor='#ef4444';return}
+  currentSubject=n;currentStep=1;showStep(1);
+}
+
+function showStep(s){
+  document.querySelectorAll('.step').forEach(e=>e.classList.remove('active'));
+  const el=document.getElementById(`step${s}`);
+  if(el)el.classList.add('active');
+  const total=9,pct=Math.round(s<8?s/7*100:100);
+  document.getElementById('progressFill').style.width=pct+'%';
+}
+
+function nextStep(){
+  const qi=currentStep-1,val=document.getElementById(`answer${qi}`).value.trim();
+  if(val.length<5){document.getElementById(`error${qi}`).classList.add('show');document.getElementById(`answer${qi}`).focus();return}
+  answers[qi]=val;
+  if(currentStep===QUESTIONS.length){onComplete()}
+  else{currentStep++;showStep(currentStep)}
+}
+
+function prevStep(){
+  if(currentStep>1){
+    answers[currentStep-1]=document.getElementById(`answer${currentStep-1}`).value.trim();
+    currentStep--;showStep(currentStep);
+    const pi=currentStep-1;
+    if(answers[pi]){document.getElementById(`answer${pi}`).value=answers[pi]}
+  }
+}
+
+async function onComplete(){
+  const li=QUESTIONS.length-1;answers[li]=document.getElementById(`answer${li}`).value.trim();
+  currentStep=7;showStep(7);
+  const data={
+    subject:currentSubject,
+    timestamp:new Date().toISOString(),
+    responses:QUESTIONS.map((q,i)=>({round:q.round,dimension:q.dim,question:q.text,answer:answers[i]||''}))
+  };
+  window._rawData=data;
+  try{const s=JSON.parse(localStorage.getItem('syn_phase05')||'[]');s.push(data);localStorage.setItem('syn_phase05',JSON.stringify(s))}catch(e){}
+  try{
+    const res=await fetch('/api/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!res.ok){const err=await res.json();throw new Error(err.error||'评分请求失败')}
+    reportData=await res.json();
+    showProfile(reportData);
+  }catch(e){
+    document.getElementById('step7').innerHTML=`<div class="complete"><div class="icon">⚠️</div><h2>评分暂不可用</h2><p style="color:#ef4444;font-size:14px">${e.message}</p><p style="margin-top:12px;font-size:13px;color:#888">请点击"下载数据"保存回答，稍后再试。</p><div class="btn-row"><button class="btn btn-outline" onclick="downloadData()">📥 下载数据</button><button class="btn btn-success" onclick="resetAll()">✅ 重新开始</button></div></div>`;
+  }
+}
+
+function showProfile(r){
+  currentStep=8;showStep(8);
+  const card=document.getElementById('profileCard');
+  const dims=['ai_operation','critical_integration','ethical_judgment','workflow_orchestration','ai_collaborative_creativity','ai_adaptability'];
+  const labels={'ai_operation':'AI操作力','critical_integration':'批判整合力','ethical_judgment':'伦理判断力','workflow_orchestration':'流程编排力','ai_collaborative_creativity':'AI协同创造力','ai_adaptability':'AI适应力'};
+  const bars=dims.map(d=>{
+    const s=r.scores[d]||{},score=s.score||0,evidence=s.evidence||'';
+    const lvl=score<=20?'lv1':score<=40?'lv2':score<=60?'lv3':score<=80?'lv4':'lv5';
+    return `<div><div class="dim-bar"><div class="label">${labels[d]}</div><div class="bar-wrap"><div class="bar-fill ${lvl}" style="width:${score}%">${score}</div></div><div class="score">${score}</div></div>${evidence?`<div class="evidence">${evidence}</div>`:''}</div>`;
+  }).join('');
+  card.innerHTML=`
+    <div class="profile-header">
+      <div class="name">${r.subject}</div>
+      <div class="role">${r.role}</div>
+      <div class="total">综合合能指数：${r.total_score} · 最强维度：${r.top_dimension}（${r.top_dimension_score}分）</div>
+    </div>
+    ${bars}
+    <div class="role-desc"><strong>🎯 ${r.role}</strong><br>${r.role_description}</div>
+  `;
+  window._reportData=r;
+}
+
+function downloadData(){
+  if(!window._rawData)return;
+  const b=new Blob([JSON.stringify(window._rawData,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=`回答_${currentSubject}_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u);
+}
+
+function downloadResult(){
+  if(!reportData)return;
+  const b=new Blob([JSON.stringify(reportData,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=`合能画像_${reportData.subject}_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(u);
+}
+
+function resetAll(){
+  if(!confirm('重新开始？当前数据已保存，不会丢失。'))return;
+  currentStep=0;answers=[];currentSubject='';reportData=null;window._rawData=null;window._reportData=null;
+  document.getElementById('subjectName').value='';
+  document.querySelector('.welcome input').style.borderColor='';
+  initQuestions();showStep(0);
+  // 恢复第7步的加载状态
+  document.getElementById('step7').innerHTML=`
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>🔍 正在评估你的合能画像...</p>
+    </div>
+  `;
+}
+initQuestions();showStep(0);
+</script>
+</body>
+</html>

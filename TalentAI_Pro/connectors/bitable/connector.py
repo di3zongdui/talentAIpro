@@ -87,7 +87,7 @@ class BitableConnector:
     jobs = connector.records_to_jobs(records)
     ```
 
-    Bitable数据表结构示例 (CGL招聘跟踪表):
+    Bitable数据表结构示例 (招聘跟踪表):
     | 候选人 | 职位 | 状态 | 面试时间 | 推荐度 | 备注 |
     |--------|------|------|----------|--------|------|
     | 张三   | AI产品经理 | 面试中 | 2026-04-25 | 85 | 二次面试 |
@@ -158,7 +158,7 @@ class BitableConnector:
         """生成Mock Bitable App"""
         return BitableApp(
             app_token=self.app_token or "mock_app_token",
-            name="CGL招聘跟踪表",
+            name="招聘跟踪表",
             tables=[
                 BitableTable(
                     table_id="tbl_candidates",

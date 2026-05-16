@@ -13,6 +13,107 @@
         .header h1 { font-size: 24px; margin-bottom: 8px; }
         .header p { color: #94a3b8; font-size: 14px; }
         
+        /* Agent Network Diagram */
+        .agent-network { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 30px 40px 20px;
+            border-bottom: 1px solid #334155;
+        }
+        .agent-network h3 { 
+            font-size: 14px; 
+            color: #94a3b8; 
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .agent-network h3::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+            border-radius: 2px;
+        }
+        .agent-graph {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: wrap;
+            position: relative;
+            padding: 20px 0;
+        }
+        .agent-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 16px;
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 100px;
+            position: relative;
+            z-index: 2;
+        }
+        .agent-node:hover {
+            border-color: #3b82f6;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+            background: rgba(59,130,246,0.1);
+        }
+        .agent-node .node-icon { font-size: 28px; margin-bottom: 6px; }
+        .agent-node .node-name { font-size: 12px; font-weight: 600; color: #e2e8f0; }
+        .agent-node .node-title { font-size: 10px; color: #64748b; margin-top: 2px; }
+        
+        .agent-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            font-size: 20px;
+            padding: 0 4px;
+            position: relative;
+            z-index: 1;
+        }
+        .agent-connector::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -8px;
+            right: -8px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #475569, #334155, transparent);
+            z-index: -1;
+        }
+        .agent-connector.forward { color: #3b82f6; }
+        .agent-connector.forward::after { background: linear-gradient(90deg, transparent, #3b82f6, #10b981, transparent); }
+        
+        .agent-phase {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin: 0 16px;
+        }
+        .phase-label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 12px;
+            background: #0f172a;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+        .phase-agents {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+        
         /* Mode Tabs */
         .mode-tabs { display: flex; gap: 12px; padding: 20px 40px; background: #1e293b; }
         .mode-tab { padding: 12px 24px; border-radius: 8px; cursor: pointer; border: 2px solid #334155; transition: all 0.3s; }
@@ -166,6 +267,84 @@
         <p>招聘与求职全流程自动化 · 正向执行与反向回滚</p>
     </div>
     
+    <!-- Agent Network Diagram -->
+    <div class="agent-network">
+        <h3>🤖 Agent 协作关系图谱（点击节点进入操作）</h3>
+        <div class="agent-graph">
+            <!-- 招聘流程 -->
+            <div class="agent-phase">
+                <span class="phase-label">📋 职位发布</span>
+                <div class="phase-agents">
+                    <div class="agent-node" onclick="openAgent('job-creator')">
+                        <span class="node-icon">📋</span>
+                        <span class="node-name">Job Creator</span>
+                        <span class="node-title">创建职位</span>
+                    </div>
+                    <span class="agent-connector forward">→</span>
+                    <div class="agent-node" onclick="openAgent('candidate-searcher')">
+                        <span class="node-icon">🔍</span>
+                        <span class="node-name">Candidate Searcher</span>
+                        <span class="node-title">搜索候选人</span>
+                    </div>
+                </div>
+            </div>
+            
+            <span class="agent-connector forward">⟷</span>
+            
+            <!-- 匹配流程 -->
+            <div class="agent-phase">
+                <span class="phase-label">🎯 智能匹配</span>
+                <div class="phase-agents">
+                    <div class="agent-node" onclick="openAgent('matcher')">
+                        <span class="node-icon">🎯</span>
+                        <span class="node-name">Matcher</span>
+                        <span class="node-title">AI人才匹配</span>
+                    </div>
+                    <span class="agent-connector forward">→</span>
+                    <div class="agent-node" onclick="openAgent('interviewer')">
+                        <span class="node-icon">📅</span>
+                        <span class="node-name">Interview Scheduler</span>
+                        <span class="node-title">安排面试</span>
+                    </div>
+                </div>
+            </div>
+            
+            <span class="agent-connector forward">⟷</span>
+            
+            <!-- 评估谈判 -->
+            <div class="agent-phase">
+                <span class="phase-label">📊 评估决策</span>
+                <div class="phase-agents">
+                    <div class="agent-node" onclick="openAgent('evaluator')">
+                        <span class="node-icon">📊</span>
+                        <span class="node-name">Evaluator</span>
+                        <span class="node-title">面试评估</span>
+                    </div>
+                    <span class="agent-connector forward">→</span>
+                    <div class="agent-node" onclick="openAgent('negotiator')">
+                        <span class="node-icon">🤝</span>
+                        <span class="node-name">Negotiator</span>
+                        <span class="node-title">薪资谈判</span>
+                    </div>
+                </div>
+            </div>
+            
+            <span class="agent-connector forward">→</span>
+            
+            <!-- 入职 -->
+            <div class="agent-phase">
+                <span class="phase-label">🎉 入职</span>
+                <div class="phase-agents">
+                    <div class="agent-node" onclick="openAgent('onboarder')">
+                        <span class="node-icon">🎉</span>
+                        <span class="node-name">Onboarder</span>
+                        <span class="node-title">入职管理</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Mode Tabs -->
     <div class="mode-tabs">
         <div class="mode-tab recruiter active" onclick="switchMode('recruiter')">
@@ -182,6 +361,16 @@
             <div class="icon">⚙️</div>
             <div class="title">系统设置</div>
             <div class="desc">LLM配置 · API密钥</div>
+        </div>
+        <div class="mode-tab" onclick="switchMode('negotiation')">
+            <div class="icon">🤝</div>
+            <div class="title">薪资谈判</div>
+            <div class="desc">多Agent · 多轮记忆</div>
+        </div>
+        <div class="mode-tab" onclick="switchMode('interview')">
+            <div class="icon">📊</div>
+            <div class="title">智能面试</div>
+            <div class="desc">AI评估 · 个性化报告</div>
         </div>
     </div>
     
@@ -440,6 +629,146 @@
                 </div>
             </div>
         </div>
+
+        <!-- Negotiation Panel -->
+        <div id="negotiationPanel" class="workflow" style="display:none;">
+            <h2 style="margin-bottom: 20px; font-size: 18px;">🤝 薪资谈判 - 多Agent博弈</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">
+                <!-- 多Agent谈判 -->
+                <div style="background: #1e293b; padding: 20px; border-radius: 12px;">
+                    <h3 style="margin-bottom: 16px;">🎭 多Agent谈判策略</h3>
+                    <div class="form-group">
+                        <label>候选人姓名</label>
+                        <input type="text" id="negCandidateName" placeholder="张三" value="张三">
+                    </div>
+                    <div class="form-group">
+                        <label>候选人期望薪资</label>
+                        <input type="text" id="negCandidateSalary" placeholder="30K" value="30K">
+                    </div>
+                    <div class="form-group">
+                        <label>公司Offer</label>
+                        <input type="text" id="negCompanyOffer" placeholder="25K*14薪" value="25K*14薪">
+                    </div>
+                    <div class="form-group">
+                        <label>公司最高预算</label>
+                        <input type="text" id="negBudgetMax" placeholder="35K" value="35K">
+                    </div>
+                    <div class="form-group">
+                        <label>候选人优势（逗号分隔）</label>
+                        <input type="text" id="negAdvantages" placeholder="10年经验,大厂背景" value="10年经验,大厂背景">
+                    </div>
+                    <div class="form-group">
+                        <label>语气策略</label>
+                        <select id="negTone">
+                            <option value="moderate" selected>平衡型</option>
+                            <option value="aggressive">强硬型</option>
+                            <option value="conciliatory">温和型</option>
+                        </select>
+                    </div>
+                    <button class="demo-btn primary" style="width:100%" onclick="runMultiAgentNegotiation()">🎭 启动多Agent谈判</button>
+                    <div id="negMultiResult" class="response-area" style="margin-top:12px;"><pre style="color:#64748b;">点击按钮启动谈判...</pre></div>
+                </div>
+
+                <!-- 多轮谈判对话 -->
+                <div style="background: #1e293b; padding: 20px; border-radius: 12px;">
+                    <h3 style="margin-bottom: 16px;">💬 多轮谈判对话</h3>
+                    <div class="form-group">
+                        <label>会话ID</label>
+                        <input type="text" id="negSessionId" placeholder="neg-xxxxx 或留空新建">
+                    </div>
+                    <div class="form-group">
+                        <label>公司Offer</label>
+                        <input type="text" id="negOfferInput" placeholder="25K*14薪" value="25K*14薪">
+                    </div>
+                    <div class="form-group">
+                        <label>候选人背景</label>
+                        <input type="text" id="negCandidateInfo" placeholder="张三，5年经验" value="张三，5年经验，期望30K">
+                    </div>
+                    <div class="form-group">
+                        <label>语气策略</label>
+                        <select id="negDialogueTone">
+                            <option value="moderate" selected>平衡型</option>
+                            <option value="aggressive">强硬型</option>
+                            <option value="conciliatory">温和型</option>
+                        </select>
+                    </div>
+                    <button class="demo-btn secondary" style="width:100%" onclick="startNegotiation()">📩 发起谈判</button>
+                    <div class="form-group" style="margin-top:12px;">
+                        <label>候选人回复</label>
+                        <textarea id="negCandidateReply" rows="2" placeholder="候选人最新回复..."></textarea>
+                    </div>
+                    <button class="demo-btn primary" style="width:100%" onclick="continueNegotiation()">🔄 继续谈判</button>
+                    <div id="negDialogueResult" class="response-area" style="margin-top:12px;"><pre style="color:#64748b;">等待对话...</pre></div>
+                </div>
+
+                <!-- 谈判会话管理 -->
+                <div style="background: #1e293b; padding: 20px; border-radius: 12px; grid-column: span 2;">
+                    <h3 style="margin-bottom: 16px;">📜 谈判历史记录</h3>
+                    <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                        <input type="text" id="negSearchKeyword" placeholder="搜索关键词..." style="flex:1;padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;">
+                        <button class="demo-btn secondary" onclick="searchNegotiations()">🔍 搜索</button>
+                        <button class="demo-btn secondary" onclick="loadNegotiationSessions()">📋 刷新列表</button>
+                    </div>
+                    <div id="negSessionsList" style="max-height: 200px; overflow-y: auto;">
+                        <pre style="color:#64748b;">点击「刷新列表」查看历史会话...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interview Evaluation Panel -->
+        <div id="interviewPanel" class="workflow" style="display:none;">
+            <h2 style="margin-bottom: 20px; font-size: 18px;">📊 智能面试评估</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">
+                <!-- 智能评估表单 -->
+                <div style="background: #1e293b; padding: 20px; border-radius: 12px;">
+                    <h3 style="margin-bottom: 16px;">🎯 提交评估请求</h3>
+                    <div class="form-group">
+                        <label>候选人姓名</label>
+                        <input type="text" id="ivCandidateName" placeholder="李四" value="李四">
+                    </div>
+                    <div class="form-group">
+                        <label>候选人简历</label>
+                        <textarea id="ivResume" rows="3" placeholder="5年Java开发经验，曾在BAT工作...">5年Java开发经验，曾在BAT工作，熟悉Spring Boot、MySQL、Redis</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>职位名称</label>
+                        <input type="text" id="ivJobTitle" placeholder="高级后端工程师" value="高级后端工程师">
+                    </div>
+                    <div class="form-group">
+                        <label>职位要求（逗号分隔）</label>
+                        <input type="text" id="ivRequirements" placeholder="Java, Spring, 微服务" value="Java, Spring, 微服务, MySQL">
+                    </div>
+                    <div class="form-group">
+                        <label>问题1</label>
+                        <input type="text" id="ivQ1" value="请介绍你最擅长的技术栈">
+                    </div>
+                    <div class="form-group">
+                        <label>回答1</label>
+                        <textarea id="ivA1" rows="2" placeholder="候选人回答...">我擅长Java生态，包括Spring Boot、MySQL...</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>问题2</label>
+                        <input type="text" id="ivQ2" value="如何设计高可用系统">
+                    </div>
+                    <div class="form-group">
+                        <label>回答2</label>
+                        <textarea id="ivA2" rows="2" placeholder="候选人回答...">高可用需要考虑...</textarea>
+                    </div>
+                    <button class="demo-btn primary" style="width:100%" onclick="runIntelligentEvaluation()">📊 智能评估</button>
+                    <div id="ivResult" class="response-area" style="margin-top:12px;"><pre style="color:#64748b;">等待评估结果...</pre></div>
+                </div>
+
+                <!-- 评估历史 -->
+                <div style="background: #1e293b; padding: 20px; border-radius: 12px;">
+                    <h3 style="margin-bottom: 16px;">📋 评估历史</h3>
+                    <button class="demo-btn secondary" style="width:100%;margin-bottom:12px" onclick="loadEvaluationHistory()">🔄 刷新历史</button>
+                    <div id="ivHistory" style="max-height: 400px; overflow-y: auto;">
+                        <pre style="color:#64748b;">点击按钮查看评估历史...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- History Log -->
         <div class="history-log">
@@ -488,6 +817,7 @@
             <div class="modal-body" id="modalBody">
                 <!-- Dynamic content -->
             </div>
+            <div class="modal-actions"></div>
         </div>
     </div>
 
@@ -622,6 +952,14 @@
             } else if (mode === 'candidate') {
                 document.getElementById('candidateWorkflow').style.display = 'block';
                 document.getElementById('currentStageLabel').textContent = '1. 创建简历';
+            } else if (mode === 'negotiation') {
+                document.getElementById('negotiationPanel').style.display = 'block';
+                document.getElementById('currentStageLabel').textContent = '🤝 薪资谈判';
+                loadNegotiationSessions();
+            } else if (mode === 'interview') {
+                document.getElementById('interviewPanel').style.display = 'block';
+                document.getElementById('currentStageLabel').textContent = '📊 智能面试';
+                loadEvaluationHistory();
             } else {
                 document.getElementById('settingsPanel').style.display = 'block';
                 document.getElementById('currentStageLabel').textContent = '-';
@@ -949,18 +1287,66 @@
             }
         }
         
+        // SiliconFlow 默认配置
+        const DEFAULT_SILICONFLOW_CONFIG = {
+            api_key: 'sk-unpavlxvzzormhmxlpzlajqadfrgvybfzevprbjqphbzigtr',
+            model: 'Qwen/Qwen3-Omni-30B-A3B-Instruct'
+        };
+        
+        // 页面加载时获取已有配置
+        async function loadLLMConfig() {
+            // 首先从 localStorage 读取
+            const savedApiKey = localStorage.getItem('llm_api_key');
+            const savedModel = localStorage.getItem('llm_model');
+            
+            if (savedApiKey) {
+                document.getElementById('apiKey').value = savedApiKey;
+            }
+            if (savedModel) {
+                document.getElementById('modelName').value = savedModel;
+            } else {
+                // 使用默认值
+                document.getElementById('apiKey').value = DEFAULT_SILICONFLOW_CONFIG.api_key;
+                document.getElementById('modelName').value = DEFAULT_SILICONFLOW_CONFIG.model;
+                localStorage.setItem('llm_api_key', DEFAULT_SILICONFLOW_CONFIG.api_key);
+                localStorage.setItem('llm_model', DEFAULT_SILICONFLOW_CONFIG.model);
+            }
+            
+            // 尝试从后端获取模型列表
+            try {
+                const response = await fetch('http://localhost:8089/api/llm/providers');
+                const result = await response.json();
+                if (result.status === 'success' && result.data) {
+                    const siliconflow = result.data.find(p => p.id === 'siliconflow');
+                    if (siliconflow && siliconflow.models?.length > 0) {
+                        const enabledModel = siliconflow.models.find(m => m.enabled);
+                        if (enabledModel && !savedModel) {
+                            document.getElementById('modelName').value = enabledModel.model_key;
+                            localStorage.setItem('llm_model', enabledModel.model_key);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('获取LLM模型列表失败:', e);
+            }
+        }
+        
         async function testAllAPIs() {
             const API_BASE = 'http://localhost:8089';
             const statusPanel = document.querySelector('#settingsPanel .status-list');
             
             if (!statusPanel) return;
             
+            // 获取页面配置的 API Key 和 Model
+            const apiKey = document.getElementById('apiKey').value || localStorage.getItem('llm_api_key') || DEFAULT_SILICONFLOW_CONFIG.api_key;
+            const modelName = document.getElementById('modelName').value || localStorage.getItem('llm_model') || DEFAULT_SILICONFLOW_CONFIG.model;
+            
             statusPanel.innerHTML = '<div class="status-item"><span class="status-dot running"></span> 正在测试所有API...</div>';
             
             const endpoints = [
                 { name: '服务器健康检查', url: '/health', method: 'GET' },
-                { name: 'LLM配置', url: '/api/llm/configure', method: 'POST', body: { provider: 'siliconflow', api_key: 'sk-test', base_url: 'https://api.siliconflow.cn/v1' } },
-                { name: 'LLM对话', url: '/api/llm/chat', method: 'POST', body: { message: '你好', provider: 'siliconflow', model: 'deepseek-ai/DeepSeek-V3' } },
+                { name: 'LLM配置', url: '/api/llm/configure', method: 'POST', body: { provider: 'siliconflow', api_key: apiKey, base_url: 'https://api.siliconflow.cn/v1' } },
+                { name: 'LLM对话', url: '/api/llm/chat', method: 'POST', body: { prompt: '你好，请回复"测试成功"', model: modelName } },
                 { name: '工作流状态', url: '/api/workflow/stages', method: 'GET' },
                 { name: '招聘-创建职位', url: '/api/workflow/recruiter/create-job', method: 'POST', body: { title: '前端工程师', company: '科技公司', requirements: ['Vue3', 'React'] } },
                 { name: '求职-创建简历', url: '/api/workflow/candidate/create-profile', method: 'POST', body: { name: '张三', email: 'test@example.com', skills: ['Vue3', 'React'] } },
@@ -1032,6 +1418,340 @@
             
             console.log('Workflow initialized, currentStage:', currentStage);
         })();
+        
+        // ========== 薪资谈判功能 ==========
+
+        async function runMultiAgentNegotiation() {
+            const resultDiv = document.getElementById('negMultiResult');
+            resultDiv.innerHTML = '<pre style="color:#fbbf24;">🎭 正在启动多Agent谈判...</pre>';
+            
+            const body = {
+                candidate_name: document.getElementById('negCandidateName').value,
+                candidate_expected_salary: document.getElementById('negCandidateSalary').value,
+                company_offer: document.getElementById('negCompanyOffer').value,
+                company_budget_max: document.getElementById('negBudgetMax').value,
+                key_advantages: document.getElementById('negAdvantages').value.split(',').map(s => s.trim()),
+                tone: document.getElementById('negTone').value
+            };
+            
+            try {
+                const res = await fetch('http://localhost:8089/api/workflow/multi-agent/negotiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    let html = '<pre style="color:#10b981;">✅ 谈判策略生成成功\n\n';
+                    html += `📋 Session ID: ${data.session_id}\n\n`;
+                    html += `🎯 推荐Offer: ${data.recommended_offer || data.recruiter_strategy?.recommended_counter}\n`;
+                    html += `📊 成功率: ${((data.win_probability || 0.8) * 100).toFixed(0)}%\n\n`;
+                    html += `🤖 Recruiter策略: ${data.recruiter_strategy?.strategy || data.recruiter_strategy?.recommended_counter || "-"}\n`;
+                    if (data.recruiter_strategy?.让步空间) {
+                        html += `   让步空间: ${data.recruiter_strategy.让步空间.join(', ')}\n`;
+                    }
+                    html += `\n🤖 Candidate底线: ${data.candidate_strategy?.bottom_line || "-"}\n`;
+                    if (data.candidate_strategy?.flexible_points) {
+                        html += `   灵活点: ${data.candidate_strategy.flexible_points.join(', ')}\n`;
+                    }
+                    html += '</pre>';
+                    resultDiv.innerHTML = html;
+                    
+                    // 保存session_id到会话输入框
+                    document.getElementById('negSessionId').value = data.session_id;
+                } else {
+                    resultDiv.innerHTML = `<pre style="color:#ef4444;">❌ 失败: ${data.detail || data.message || '未知错误'}</pre>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<pre style="color:#ef4444;">❌ 网络错误: ${e.message}</pre>`;
+            }
+        }
+
+        async function startNegotiation() {
+            const resultDiv = document.getElementById('negDialogueResult');
+            resultDiv.innerHTML = '<pre style="color:#fbbf24;">📩 正在发起谈判...</pre>';
+            
+            const body = {
+                situation: "候选人面试通过，需要进行薪资谈判",
+                tone: document.getElementById('negDialogueTone').value,
+                candidate_info: document.getElementById('negCandidateInfo').value,
+                company_offer: document.getElementById('negOfferInput').value
+            };
+            
+            try {
+                const res = await fetch('http://localhost:8089/api/llm/negotiation-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('negSessionId').value = data.data.session_id;
+                    resultDiv.innerHTML = `<pre style="color:#10b981;">✅ 谈判开始\n\n📋 Session: ${data.data.session_id}\n🔄 Round: ${data.data.round}\n\n💬 ${data.data.message}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<pre style="color:#ef4444;">❌ 失败: ${data.detail || data.message}</pre>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<pre style="color:#ef4444;">❌ 网络错误: ${e.message}</pre>`;
+            }
+        }
+
+        async function continueNegotiation() {
+            const resultDiv = document.getElementById('negDialogueResult');
+            const sessionId = document.getElementById('negSessionId').value;
+            
+            if (!sessionId) {
+                resultDiv.innerHTML = '<pre style="color:#ef4444;">❌ 请先发起谈判获取Session ID</pre>';
+                return;
+            }
+            
+            const reply = document.getElementById('negCandidateReply').value;
+            if (!reply) {
+                resultDiv.innerHTML = '<pre style="color:#ef4444;">❌ 请输入候选人回复</pre>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<pre style="color:#fbbf24;">🔄 继续谈判中...</pre>';
+            
+            const body = {
+                situation: "薪资谈判进行中，候选人回复需要进一步谈判",
+                tone: document.getElementById('negDialogueTone').value,
+                session_id: sessionId,
+                candidate_reply: reply
+            };
+            
+            try {
+                const res = await fetch('http://localhost:8089/api/llm/negotiation-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    resultDiv.innerHTML = `<pre style="color:#10b981;">✅ Round ${data.data.round}\n\n💬 ${data.data.message}</pre>`;
+                    document.getElementById('negCandidateReply').value = '';
+                } else {
+                    resultDiv.innerHTML = `<pre style="color:#ef4444;">❌ 失败: ${data.detail || data.message}</pre>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<pre style="color:#ef4444;">❌ 网络错误: ${e.message}</pre>`;
+            }
+        }
+
+        async function loadNegotiationSessions() {
+            const listDiv = document.getElementById('negSessionsList');
+            listDiv.innerHTML = '<pre style="color:#fbbf24;">📋 加载中...</pre>';
+            
+            try {
+                const res = await fetch('http://localhost:8089/api/llm/negotiation-sessions?limit=20');
+                const data = await res.json();
+                
+                if (data.status === 'success' && data.data.sessions) {
+                    if (data.data.sessions.length === 0) {
+                        listDiv.innerHTML = '<pre style="color:#64748b;">暂无历史会话</pre>';
+                    } else {
+                        let html = '<table style="width:100%;font-size:12px;">';
+                        html += '<tr style="text-align:left;"><th>Session ID</th><th>候选人</th><th>轮次</th><th>操作</th></tr>';
+                        data.data.sessions.forEach(s => {
+                            html += `<tr>
+                                <td style="padding:4px;">${s.session_id?.substring(0, 12)}...</td>
+                                <td>${s.candidate_info?.substring(0, 15) || '-'}...</td>
+                                <td>${s.rounds || 0}</td>
+                                <td><button class="demo-btn secondary" style="padding:4px 8px;font-size:11px" onclick="viewNegotiation('${s.session_id}')">查看</button></td>
+                            </tr>`;
+                        });
+                        html += '</table>';
+                        listDiv.innerHTML = html;
+                    }
+                } else {
+                    listDiv.innerHTML = '<pre style="color:#ef4444;">加载失败</pre>';
+                }
+            } catch (e) {
+                listDiv.innerHTML = `<pre style="color:#ef4444;">网络错误: ${e.message}</pre>`;
+            }
+        }
+
+        async function searchNegotiations() {
+            const keyword = document.getElementById('negSearchKeyword').value;
+            const listDiv = document.getElementById('negSessionsList');
+            
+            if (!keyword) {
+                loadNegotiationSessions();
+                return;
+            }
+            
+            listDiv.innerHTML = '<pre style="color:#fbbf24;">🔍 搜索中...</pre>';
+            
+            try {
+                const res = await fetch(`http://localhost:8089/api/llm/negotiation-search?keyword=${encodeURIComponent(keyword)}`);
+                const data = await res.json();
+                
+                if (data.status === 'success' && data.data.sessions) {
+                    let html = '<pre style="color:#10b981;">🔍 搜索结果:</pre>';
+                    data.data.sessions.forEach(s => {
+                        html += `<div style="padding:8px;border-bottom:1px solid #334155;">
+                            <div>📋 ${s.session_id}</div>
+                            <div style="color:#94a3b8;font-size:11px;">${s.candidate_info || '-'} | 轮次: ${s.rounds || 0}</div>
+                            <button class="demo-btn secondary" style="padding:4px 8px;font-size:11px;margin-top:4px" onclick="viewNegotiation('${s.session_id}')">查看详情</button>
+                        </div>`;
+                    });
+                    listDiv.innerHTML = html || '<pre style="color:#64748b;">无结果</pre>';
+                }
+            } catch (e) {
+                listDiv.innerHTML = `<pre style="color:#ef4444;">错误: ${e.message}</pre>`;
+            }
+        }
+
+        async function viewNegotiation(sessionId) {
+            try {
+                const res = await fetch(`http://localhost:8089/api/llm/negotiation-session/${sessionId}`);
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    const d = data.data;
+                    let html = `<div style="background:#0f172a;padding:16px;border-radius:8px;">
+                        <h4 style="color:#10b981;margin-bottom:12px;">📋 会话详情: ${d.session_id}</h4>
+                        <div style="color:#94a3b8;font-size:12px;margin-bottom:12px;">
+                            <div>👤 候选人: ${d.candidate_info}</div>
+                            <div>💼 Offer: ${d.company_offer}</div>
+                            <div>🔄 轮次: ${d.rounds}</div>
+                        </div>
+                        <div style="max-height:200px;overflow-y:auto;">`;
+                    d.messages?.forEach(m => {
+                        const role = m.role === 'hr' ? '🏢 HR' : '👤 候选人';
+                        const time = new Date(m.timestamp).toLocaleTimeString('zh-CN');
+                        html += `<div style="padding:8px;margin:4px 0;background:#1e293b;border-radius:4px;">
+                            <span style="color:#3b82f6;">${role}</span> <span style="color:#64748b;font-size:10px;">${time}</span>
+                            <div style="margin-top:4px;">${m.content?.substring(0, 100)}...</div>
+                        </div>`;
+                    });
+                    html += '</div></div>';
+                    
+                    // 在modal中显示
+                    document.getElementById('modalTitle').innerHTML = '🤝 谈判详情';
+                    document.getElementById('modalBody').innerHTML = html + '<button class="demo-btn primary" style="margin-top:12px" onclick="closeModal()">关闭</button>';
+                    document.querySelector('.modal-actions').innerHTML = '';
+                    document.getElementById('agentModal').classList.add('active');
+                }
+            } catch (e) {
+                alert('加载失败: ' + e.message);
+            }
+        }
+
+        // ========== 智能面试评估功能 ==========
+
+        async function runIntelligentEvaluation() {
+            const resultDiv = document.getElementById('ivResult');
+            resultDiv.innerHTML = '<pre style="color:#fbbf24;">📊 正在评估...</pre>';
+            
+            const questions = [
+                document.getElementById('ivQ1').value,
+                document.getElementById('ivQ2').value
+            ].filter(q => q);
+            
+            const answers = [
+                document.getElementById('ivA1').value,
+                document.getElementById('ivA2').value
+            ].filter(a => a);
+            
+            const body = {
+                candidate_name: document.getElementById('ivCandidateName').value,
+                candidate_resume: document.getElementById('ivResume').value,
+                job_title: document.getElementById('ivJobTitle').value,
+                job_requirements: document.getElementById('ivRequirements').value.split(',').map(s => s.trim()),
+                questions: questions,
+                answers: answers
+            };
+            
+            try {
+                const res = await fetch('http://localhost:8089/api/interview/intelligent-evaluation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    const score = data.overall_score || 0;
+                    const level = data.overall_level || '-';
+                    const verdict = data.final_verdict || '-';
+                    
+                    let scoreColor = '#ef4444';
+                    if (score >= 80) scoreColor = '#10b981';
+                    else if (score >= 60) scoreColor = '#fbbf24';
+                    
+                    let html = `<pre style="color:#10b981;">✅ 评估完成\n\n`;
+                    html += `📊 总分: <span style="color:${scoreColor};font-size:20px;font-weight:bold;">${score}</span>/100 (${level})\n`;
+                    html += `📝 建议: ${verdict}\n\n`;
+                    html += `📈 维度评分:\n`;
+                    
+                    if (data.dimensions) {
+                        data.dimensions.forEach(d => {
+                            const dScore = d.score || 0;
+                            const dColor = dScore >= 80 ? '#10b981' : dScore >= 60 ? '#fbbf24' : '#ef4444';
+                            html += `   ${d.name}: <span style="color:${dColor};">${dScore}</span> (${d.level})\n`;
+                        });
+                    }
+                    
+                    if (data.strengths && data.strengths.length > 0) {
+                        html += `\n💪 优势: ${data.strengths.slice(0, 3).join(', ')}`;
+                    }
+                    if (data.weaknesses && data.weaknesses.length > 0) {
+                        html += `\n⚠️ 劣势: ${data.weaknesses.slice(0, 3).join(', ')}`;
+                    }
+                    
+                    html += `\n\n📋 Session: ${data.session_id}</pre>`;
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<pre style="color:#ef4444;">❌ 失败: ${data.detail || data.message || '未知错误'}</pre>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<pre style="color:#ef4444;">❌ 网络错误: ${e.message}</pre>`;
+            }
+        }
+
+        async function loadEvaluationHistory() {
+            const listDiv = document.getElementById('ivHistory');
+            listDiv.innerHTML = '<pre style="color:#fbbf24;">📋 加载中...</pre>';
+            
+            try {
+                const res = await fetch('http://localhost:8089/api/interview/evaluations?limit=20');
+                const data = await res.json();
+                
+                if (data.status === 'success' && data.data.evaluations) {
+                    if (data.data.evaluations.length === 0) {
+                        listDiv.innerHTML = '<pre style="color:#64748b;">暂无评估记录</pre>';
+                    } else {
+                        let html = '<div style="max-height:400px;overflow-y:auto;">';
+                        data.data.evaluations.forEach(e => {
+                            const score = e.overall_score || 0;
+                            const scoreColor = score >= 80 ? '#10b981' : score >= 60 ? '#fbbf24' : '#ef4444';
+                            html += `<div style="padding:12px;border-bottom:1px solid #334155;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-weight:600;">${e.candidate_name || 'Unknown'}</span>
+                                    <span style="color:${scoreColor};font-weight:bold;">${score}/100</span>
+                                </div>
+                                <div style="color:#94a3b8;font-size:11px;margin-top:4px;">
+                                    ${e.job_title || '-'} | ${e.overall_level || '-'} | ${new Date(e.created_at || Date.now()).toLocaleDateString('zh-CN')}
+                                </div>
+                            </div>`;
+                        });
+                        html += '</div>';
+                        listDiv.innerHTML = html;
+                    }
+                } else {
+                    listDiv.innerHTML = '<pre style="color:#ef4444;">加载失败</pre>';
+                }
+            } catch (e) {
+                listDiv.innerHTML = `<pre style="color:#ef4444;">网络错误: ${e.message}</pre>`;
+            }
+        }
+        
+        // 加载已有的 LLM 配置
+        loadLLMConfig();
         
         // Close modal on outside click
         document.getElementById('agentModal').addEventListener('click', (e) => {

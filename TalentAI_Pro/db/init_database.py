@@ -176,6 +176,36 @@ def init_database():
         )
     ''')
 
+    # ========== 谈判会话表 ==========
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS negotiation_sessions (
+            id TEXT PRIMARY KEY,
+            candidate_id TEXT,
+            job_id TEXT,
+            candidate_info TEXT,
+            company_offer TEXT,
+            tone TEXT,
+            status TEXT DEFAULT 'active',
+            final_deal TEXT,
+            rounds INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # ========== 谈判消息表 ==========
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS negotiation_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            round INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES negotiation_sessions(id)
+        )
+    ''')
+
     conn.commit()
     return conn
 
@@ -184,9 +214,9 @@ def seed_users(conn):
     c = conn.cursor()
 
     users = [
-        ('admin', 'admin@cgl.com', get_password_hash('admin123'), 'admin', '郭雁冰', '13800138000', '👤'),
-        ('consultant', 'li@cgl.com', get_password_hash('consultant123'), 'consultant', '李明', '13800138001', '👔'),
-        ('consultant2', 'zhang@cgl.com', get_password_hash('consultant123'), 'consultant', '张华', '13800138002', '👔'),
+        ('admin', 'admin@example.com', get_password_hash('admin123'), 'admin', '郭雁冰', '13800138000', '👤'),
+        ('consultant', 'li@example.com', get_password_hash('consultant123'), 'consultant', '李明', '13800138001', '👔'),
+        ('consultant2', 'zhang@example.com', get_password_hash('consultant123'), 'consultant', '张华', '13800138002', '👔'),
         ('candidate', 'wang@email.com', get_password_hash('candidate123'), 'candidate', '王强', '13800138003', '👨'),
     ]
 

@@ -26,6 +26,13 @@
 - 薪资谈判: `POST /api/salary/negotiate`
 - 语义匹配: `POST /api/semantic/match`
 - 面试评估: `POST /api/interview/evaluate`
+- 多猎搜索: `POST /api/duolie/search`
+- 多猎历史: `GET /api/duolie/history`
+
+### 多猎搜索
+- Skill: `C:\Users\George Guo\.workbuddy\skills\cgl-duolie-search`
+- 账号: 13918285320 / lll727511
+- 数据库: `~/.workbuddy/skills/cgl-duolie-search/candidates.db`
 
 ---
 

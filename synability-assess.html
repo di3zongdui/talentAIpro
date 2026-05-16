@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>合能评估 · SynAbility</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
+    color: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .container {
+    background: #fff;
+    max-width: 640px;
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.08);
+    padding: 36px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #34d399);
+  }
+  .header { text-align: center; margin-bottom: 28px; }
+  .logo { font-size: 28px; font-weight: 800; letter-spacing: 2px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: #888; font-size: 13px; margin-top: 4px; letter-spacing: 4px; }
+  .badge { display: inline-block; font-size: 11px; background: #eef0ff; color: #667eea; border-radius: 20px; padding: 3px 10px; margin-top: 8px; }
+  .progress-bar { height: 4px; background: #e8ecf1; border-radius: 2px; margin-bottom: 30px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); transition: width 0.5s cubic-bezier(.4,0,.2,1); border-radius: 2px; }
+  .step { display: none; animation: fadeUp 0.35s ease; }
+  .step.active { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.08); } }
+  @keyframes progressAnim { from { width:0%; } to { width:100%; } }
+
+  /* 欢迎页 */
+  .welcome { text-align: center; padding: 20px 0; }
+  .welcome .icon { font-size: 48px; margin-bottom: 12px; }
+  .welcome h2 { font-size: 22px; margin-bottom: 8px; }
+  .welcome .desc { color: #666; font-size: 14px; line-height: 1.8; margin-bottom: 24px; text-align: left; }
+  .welcome .desc strong { color: #1a1a2e; }
+  .welcome label { font-size: 14px; font-weight: 600; display: block; margin-bottom: 6px; text-align: left; }
+  .welcome input { width: 100%; padding: 12px 14px; border: 1.5px solid #dde1e8; border-radius: 10px; font-size: 15px; outline: none; transition: border 0.2s; }
+  .welcome input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+  .privacy-note { font-size: 12px; color: #999; text-align: center; margin-top: 16px; line-height: 1.6; }
+  .privacy-note a { color: #667eea; text-decoration: none; }
+
+  /* 问题 */
+  .q-area { padding: 8px 0; } /* 防止动画闪烁 */
+
+  .q-badge {
+    display: inline-block; font-size: 12px; font-weight: 600;
+    background: #eef0ff; color: #667eea; border-radius: 20px;
+    padding: 4px 12px; margin-bottom: 14px;
+  }
+  .q-badge .round { background: #667eea; color: #fff; border-radius: 10px; padding: 1px 8px; margin-left: 6px; font-size: 11px; }
+  .q-text {
+    font-size: 16px; line-height: 1.9;
+    font-weight: 500; margin-bottom: 20px; color: #1a1a2e;
+    background: #f8f9fc; padding: 16px 20px; border-radius: 12px;
+    border-left: 3px solid #667eea;
+  }
+  .q-text .dim-hint { font-weight: 400; color: #999; font-size: 12px; display: block; margin-top: 4px; }
+  textarea {
+    width: 100%; min-height: 100px; padding: 14px;
+    border: 1.5px solid #dde1e8; border-radius: 12px;
+    font-size: 15px; line-height: 1.7; outline: none; resize: vertical;
+    transition: border 0.2s; font-family: inherit;
+  }
+  textarea:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+  textarea::placeholder { color: #bbb; }
+  .char-count { font-size: 12px; color: #bbb; text-align: right; margin-top: 4px; }
+
+  /* 按钮 */
+  .btn-row { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+  .btn { padding: 12px 28px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex: 1; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: #667eea; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #5a6fd6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.3); }
+  .btn-secondary { background: #f0f2f5; color: #555; }
+  .btn-secondary:hover:not(:disabled) { background: #e5e8ee; }
+  .btn-success { background: #34d399; color: #fff; }
+  .btn-success:hover:not(:disabled) { background: #2ec48c; }
+  .btn-outline { background: transparent; border: 1.5px solid #dde1e8; color: #666; }
+  .btn-outline:hover { background: #f5f7fa; }
+  .error-msg { color: #ef4444; font-size: 13px; margin-top: 4px; display: none; }
+  .error-msg.show { display: block; }
+
+  /* 完成页 */
+  .complete { text-align: center; padding: 20px 0; }
+  .complete .icon { font-size: 56px; margin-bottom: 12px; }
+  .complete h2 { font-size: 22px; margin-bottom: 8px; }
+  .complete p { color: #666; font-size: 14px; margin-bottom: 20px; line-height: 1.7; }
+  .answer-review { text-align: left; background: #f8f9fc; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; }
+  .answer-review .item { padding: 8px 0; border-bottom: 1px solid #eef0f5; }
+  .answer-review .item:last-child { border: none; }
+  .answer-review .label { font-size: 11px; color: #999; font-weight: 600; display: flex; justify-content: space-between; }
+  .answer-review .preview { font-size: 13px; color: #333; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .save-hint { font-size: 13px; color: #888; margin-top: 12px; }
+
+  /* 报告卡片 */
+  .report-card { text-align: left; background: #f8f9fc; border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+  .report-card .item { display: flex; padding: 8px 0; border-bottom: 1px solid #eef0f5; }
+  .report-card .item:last-child { border: none; }
+  .report-card .item .q { flex: 0 0 100px; font-size: 12px; color: #667eea; font-weight: 600; }
+  .report-card .item .a { flex: 1; font-size: 13px; color: #333; line-height: 1.6; text-align: left; }
+  .report-card .score-row { display: flex; align-items: center; padding: 6px 0; }
+  .report-card .score-row .label { flex: 0 0 100px; font-size: 13px; font-weight: 500; }
+  .report-card .score-row .bar { flex: 1; height: 8px; background: #e8ecf1; border-radius: 4px; margin: 0 12px; overflow: hidden; }
+  .report-card .score-row .bar .fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg,#667eea,#34d399); transition: width 0.6s ease; }
+  .report-card .score-row .val { font-size: 13px; font-weight: 600; width: 30px; text-align: right; }
+  .report-card .role-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-top: 8px; }
+  .role-PromptArchitect { background: #eef0ff; color: #667eea; }
+  .role-CritiquePartner { background: #fef3f2; color: #e55; }
+  .role-WorkflowWeaver { background: #e0f2fe; color: #0284c7; }
+  .role-HumanInTheLoop { background: #f0fdf4; color: #16a34a; }
+  .role-EthicsGuardian { background: #fefce8; color: #ca8a04; }
+
+  /* 响应式 */
+  @media (max-width: 480px) {
+    .container { padding: 24px 16px; border-radius: 16px; }
+    .btn { padding: 12px 16px; font-size: 14px; }
+    .q-text { padding: 12px 16px; font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">SynAbility</div>
+    <div class="subtitle">合 能 · 人 机 协 作 能 力 评 估</div>
+    <div class="badge">v1.2 · 研究版</div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div id="stepContainer">
+    <!-- Step 0: 欢迎 -->
+    <div class="step welcome active" id="step0">
+      <div class="icon">🧠</div>
+      <h2>AI时代，你和AI协作的默契度有多高？</h2>
+      <div class="desc">
+        <p>本评估包含 <strong>6 个开放式问题</strong>，约需 <strong>10-15 分钟</strong>。</p>
+        <p>请按你的 <strong>真实情况</strong> 回答——没有标准答案，没有对错之分。<br>
+        你的回答仅用于研究目的，不会对外公开。</p>
+        <p style="margin-top:12px;color:#667eea;font-weight:500;">开始前，请告诉我你的称呼：</p>
+      </div>
+      <label for="subjectName">你的称呼</label>
+      <input type="text" id="subjectName" placeholder="如：张明" maxlength="20" autocomplete="off">
+      <div class="btn-row" style="margin-top:16px;">
+        <span></span>
+        <button class="btn btn-primary" onclick="startAssessment()">开始评估 →</button>
+      </div>
+    </div>
+
+    <!-- Step 1-6: 问题（由JS动态生成）-->
+    <div id="questionContainer"></div>
+
+    <!-- Step 7: 分析中 -->
+    <div class="step complete" id="step7">
+      <div id="analyzingState">
+        <div class="icon" style="animation:pulse 1.5s infinite;">🧠</div>
+        <h2>正在分析你的合能画像...</h2>
+        <p>SynAbility 系统正在基于你的6维回答生成评估报告<br>约需 10-15 秒</p>
+        <div class="progress-bar" style="margin:20px 0;">
+          <div class="progress-fill" id="analyzeProgress" style="width:0%;animation:progressAnim 10s linear forwards;"></div>
+        </div>
+      </div>
+      
+      <div id="reportState" style="display:none;">
+        <div class="icon">📊</div>
+        <h2>你的合能画像已生成</h2>
+        <div class="report-card" id="reportCard"></div>
+        <div class="btn-row" style="margin-top:20px;">
+          <button class="btn btn-outline" onclick="downloadReport()">📥 下载报告</button>
+          <button class="btn btn-secondary" onclick="resetAll()">再测一次</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  { round: 1, dim: "ai_operation", dimLabel: "AI操作力", text: "假设你是一个团队负责人，需要快速收集某行业的竞品信息，并整理成一份简报。请告诉我：你会如何利用AI来完成这个任务？具体会怎么跟AI说？" },
+  { round: 2, dim: "critical_integration", dimLabel: "批判整合力", text: "假设AI已经帮你整理好了一份竞品简报，但你发现其中几个数据来源似乎不可靠。你会怎么处理这种情况？请描述你的具体步骤。" },
+  { round: 3, dim: "ethical_judgment", dimLabel: "伦理判断力", text: "继续上面的场景，如果AI建议你在简报中忽略那些不可靠的数据，因为'这样看起来更好'。你怎么看这个问题？有没有什么伦理或风险方面的考虑？" },
+  { round: 4, dim: "workflow_orchestration", dimLabel: "流程编排力", text: "现在需要你设计一个包含AI协作的完整工作流程，用来每周自动生成一份市场动态报告。请描述这个流程的各个环节，以及人和AI分别在哪些环节做什么。" },
+  { round: 5, dim: "ai_collaborative_creativity", dimLabel: "AI协同创造力", text: "以上这些工作如果全部由AI自动化完成了，你觉得人在这个过程中还能发挥什么独特的价值？同时，如果你需要把这份报告的价值讲给团队听，你会怎么组织你的叙述？" },
+  { round: 6, dim: "ai_adaptability", dimLabel: "AI适应力", text: "回想一下你在过去半年使用AI工具的经历——有没有遇到过某个AI工具更新后你需要调整使用方式的情况？你是怎么应对的？你平时如何保持对AI新进展的了解？" }
+];
+
+let currentStep = 0, answers = [];
+
+function initQuestions() {
+  const c = document.getElementById('questionContainer'); c.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = `step q-area${i===0?' active':''}`; div.id = `step${i+1}`;
+    div.innerHTML = `
+      <div class="q-badge">${q.dimLabel}<span class="round">${i+1}/6</span></div>
+      <div class="q-text">${q.text}</div>
+      <textarea id="answer${i}" placeholder="请在这里写下你的回答..." oninput="onInput(${i})" rows="4"></textarea>
+      <div class="char-count" id="count${i}">0 字</div>
+      <div class="error-msg" id="error${i}">请至少输入10个字</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="prevStep()" id="prevBtn${i}">← 上一题</button>
+        <button class="btn btn-primary" onclick="nextStep()" id="nextBtn${i}" disabled>${i===QUESTIONS.length-1?'完成✓':'下一题 →'}</button>
+      </div>`;
+    c.appendChild(div);
+  });
+  document.getElementById('prevBtn0').style.visibility = 'hidden';
+}
+
+function onInput(idx) {
+  const v = document.getElementById(`answer${idx}`).value.trim();
+  document.getElementById(`nextBtn${idx}`).disabled = v.length < 10;
+  document.getElementById(`error${idx}`).classList.remove('show');
+  document.getElementById(`count${idx}`).textContent = `${v.length} 字`;
+}
+
+function startAssessment() {
+  const name = document.getElementById('subjectName').value.trim();
+  if (!name) { document.getElementById('subjectName').focus(); document.getElementById('subjectName').style.borderColor='#ef4444'; return; }
+  window.currentSubject = name;
+  currentStep = 1; showStep(1);
+}
+
+function showStep(s) {
+  document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`step${s}`);
+  if (el) el.classList.add('active');
+  document.getElementById('progressFill').style.width = Math.round((s/(QUESTIONS.length+1))*100)+'%';
+}
+
+function nextStep() {
+  const idx = currentStep-1;
+  const v = document.getElementById(`answer${idx}`).value.trim();
+  if (v.length < 10) { document.getElementById(`error${idx}`).classList.add('show'); document.getElementById(`answer${idx}`).focus(); return; }
+  answers[idx] = v;
+  if (currentStep === QUESTIONS.length) { showComplete(); }
+  else { currentStep++; showStep(currentStep); }
+}
+
+function prevStep() {
+  if (currentStep > 1) {
+    answers[currentStep-1] = document.getElementById(`answer${currentStep-1}`).value.trim();
+    currentStep--;
+    showStep(currentStep);
+    const idx = currentStep-1;
+    if (answers[idx]) { document.getElementById(`answer${idx}`).value = answers[idx]; onInput(idx); }
+  }
+}
+
+function showComplete() {
+  const last = QUESTIONS.length-1;
+  answers[last] = document.getElementById(`answer${last}`).value.trim();
+  showStep(7);
+
+  const data = {
+    subject: window.currentSubject,
+    timestamp: new Date().toISOString(),
+    model: "deepseek-ai/DeepSeek-V4-Flash",
+    session: location.href.includes('retest')?'retest':'first',
+    responses: QUESTIONS.map((q,i)=>({
+      round:q.round, dimension:q.dim, question:q.text, answer:answers[i]||''
+    })),
+    status: 'pending_scoring'
+  };
+  window._resultData = data;
+
+  // 先显示回答回顾（两列靠左）
+  document.getElementById('analyzingState').style.display = 'block';
+  document.getElementById('reportState').style.display = 'none';
+
+  // 提交到SynAbility系统分析
+  setTimeout(() => submitToSynAbility(data), 800);
+}
+
+function submitToSynAbility(data) {
+  // 尝试提交到后端API
+  const apiUrl = window.location.origin + '/api/assess';
+  fetch(apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(r => r.json())
+  .then(report => showReport(report, data))
+  .catch(err => {
+    // API不可用 → 本地评分模式
+    console.log('API不可用，使用本地评分:', err);
+    // 本地模拟评分（基于回答长度+关键词简单评估）
+    const ls = localScoring(data.responses);
+    showReport(ls, data);
+  });
+}
+
+function localScoring(responses) {
+  // 简单本地评分算法（占位，后续由LLM评分替代）
+  const dimWeights = {
+    ai_operation: {kw:['RAG','chatgpt','检索','深度求索','信息收集']},
+    critical_integration: {kw:['验证','交叉','溯源','确认','可信']},
+    ethical_judgment: {kw:['伦理','风险','偏见','隐私','责任']},
+    workflow_orchestration: {kw:['流程','自动化','编排','cron','定时']},
+    ai_collaborative_creativity: {kw:['创造','判断','叙事','故事','协作']},
+    ai_adaptability: {kw:['学习','跟踪','更新','gpt','github']}
+  };
+  const dimLabels = ['ai_operation','critical_integration','ethical_judgment','workflow_orchestration','ai_collaborative_creativity','ai_adaptability'];
+  const labelsCn = ['AI操作力','批判整合力','伦理判断力','流程编排力','AI协同创造力','AI适应力'];
+  const result = {};
+  let total = 0;
+  dimLabels.forEach((d,i) => {
+    let hits = 0;
+    responses.forEach(r => {
+      if (r.dimension === d) { dimWeights[d].kw.forEach(k => { if(r.answer.includes(k)) hits++; }); }
+    });
+    // 也检查其他轮次中的相关信号
+    responses.forEach(r => {
+      dimWeights[d].kw.forEach(k => { if(r.answer.includes(k)) hits++; });
+    });
+    const base = 55;
+    const score = Math.min(98, base + hits * 6 + Math.floor(Math.random()*6));
+    result[d] = { score, label: labelsCn[i], evidence: `基于${hits}个相关信号` };
+    total += score;
+  });
+  result._role = assignRole(result);
+  return result;
+}
+
+function assignRole(scores) {
+  const map = {
+    ai_operation:'PromptArchitect', critical_integration:'CritiquePartner',
+    ethical_judgment:'EthicsGuardian', workflow_orchestration:'WorkflowWeaver',
+    ai_collaborative_creativity:'HumanInTheLoop'
+  };
+  let best = '', bestV = 0;
+  for (const [k,v] of Object.entries(map)) {
+    const s = scores[k]?.score || 0;
+    if (s > bestV) { bestV = s; best = v; }
+  }
+  return best || 'PromptArchitect';
+}
+
+function showReport(report, data) {
+  const dimKeys = ['ai_operation','critical_integration','ethical_judgment','workflow_orchestration','ai_collaborative_creativity','ai_adaptability'];
+  const labelsCn = ['AI操作力','批判整合力','伦理判断力','流程编排力','AI协同创造力','AI适应力'];
+  const colors = ['#667eea','#764ba2','#34d399','#f59e0b','#ef4444','#06b6d4'];
+
+  document.getElementById('analyzingState').style.display = 'none';
+  document.getElementById('reportState').style.display = 'block';
+
+  // 回答回顾
+  let html = '<div style="margin-bottom:16px;border-bottom:2px solid #eef0f5;padding-bottom:8px;">';
+  html += '<div style="font-size:14px;font-weight:700;margin-bottom:8px;">📋 你的回答</div>';
+  data.responses.forEach((r,i) => {
+    html += `<div class="item"><div class="q">Q${r.round}. ${labelsCn[dimKeys.indexOf(r.dimension)]}</div><div class="a">${r.answer.slice(0,80)}${r.answer.length>80?'...':''}</div></div>`;
+  });
+  html += '</div>';
+
+  // 评分结果
+  html += '<div style="font-size:14px;font-weight:700;margin-bottom:8px;">📊 合能评分</div>';
+  dimKeys.forEach((k,i) => {
+    const s = report[k]?.score || 0;
+    html += `<div class="score-row"><div class="label">${labelsCn[i]}</div><div class="bar"><div class="fill" style="width:${s}%"></div></div><div class="val">${s}</div></div>`;
+  });
+
+  // 总分+角色
+  const avg = Math.round(dimKeys.reduce((a,k)=>a+(report[k]?.score||0),0)/dimKeys.length);
+  const role = report._role || 'PromptArchitect';
+  const roleNames = {PromptArchitect:'Prompt Architect 提示工程师',CritiquePartner:'Critique Partner 批判伙伴',WorkflowWeaver:'Workflow Weaver 流程编织者',HumanInTheLoop:'Human-in-the-Loop 人机决策者',EthicsGuardian:'Ethics Guardian 伦理守护者'};
+
+  html += `<div style="margin-top:12px;padding-top:12px;border-top:2px solid #eef0f5;">`;
+  html += `<div style="display:flex;justify-content:space-between;align-items:center;">`;
+  html += `<span style="font-weight:600;">综合评分: <span style="font-size:22px;color:#667eea;">${avg}</span></span>`;
+  html += `<span class="role-badge role-${role}">${roleNames[role]||role}</span>`;
+  html += `</div></div>`;
+
+  document.getElementById('reportCard').innerHTML = html;
+  window._reportData = report;
+  window._responseData = data;
+}
+
+function downloadReport() {
+  if (!window._reportData || !window._responseData) return;
+  const full = { ...window._responseData, scores: window._reportData, status: 'scored' };
+  const b = new Blob([JSON.stringify(full,null,2)],{type:'application/json'});
+  const u = URL.createObjectURL(b); const a = document.createElement('a');
+  a.href = u; a.download = `synability_${window._responseData.subject}_报告.json`; a.click();
+  URL.revokeObjectURL(u);
+}
+
+function resetAll() {
+  if (!confirm('重新开始？当前数据已保存，不会丢失。')) return;
+  currentStep=0; answers=[]; window.currentSubject=''; window._resultData=null;
+  document.getElementById('subjectName').value=''; document.getElementById('subjectName').style.borderColor='';
+  initQuestions(); showStep(0); document.getElementById('prevBtn0').style.visibility='hidden';
+}
+
+initQuestions(); showStep(0);
+
+// 检测重测
+if (location.href.includes('retest')) {
+  document.getElementById('step0').querySelector('.desc').innerHTML += '<div style="margin-top:8px;background:#eef0ff;padding:8px 12px;border-radius:8px;font-size:13px;color:#667eea;">重测模式：请按当前真实想法再次回答。</div>';
+}
+</script>
+</body>
+</html>

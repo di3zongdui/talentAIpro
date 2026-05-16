@@ -148,11 +148,11 @@ class LiepinOAuthPlugin(TalentAIPlugin):
              "salary_range": "150-200K+期权", "location": "北京", "status": "open"}
         ]
         self._conversations = [
-            {"conversation_id": "conv_001", "candidate_id": "lp_001", "hr_name": "李经理", "company": "CGL",
+            {"conversation_id": "conv_001", "candidate_id": "lp_001", "hr_name": "李经理", "company": "TechCorp",
              "messages_count": 12, "last_message_time": "2024-03-12 14:30", "reply_rate": 0.9,
              "avg_response_hours": 2.5, "interview_scheduled": True, "interview_time": "2024-03-15 10:00",
              "status": "interviewing"},
-            {"conversation_id": "conv_002", "candidate_id": "lp_002", "hr_name": "王总监", "company": "CGL",
+            {"conversation_id": "conv_002", "candidate_id": "lp_002", "hr_name": "王总监", "company": "TechCorp",
              "messages_count": 8, "last_message_time": "2024-03-11 16:00", "reply_rate": 0.85,
              "avg_response_hours": 4.0, "interview_scheduled": False, "status": "negotiating"}
         ]
