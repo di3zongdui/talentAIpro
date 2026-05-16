@@ -755,39 +755,132 @@
             document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
         }
 
-        // ========== JD Parsing (Simple) ==========
+        // ========== JD Parsing ==========
         function parseJD(text) {
             const jd = {
                 title: '',
                 salary: '',
+                salaryMin: 0,
+                salaryMax: 999,
                 location: '',
                 education: '',
                 experience: '',
+                experienceMin: 0,
                 skills: [],
                 raw: text
             };
 
-            const salaryMatch = text.match(/(\d+)\s*[-~]\s*(\d+)\s*万/);
-            if (salaryMatch) jd.salary = `${salaryMatch[1]}-${salaryMatch[2]}万`;
+            // 薪资解析
+            const salaryMatch = text.match(/(\d+)\s*[-~至到]\s*(\d+)\s*万/);
+            if (salaryMatch) {
+                jd.salaryMin = parseInt(salaryMatch[1]);
+                jd.salaryMax = parseInt(salaryMatch[2]);
+                jd.salary = `${jd.salaryMin}-${jd.salaryMax}万`;
+            } else {
+                const singleSalary = text.match(/(\d+)\s*万/);
+                if (singleSalary) {
+                    jd.salaryMin = parseInt(singleSalary[1]);
+                    jd.salary = `${jd.salaryMin}万+`;
+                }
+            }
 
-            const locMatch = text.match(/北京|上海|广州|深圳|杭州|成都|武汉|南京/);
-            if (locMatch) jd.location = locMatch[0];
+            // 地点解析
+            const locMatch = text.match(/(北京|上海|广州|深圳|杭州|成都|武汉|南京|西安|苏州)/);
+            if (locMatch) jd.location = locMatch[1];
 
-            const eduMatch = text.match(/本科|硕士|博士|大专/);
+            // 学历解析
+            const eduMatch = text.match(/博士|硕士|本科|大专/);
             if (eduMatch) jd.education = eduMatch[0];
 
-            const expMatch = text.match(/(\d+)\s*年?以上?\s*经验|\s*(\d+)\s*年\s*经验/);
-            if (expMatch) jd.experience = expMatch[0] || expMatch.input;
+            // 经验解析
+            const expMatch = text.match(/(\d+)\s*年/);
+            if (expMatch) {
+                jd.experienceMin = parseInt(expMatch[1]);
+                jd.experience = `${jd.experienceMin}年以上`;
+            }
 
-            const skillKeywords = ['Python', 'SQL', 'SAS', 'R', 'GLM', 'GBDT', 'GAM', '机器学习', '深度学习',
-                '精算', '定价', '费率', '准备金', 'IBNR', '预测模型', '数据分析'];
+            // 技能解析
+            const skillKeywords = [
+                'Python', 'SQL', 'SAS', 'R', 'GLM', 'GBDT', 'GAM', 'XGBoost',
+                '机器学习', '深度学习', 'AI', '人工智能',
+                '精算', '定价', '费率', '准备金', 'IBNR', '偿付能力',
+                '预测模型', '数据分析', '统计建模',
+                '保险', '车险', '寿险', '财险', '健康险',
+                '产品设计', '风险评估', '再保险'
+            ];
             jd.skills = skillKeywords.filter(s => text.includes(s));
 
-            // Try to find title
-            const titleMatch = text.match(/([\u4e00-\u9fa5]{2,}(?:专家|经理|总监|主任|分析师|工程师|顾问))/);
+            // 职位名称
+            const titleMatch = text.match(/([\u4e00-\u9fa5]{2,6}(?:专家|经理|总监|主任|分析师|工程师|顾问|负责人))/);
             if (titleMatch) jd.title = titleMatch[1];
 
             return jd;
+        }
+
+        function parseSalaryMin(salary) {
+            if (!salary) return 0;
+            const match = salary.match(/(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        function parseSalaryMax(salary) {
+            if (!salary) return 999;
+            const match = salary.match(/(\d+)\s*[-~至到]\s*(\d+)/);
+            return match ? parseInt(match[2]) : 999;
+        }
+
+        // ========== LLM Semantic Search Description ==========
+        async function generateSemanticSearchDesc(jd, rawText) {
+            // 本地生成语义描述（不依赖API）
+            const parts = [];
+
+            // 职位核心词
+            if (jd.title) {
+                const shortTitle = jd.title.replace(/专家|经理|总监|主任|分析师|工程师|顾问|负责人/g, '').trim();
+                if (shortTitle) parts.push(shortTitle);
+            }
+
+            // 技能关键词
+            if (jd.skills.length > 0) {
+                const skillMap = {
+                    '精算': ['精算', 'Actuarial'],
+                    'GLM': ['GLM', '广义线性模型'],
+                    'Python': ['Python', 'Python编程'],
+                    'SQL': ['SQL', '数据库'],
+                    '定价': ['定价', '费率厘定'],
+                    '准备金': ['准备金', 'IBNR'],
+                    '车险': ['车险', '车辆保险'],
+                    '保险': ['保险', 'Insurance']
+                };
+
+                for (const skill of jd.skills.slice(0, 3)) {
+                    if (skillMap[skill]) {
+                        parts.push(skillMap[skill][0]);
+                    } else {
+                        parts.push(skill);
+                    }
+                }
+            }
+
+            // 地点
+            if (jd.location) {
+                parts.push(jd.location);
+            }
+
+            // 年限
+            if (jd.experienceMin > 0) {
+                parts.push(`${jd.experienceMin}年+`);
+            }
+
+            // 如果没有提取到有效信息，使用原始文本关键词
+            if (parts.length < 2) {
+                const keywords = rawText.match(/[\u4e00-\u9fa5]{2,6}/g);
+                if (keywords) {
+                    return keywords.slice(0, 6).join(' ');
+                }
+            }
+
+            return parts.join(' ');
         }
 
         function renderJDSummary(jd) {
@@ -807,6 +900,76 @@
             `;
         }
 
+        // ========== Data Conversion ==========
+        function convertToCard(cand) {
+            return {
+                name: cand.name || '匿名',
+                company: cand.current_company || '保密',
+                title: cand.current_title || '待更新',
+                city: cand.current_city || '未知',
+                exp: cand.work_years ? `${cand.work_years}年` : '不限',
+                edu: cand.education || '本科',
+                salary: cand.expected_salary || '面议',
+                skills: extractSkills(cand),
+                matchScore: Math.round(cand.match_score || 70),
+                reason: generateReason(cand),
+                tags: generateTags(cand)
+            };
+        }
+
+        function convertToCards(candidates) {
+            return candidates.map(c => convertToCard(c));
+        }
+
+        function extractSkills(cand) {
+            // 从原始数据提取技能关键词
+            const raw = cand.raw_data || {};
+            const skills = [];
+            if (cand.current_title) {
+                if (/精算|定价|模型/.test(cand.current_title)) skills.push('精算');
+                if (/经理|总监/.test(cand.current_title)) skills.push('管理');
+            }
+            if (raw.skills) {
+                skills.push(...raw.skills.split(/[,，]/).slice(0, 4));
+            }
+            return skills.length ? skills : ['保险', '数据分析'];
+        }
+
+        function generateReason(cand) {
+            const years = cand.work_years || 0;
+            const score = cand.match_score || 70;
+            const company = cand.current_company || '';
+            const title = cand.current_title || '';
+
+            let reason = `${years}年经验`;
+            if (company) reason += `，来自${company}`;
+            if (title) reason += `，担任${title}`;
+            reason += `。`;
+
+            if (score >= 85) {
+                reason += '高度匹配JD要求，建议优先联系。';
+            } else if (score >= 70) {
+                reason += '基本匹配，可作为备选候选人。';
+            } else {
+                reason += '部分匹配，建议评估后决定。';
+            }
+            return reason;
+        }
+
+        function generateTags(cand) {
+            const tags = [];
+            const edu = cand.education || '';
+            if (edu.includes('博士')) tags.push('博士');
+            else if (edu.includes('硕士')) tags.push('硕士');
+
+            const title = cand.current_title || '';
+            if (/精算师|准精算/.test(title)) tags.push('精算师资格');
+            if (/定价|费率/.test(title)) tags.push('定价');
+            if (/经理|总监|负责人/.test(title)) tags.push('管理层');
+
+            return tags.length ? tags : ['合适'];
+        }
+
         // ========== Main Search Flow ==========
         async function sendMessage() {
             if (isProcessing) return;
@@ -824,21 +987,33 @@
             // Parse JD
             const jd = parseJD(text);
             addMessage('agent', renderJDSummary(jd));
-            addStatusMessage('🤖 Agent团队启动中...（解析JD → 搜索多猎 → 匹配候选人）');
+            addStatusMessage('🤖 Agent团队启动中...（解析JD → 语义搜索 → 匹配候选人）');
 
             try {
+                // 调用 LLM 生成语义搜索描述
+                const semanticDesc = await generateSemanticSearchDesc(jd, text);
+                addMessage('agent', `<div style="font-size:13px;color:#8b949e;margin-top:4px">🔍 语义搜索描述：<em>${semanticDesc}</em></div>`);
+
                 // Call real API
                 const response = await fetch('http://localhost:8089/api/duolie/search', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         search_type: 'keyword',
-                        search_value: jd.title || jd.skills.join(' ') || text.substring(0, 50),
+                        search_value: semanticDesc,
                         min_years: parseInt(jd.experience) || 3,
-                        min_salary: parseInt(jd.salary) || 20,
-                        max_salary: 150,
+                        min_salary: parseSalaryMin(jd.salary),
+                        max_salary: parseSalaryMax(jd.salary),
+                        location: jd.location,
                         education: jd.education ? [jd.education] : [],
                         keywords: jd.skills,
+                        jd_info: {
+                            title: jd.title,
+                            salary: jd.salary,
+                            location: jd.location,
+                            experience: jd.experience,
+                            skills: jd.skills
+                        },
                         top_n: 50
                     })
                 });
@@ -850,47 +1025,44 @@
                     // 有真实数据
                     addMessage('agent', `
                         <div style="margin-bottom:8px">
-                            <strong>✅ 真实搜索完成</strong> — 找到 <strong>${result.total}</strong> 名候选人，已推荐 TOP${result.candidates.length}
+                            <strong>✅ 真实搜索完成</strong> — 找到 <strong>${result.total}</strong> 名候选人，已推荐 TOP${Math.min(result.candidates.length, 5)}
                         </div>
                         <div style="font-size:13px;color:#8b949e">
-                            数据来源: 多猎猎聘库 | 匹配条件: 工作年限≥${parseInt(jd.experience)||3}年
+                            数据来源: 多猎猎聘库 | 工作年限≥${jd.experienceMin||3}年 | 多维度评分
                         </div>
                     `);
 
-                    // Show each candidate
-                    result.candidates.forEach((cand, i) => {
+                    // Show each candidate (top 5)
+                    const topCands = result.candidates.slice(0, 5);
+                    topCands.forEach((cand, i) => {
                         setTimeout(() => addCandidateCard(convertToCard(cand), i + 1), i * 300);
                     });
 
                     setTimeout(() => {
                         renderResultsPanel(convertToCards(result.candidates));
-                    }, result.candidates.length * 300 + 200);
+                    }, topCands.length * 300 + 200);
 
-                } else if (result.script) {
+                } else if (result.browser_script) {
                     // 需要执行浏览器脚本
+                    const script = result.browser_script;
                     addMessage('agent', `
                         <div style="margin-bottom:8px">
-                            <strong>🔍 首次搜索 - 请先执行浏览器脚本</strong>
+                            <strong>🔍 数据库暂无数据，请使用浏览器脚本搜索</strong>
                         </div>
                         <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px;margin-top:8px">
-                            <div style="font-size:13px;color:#8b949e;margin-bottom:8px">执行以下命令打开多猎搜索：</div>
-                            <code style="display:block;background:#0d1117;padding:8px;border-radius:4px;font-size:12px;white-space:pre-wrap">${result.script.commands.join('\n')}</code>
-                            <div style="font-size:13px;color:#8b949e;margin-top:12px;margin-bottom:8px">然后执行提取脚本获取候选人数据。</div>
+                            <div style="font-size:13px;color:#8b949e;margin-bottom:8px">${result.note || '使用 agent-browser 工具执行以下命令：'}</div>
+                            <code style="display:block;background:#0d1117;padding:8px;border-radius:4px;font-size:11px;white-space:pre-wrap;max-height:200px;overflow-y:auto">${script.commands.join('\\n')}</code>
+                            <div style="font-size:12px;color:#8b949e;margin-top:12px">${script.search_guide || ''}</div>
                         </div>
-                        <div style="margin-top:12px">
-                            <strong>📝 或者使用命令行工具：</strong><br>
-                            <code style="background:#161b22;padding:4px 8px;border-radius:4px;font-size:12px">
-                                python duolie_scraper.py --keyword "${jd.title || jd.skills[0] || '搜索关键词'}" --min-years ${parseInt(jd.experience)||3}
-                            </code>
+                        <div style="margin-top:12px;font-size:13px;color:#8b949e">
+                            ⏳ 脚本执行后，候选人数据将自动保存到数据库，下次搜索即可直接返回结果。
                         </div>
                     `);
 
-                    // Fallback to mock
+                    // 显示演示数据
                     setTimeout(() => {
-                        const mockData = mockCandidates['车险精算'];
-                        mockData.forEach((cand, i) => setTimeout(() => addCandidateCard(cand, i + 1), i * 300));
-                        setTimeout(() => renderResultsPanel(mockData), mockData.length * 300 + 200);
-                    }, 1000);
+                        showMockResults(text);
+                    }, 1500);
                 } else {
                     // 无数据，回退到模拟
                     showMockResults(text);
