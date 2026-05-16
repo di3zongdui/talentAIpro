@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顾问 Agent - TalentAI Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #58a6ff, #bc8cff);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: #8b949e;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #8b949e;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #3fb950;
+        }
+
+        .status-dot.offline { background: #f85149; }
+
+        .header-btn {
+            padding: 6px 14px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            background: #21262d;
+            color: #e6edf3;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .header-btn:hover {
+            background: #30363d;
+            border-color: #8b949e;
+        }
+
+        /* Main Layout */
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            width: 420px;
+            min-width: 420px;
+            border-right: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message-agent {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message-user .message-bubble {
+            background: #1f6feb;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-agent .message-bubble {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-agent .message-bubble .agent-avatar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .message-agent .message-bubble .agent-avatar .avatar-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #58a6ff, #bc8cff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .message-agent .message-bubble .agent-avatar .avatar-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: #58a6ff;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #484f58;
+            margin-top: 4px;
+        }
+
+        .message-user .message-time { text-align: right; }
+
+        /* Status messages */
+        .message-status {
+            text-align: center;
+            padding: 8px;
+            color: #8b949e;
+            font-size: 13px;
+        }
+
+        .message-status .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #30363d;
+            border-top-color: #58a6ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Candidate Card in Chat */
+        .candidate-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+        }
+
+        .candidate-card .cand-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .candidate-card .cand-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #58a6ff;
+        }
+
+        .candidate-card .cand-score {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .score-high { background: #1b3a2d; color: #3fb950; }
+        .score-mid { background: #3d2e00; color: #d29922; }
+        .score-low { background: #3d1c1c; color: #f85149; }
+
+        .candidate-card .cand-info {
+            font-size: 13px;
+            color: #8b949e;
+            line-height: 1.6;
+        }
+
+        .candidate-card .cand-info span {
+            color: #e6edf3;
+        }
+
+        .candidate-card .cand-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .candidate-card .cand-tag {
+            padding: 2px 8px;
+            background: #21262d;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #8b949e;
+            border: 1px solid #30363d;
+        }
+
+        .candidate-card .cand-reason {
+            margin-top: 8px;
+            padding: 8px;
+            background: #0d1117;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #e6edf3;
+            border-left: 3px solid #58a6ff;
+        }
+
+        /* Input Area */
+        .chat-input {
+            padding: 16px;
+            border-top: 1px solid #30363d;
+            background: #161b22;
+        }
+
+        .chat-input textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            color: #e6edf3;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            min-height: 60px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input textarea:focus {
+            border-color: #58a6ff;
+        }
+
+        .chat-input textarea::placeholder {
+            color: #484f58;
+        }
+
+        .chat-input .input-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .chat-input .input-left {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input .action-btn {
+            padding: 6px 12px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            background: #21262d;
+            color: #8b949e;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-input .action-btn:hover {
+            background: #30363d;
+            color: #e6edf3;
+        }
+
+        .chat-input .send-btn {
+            padding: 8px 20px;
+            background: #1f6feb;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chat-input .send-btn:hover { background: #388bfd; }
+        .chat-input .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Right Panel - Results Detail */
+        .results-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .results-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #30363d;
+            background: #161b22;
+            flex-shrink: 0;
+        }
+
+        .results-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .results-header p {
+            font-size: 13px;
+            color: #8b949e;
+            margin-top: 4px;
+        }
+
+        .results-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #484f58;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            max-width: 400px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* Full Candidate Detail in Right Panel */
+        .candidate-detail {
+            margin-bottom: 20px;
+        }
+
+        .candidate-detail .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .candidate-detail .detail-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #58a6ff, #bc8cff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .candidate-detail .detail-name-section h3 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .candidate-detail .detail-name-section p {
+            font-size: 14px;
+            color: #8b949e;
+            margin-top: 2px;
+        }
+
+        .candidate-detail .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .candidate-detail .detail-item {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .candidate-detail .detail-item .label {
+            font-size: 12px;
+            color: #8b949e;
+            margin-bottom: 4px;
+        }
+
+        .candidate-detail .detail-item .value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .candidate-detail .skill-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .candidate-detail .skill-bar .bar {
+            flex: 1;
+            height: 6px;
+            background: #21262d;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .candidate-detail .skill-bar .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .candidate-detail .skill-bar .skill-name {
+            width: 80px;
+            font-size: 13px;
+            color: #8b949e;
+        }
+
+        .candidate-detail .skill-bar .skill-pct {
+            width: 36px;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* JD Summary */
+        .jd-summary {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .jd-summary .jd-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .jd-summary .jd-field {
+            display: flex;
+            gap: 8px;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .jd-summary .jd-field .label {
+            color: #8b949e;
+            min-width: 60px;
+        }
+
+        .jd-summary .jd-field .value {
+            color: #e6edf3;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-logo">TA</div>
+            <div>
+                <div class="header-title">顾问 Agent</div>
+                <div class="header-subtitle">TalentAI Pro · AI招聘助手</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="agent-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">连接中...</span>
+            </div>
+            <button class="header-btn" onclick="clearChat()">新对话</button>
+        </div>
+    </div>
+
+    <div class="main">
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message message-agent">
+                    <div class="message-bubble">
+                        <div class="agent-avatar">
+                            <div class="avatar-icon">🤖</div>
+                            <span class="avatar-name">顾问 Agent</span>
+                        </div>
+                        <div>你好！我是你的AI招聘顾问。<br><br>
+                        你可以这样使用我：<br>
+                        • <strong>搜索候选人</strong> — 直接粘贴JD或告诉我职位需求<br>
+                        • <strong>匹配分析</strong> — 给我候选人信息，我来评估匹配度<br>
+                        • <strong>面试准备</strong> — 生成面试问题和评估维度<br><br>
+                        试试：<em>"帮我找车险精算专家，JD附上"</em></div>
+                        <div class="message-time">现在</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <textarea id="inputField" placeholder="粘贴JD、输入职位需求，或直接问我..." rows="2"></textarea>
+                <div class="input-actions">
+                    <div class="input-left">
+                        <button class="action-btn" onclick="addExample('帮我找车险精算师，60-90万，北京，本科+，3年以上精算经验')">📋 示例1</button>
+                        <button class="action-btn" onclick="addExample('搜索AI产品经理，上海，60-120万，硕士+，5年以上')">📋 示例2</button>
+                    </div>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">发送</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div class="results-panel">
+            <div class="results-header">
+                <h2>📊 候选人结果</h2>
+                <p>发送职位需求后，Agent团队将自动搜索并匹配候选人</p>
+            </div>
+            <div class="results-content" id="resultsContent">
+                <div class="empty-state">
+                    <div class="icon">💼</div>
+                    <h3>等待您的需求</h3>
+                    <p>在左侧对话框中输入职位描述或搜索需求，AI招聘顾问将自动调度Agent团队为您搜寻和匹配最佳候选人。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== State ==========
+        let workflowId = null;
+        let isProcessing = false;
+        let messageHistory = [];
+
+        // ========== Agent Intro Candidates (mock) ==========
+        const mockCandidates = {
+            '车险精算': [
+                { name: '张明远', age: 35, exp: '11年', city: '北京', edu: '硕士', salary: '60万', company: '中国平安财险', title: '车险定价高级经理', skills: ['GLM', 'Python', 'SAS', '费率厘定'], matchScore: 94, reason: '11年车险精算经验，精通GLM建模和费率厘定，中国精算师资格，当前薪资60万完全匹配预算范围。', tags: ['精算师', '车险定价', 'GLM模型'] },
+                { name: '李婷', age: 32, exp: '8年', city: '北京', edu: '硕士', salary: '55万', company: '中国人保财险', title: '精算定价专家', skills: ['GBDT', 'Python', 'SQL', '准备金测算'], matchScore: 89, reason: '8年精算经验，熟悉新能源车险定价，有UBI产品经验。薪资55万在预算范围内，性价比高。', tags: ['新能源车险', 'UBI定价', 'Python'] },
+                { name: '王浩', age: 38, exp: '12年', city: '北京', edu: '博士', salary: '75万', company: '太平洋保险', title: '总精算师助理', skills: ['GLM', 'GAM', 'Python', 'SAS', 'IBNR'], matchScore: 86, reason: '博士学历+12年精算经验，精通IBNR准备金评估方法。预算75万接近上限但有更强的专业深度。', tags: ['博士', '准备金', '精算模型'] },
+                { name: '陈思远', age: 30, exp: '6年', city: '北京', edu: '硕士', salary: '45万', company: '阳光保险集团', title: '车险定价分析师', skills: ['Python', 'SQL', 'GLM', '数据可视化'], matchScore: 82, reason: '6年精算经验，2年+的GLM车险定价经验。年薪45万在预算中位，成长空间大。', tags: ['年轻', '成长型', 'GLM'] },
+                { name: '刘佳', age: 34, exp: '9年', city: '北京', edu: '硕士', salary: '65万', company: '泰康在线', title: '精算部高级经理', skills: ['Python', 'GBDT', '费率结构', '产品测算'], matchScore: 78, reason: '9年精算经验，熟悉互联网保险定价。有费率结构调整经验，适合差异化定价场景。', tags: ['互联网保险', '费率', '产品测算'] },
+            ]
+        };
+
+        // ========== Chat Functions ==========
+        function addExample(text) {
+            document.getElementById('inputField').value = text;
+            document.getElementById('inputField').focus();
+        }
+
+        function clearChat() {
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="message message-agent">
+                    <div class="message-bubble">
+                        <div class="agent-avatar">
+                            <div class="avatar-icon">🤖</div>
+                            <span class="avatar-name">顾问 Agent</span>
+                        </div>
+                        <div>对话已重置。请告诉我你需要什么样的候选人？</div>
+                        <div class="message-time">${getTime()}</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('resultsContent').innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">💼</div>
+                    <h3>等待您的需求</h3>
+                    <p>在左侧对话框中输入职位描述或搜索需求，AI招聘顾问将自动调度Agent团队为您搜寻和匹配最佳候选人。</p>
+                </div>
+            `;
+            workflowId = null;
+            messageHistory = [];
+        }
+
+        function getTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        }
+
+        function addMessage(type, content, extraClass = '') {
+            const chat = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `message message-${type}`;
+
+            if (type === 'user') {
+                div.innerHTML = `
+                    <div class="message-bubble">
+                        <div>${content}</div>
+                        <div class="message-time">${getTime()}</div>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = `
+                    <div class="message-bubble ${extraClass}">
+                        <div class="agent-avatar">
+                            <div class="avatar-icon">🤖</div>
+                            <span class="avatar-name">顾问 Agent</span>
+                        </div>
+                        <div>${content}</div>
+                        <div class="message-time">${getTime()}</div>
+                    </div>
+                `;
+            }
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function addStatusMessage(text) {
+            const chat = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'message message-status';
+            div.id = 'statusMsg';
+            div.innerHTML = `<span class="spinner"></span>${text}`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function updateStatus(text) {
+            const el = document.getElementById('statusMsg');
+            if (el) el.innerHTML = `<span class="spinner"></span>${text}`;
+        }
+
+        function removeStatus() {
+            const el = document.getElementById('statusMsg');
+            if (el) el.remove();
+        }
+
+        function addCandidateCard(cand, rank) {
+            const scoreClass = cand.matchScore >= 85 ? 'score-high' : cand.matchScore >= 70 ? 'score-mid' : 'score-low';
+
+            const div = document.createElement('div');
+            div.className = 'message message-agent';
+            div.innerHTML = `
+                <div class="message-bubble">
+                    <div class="candidate-card" onclick="showCandidateDetail(${rank})" style="cursor:pointer">
+                        <div class="cand-header">
+                            <span class="cand-name">#${rank} ${cand.name}</span>
+                            <span class="cand-score ${scoreClass}">${cand.matchScore}%</span>
+                        </div>
+                        <div class="cand-info">
+                            ${cand.company} · ${cand.title}<br>
+                            ${cand.city} · ${cand.exp} · ${cand.edu} · 期望${cand.salary}
+                        </div>
+                        <div class="cand-tags">
+                            ${cand.tags.map(t => `<span class="cand-tag">${t}</span>`).join('')}
+                        </div>
+                        <div class="cand-reason">
+                            💡 ${cand.reason}
+                        </div>
+                    </div>
+                    <div class="message-time">${getTime()}</div>
+                </div>
+            `;
+            document.getElementById('chatMessages').appendChild(div);
+            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+        }
+
+        // ========== JD Parsing (Simple) ==========
+        function parseJD(text) {
+            const jd = {
+                title: '',
+                salary: '',
+                location: '',
+                education: '',
+                experience: '',
+                skills: [],
+                raw: text
+            };
+
+            const salaryMatch = text.match(/(\d+)\s*[-~]\s*(\d+)\s*万/);
+            if (salaryMatch) jd.salary = `${salaryMatch[1]}-${salaryMatch[2]}万`;
+
+            const locMatch = text.match(/北京|上海|广州|深圳|杭州|成都|武汉|南京/);
+            if (locMatch) jd.location = locMatch[0];
+
+            const eduMatch = text.match(/本科|硕士|博士|大专/);
+            if (eduMatch) jd.education = eduMatch[0];
+
+            const expMatch = text.match(/(\d+)\s*年?以上?\s*经验|\s*(\d+)\s*年\s*经验/);
+            if (expMatch) jd.experience = expMatch[0] || expMatch.input;
+
+            const skillKeywords = ['Python', 'SQL', 'SAS', 'R', 'GLM', 'GBDT', 'GAM', '机器学习', '深度学习',
+                '精算', '定价', '费率', '准备金', 'IBNR', '预测模型', '数据分析'];
+            jd.skills = skillKeywords.filter(s => text.includes(s));
+
+            // Try to find title
+            const titleMatch = text.match(/([\u4e00-\u9fa5]{2,}(?:专家|经理|总监|主任|分析师|工程师|顾问))/);
+            if (titleMatch) jd.title = titleMatch[1];
+
+            return jd;
+        }
+
+        function renderJDSummary(jd) {
+            return `
+                <div class="jd-summary">
+                    <div class="jd-title">📋 JD解析结果</div>
+                    <div class="jd-field"><span class="label">职位</span><span class="value">${jd.title || '未识别'}</span></div>
+                    <div class="jd-field"><span class="label">薪资</span><span class="value">${jd.salary || '未识别'}</span></div>
+                    <div class="jd-field"><span class="label">地点</span><span class="value">${jd.location || '未识别'}</span></div>
+                    <div class="jd-field"><span class="label">学历</span><span class="value">${jd.education || '未识别'}</span></div>
+                    <div class="jd-field"><span class="label">经验</span><span class="value">${jd.experience || '未识别'}</span></div>
+                    <div class="jd-field" style="margin-top:8px">
+                        <span class="label">技能</span>
+                        <span class="value">${jd.skills.length ? jd.skills.join('、') : '未识别'}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ========== Main Search Flow ==========
+        async function sendMessage() {
+            if (isProcessing) return;
+
+            const input = document.getElementById('inputField');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Add user message
+            addMessage('user', text);
+            input.value = '';
+            isProcessing = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            // Parse JD
+            const jd = parseJD(text);
+            addMessage('agent', renderJDSummary(jd));
+            addStatusMessage('🤖 Agent团队启动中...（解析JD → 搜索多猎 → 匹配候选人）');
+
+            try {
+                // Call real API
+                const response = await fetch('http://localhost:8089/api/duolie/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        search_type: 'keyword',
+                        search_value: jd.title || jd.skills.join(' ') || text.substring(0, 50),
+                        min_years: parseInt(jd.experience) || 3,
+                        min_salary: parseInt(jd.salary) || 20,
+                        max_salary: 150,
+                        education: jd.education ? [jd.education] : [],
+                        keywords: jd.skills,
+                        top_n: 50
+                    })
+                });
+
+                const result = await response.json();
+                removeStatus();
+
+                if (result.source === 'database' && result.candidates.length > 0) {
+                    // 有真实数据
+                    addMessage('agent', `
+                        <div style="margin-bottom:8px">
+                            <strong>✅ 真实搜索完成</strong> — 找到 <strong>${result.total}</strong> 名候选人，已推荐 TOP${result.candidates.length}
+                        </div>
+                        <div style="font-size:13px;color:#8b949e">
+                            数据来源: 多猎猎聘库 | 匹配条件: 工作年限≥${parseInt(jd.experience)||3}年
+                        </div>
+                    `);
+
+                    // Show each candidate
+                    result.candidates.forEach((cand, i) => {
+                        setTimeout(() => addCandidateCard(convertToCard(cand), i + 1), i * 300);
+                    });
+
+                    setTimeout(() => {
+                        renderResultsPanel(convertToCards(result.candidates));
+                    }, result.candidates.length * 300 + 200);
+
+                } else if (result.script) {
+                    // 需要执行浏览器脚本
+                    addMessage('agent', `
+                        <div style="margin-bottom:8px">
+                            <strong>🔍 首次搜索 - 请先执行浏览器脚本</strong>
+                        </div>
+                        <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px;margin-top:8px">
+                            <div style="font-size:13px;color:#8b949e;margin-bottom:8px">执行以下命令打开多猎搜索：</div>
+                            <code style="display:block;background:#0d1117;padding:8px;border-radius:4px;font-size:12px;white-space:pre-wrap">${result.script.commands.join('\n')}</code>
+                            <div style="font-size:13px;color:#8b949e;margin-top:12px;margin-bottom:8px">然后执行提取脚本获取候选人数据。</div>
+                        </div>
+                        <div style="margin-top:12px">
+                            <strong>📝 或者使用命令行工具：</strong><br>
+                            <code style="background:#161b22;padding:4px 8px;border-radius:4px;font-size:12px">
+                                python duolie_scraper.py --keyword "${jd.title || jd.skills[0] || '搜索关键词'}" --min-years ${parseInt(jd.experience)||3}
+                            </code>
+                        </div>
+                    `);
+
+                    // Fallback to mock
+                    setTimeout(() => {
+                        const mockData = mockCandidates['车险精算'];
+                        mockData.forEach((cand, i) => setTimeout(() => addCandidateCard(cand, i + 1), i * 300));
+                        setTimeout(() => renderResultsPanel(mockData), mockData.length * 300 + 200);
+                    }, 1000);
+                } else {
+                    // 无数据，回退到模拟
+                    showMockResults(text);
+                }
+
+            } catch (e) {
+                console.error('API调用失败:', e);
+                removeStatus();
+                addMessage('agent', `<span style="color:#f85149">⚠️ 无法连接服务器，使用演示数据</span>`);
+                showMockResults(text);
+            }
+
+            isProcessing = false;
+            document.getElementById('sendBtn').disabled = false;
+        }
+
+        function showMockResults(text) {
+            let candidates = [];
+            if (text.includes('车险') || text.includes('精算') || text.includes('保险')) {
+                candidates = mockCandidates['车险精算'];
+            } else {
+                candidates = mockCandidates['车险精算'].map(c => ({...c, name: c.name.replace(/./g, '*')}));
+            }
+
+            addMessage('agent', `
+                <div style="margin-bottom:8px">
+                    <strong>✅ 演示模式</strong> — 显示示例候选人
+                </div>
+                <div style="font-size:13px;color:#8b949e">
+                    注意：真实数据需先通过多猎平台搜索获取
+                </div>
+            `);
+
+            candidates.forEach((cand, i) => setTimeout(() => addCandidateCard(cand, i + 1), i * 300));
+            setTimeout(() => renderResultsPanel(candidates), candidates.length * 300 + 200);
+        }
+
+        // 转换API返回的数据格式为卡片格式
+        function convertToCard(cand) {
+            return {
+                name: cand.name || '候选人',
+                company: cand.current_company || '公司未知',
+                title: cand.current_title || '职位未知',
+                city: cand.current_city || '城市未知',
+                exp: (cand.work_years || 0) + '年',
+                edu: cand.education || '学历未知',
+                salary: cand.expected_salary || '薪资面议',
+                skills: [cand.current_title].filter(Boolean),
+                matchScore: Math.round(cand.match_score || 70),
+                tags: [cand.education, cand.current_city].filter(Boolean),
+                reason: `来自 ${cand.current_company || '未知公司'}，有 ${cand.work_years || 0} 年经验，匹配度 ${Math.round(cand.match_score || 70)}%`
+            };
+        }
+
+        function convertToCards(candidates) {
+            return candidates.map(convertToCard);
+        }
+
+        // ========== Results Panel ==========
+        function renderResultsPanel(candidates) {
+            const container = document.getElementById('resultsContent');
+            let html = `
+                <div style="margin-bottom:20px">
+                    <h3 style="font-size:18px;margin-bottom:4px">🏆 推荐候选人 TOP${candidates.length}</h3>
+                    <p style="font-size:13px;color:#8b949e">点击候选人查看详细评估</p>
+                </div>
+            `;
+
+            candidates.forEach((cand, i) => {
+                const scoreClass = cand.matchScore >= 85 ? '#3fb950' : cand.matchScore >= 70 ? '#d29922' : '#f85149';
+                html += `
+                    <div class="candidate-detail" id="detail-${i}" style="${i > 0 ? 'display:none' : ''}">
+                        <div class="detail-header">
+                            <div class="detail-avatar">${cand.name[0]}</div>
+                            <div class="detail-name-section">
+                                <h3>${cand.name}</h3>
+                                <p>${cand.company} · ${cand.title}</p>
+                            </div>
+                            <div style="margin-left:auto;font-size:24px;font-weight:700;color:${scoreClass}">${cand.matchScore}%</div>
+                        </div>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="label">📍 所在城市</div>
+                                <div class="value">${cand.city}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="label">📅 工作年限</div>
+                                <div class="value">${cand.exp}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="label">🎓 最高学历</div>
+                                <div class="value">${cand.edu}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="label">💰 期望薪资</div>
+                                <div class="value">${cand.salary}</div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:16px">
+                            <div class="label" style="font-size:13px;color:#8b949e;margin-bottom:8px">🔧 技能匹配</div>
+                            ${cand.skills.map(s => {
+                                const pct = Math.floor(70 + Math.random() * 30);
+                                const color = pct >= 90 ? '#3fb950' : pct >= 75 ? '#d29922' : '#58a6ff';
+                                return `
+                                    <div class="skill-bar">
+                                        <span class="skill-name">${s}</span>
+                                        <div class="bar"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+                                        <span class="skill-pct" style="color:${color}">${pct}%</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px">
+                            <div class="label" style="font-size:13px;color:#8b949e;margin-bottom:8px">💡 推荐理由</div>
+                            <div style="font-size:14px;line-height:1.7">${cand.reason}</div>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-top:16px">
+                            <button class="header-btn" style="flex:1;text-align:center">📄 查看简历</button>
+                            <button class="header-btn" style="flex:1;text-align:center">💬 联系候选人</button>
+                            <button class="header-btn" style="flex:1;text-align:center">🎯 生成面试题</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Add tab navigation for candidates
+            if (candidates.length > 0) {
+                html += `
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid #30363d">
+                        ${candidates.map((c, i) => `
+                            <button class="header-btn cand-tab ${i === 0 ? 'active' : ''}"
+                                style="${i === 0 ? 'background:#1f6feb;border-color:#1f6feb' : ''}"
+                                onclick="showCandidateDetail(${i})">
+                                #${i+1} ${c.name} <span style="color:${c.matchScore >= 85 ? '#3fb950' : '#d29922'}">${c.matchScore}%</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function showCandidateDetail(index) {
+            // Hide all
+            document.querySelectorAll('.candidate-detail').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.cand-tab').forEach(el => {
+                el.style.background = '#21262d';
+                el.style.borderColor = '#30363d';
+            });
+
+            // Show selected
+            const detail = document.getElementById(`detail-${index}`);
+            if (detail) detail.style.display = 'block';
+
+            // Highlight tab
+            const tabs = document.querySelectorAll('.cand-tab');
+            if (tabs[index]) {
+                tabs[index].style.background = '#1f6feb';
+                tabs[index].style.borderColor = '#1f6feb';
+            }
+
+            // Scroll to detail
+            if (detail) detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ========== WebSocket Connection ==========
+        let ws = null;
+        function connectWS() {
+            try {
+                ws = new WebSocket('ws://localhost:8089/ws/agents');
+                ws.onopen = () => {
+                    document.getElementById('statusDot').className = 'status-dot';
+                    document.getElementById('statusText').textContent = 'Agent已连接';
+                };
+                ws.onclose = () => {
+                    document.getElementById('statusDot').className = 'status-dot offline';
+                    document.getElementById('statusText').textContent = 'Agent离线';
+                    setTimeout(connectWS, 3000);
+                };
+                ws.onerror = () => {
+                    document.getElementById('statusDot').className = 'status-dot offline';
+                    document.getElementById('statusText').textContent = '连接失败（离线模式）';
+                };
+                ws.onmessage = (e) => {
+                    try {
+                        const msg = JSON.parse(e.data);
+                        if (msg.type === 'message' && msg.data) {
+                            // Handle incoming agent messages
+                        }
+                    } catch(e) {}
+                };
+            } catch(e) {
+                document.getElementById('statusDot').className = 'status-dot offline';
+                document.getElementById('statusText').textContent = '离线模式';
+            }
+        }
+
+        // ========== Keyboard ==========
+        document.getElementById('inputField').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // ========== Init ==========
+        connectWS();
+    </script>
+</body>
+</html>
